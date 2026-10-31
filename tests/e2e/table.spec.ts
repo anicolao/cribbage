@@ -13,8 +13,8 @@ for(const count of [4,2,3])test(count===4?'four friends gather, peg a complete h
  // Predictable invitation entropy and shuffle choices are inputs, never injected game state.
  for(let i=0;i<count;i++)await contexts[i].addInitScript(({id})=>{let n=Number(sessionStorage.getItem('choice-counter')??0);Object.defineProperty(crypto,'randomUUID',{value:()=>{sessionStorage.setItem('choice-counter',String(n+1));return n++===0?id:`${id}-choice-${n}`;}});},{id:ids[i]});
  let wall=Date.UTC(2026,9,31,12);for(const page of pages)await page.clock.setFixedTime(wall);
- let expected=initialState(),room='',action=0;const pegOrigins:Record<string,number>={};
- function applyExpected(actor:string,intent:Intent){const before=expected,next=apply(before,actor,intent);for(const p of next.players){const old=before.players.find(o=>o.id===p.id);if(!old||intent.type==='begin')pegOrigins[p.id]=-1;else if(p.score!==old.score)pegOrigins[p.id]=old.score;}return next;}
+ let expected=initialState(),room='',action=0;const pegOrigins:Record<string,number>={};let goStartedAt=wall;
+ function applyExpected(actor:string,intent:Intent){const before=expected,next=apply(before,actor,intent);for(const p of next.players){const old=before.players.find(o=>o.id===p.id);if(!old||intent.type==='begin')pegOrigins[p.id]=-1;else if(p.score!==old.score)pegOrigins[p.id]=old.score;}if(next.phase==='pegging'&&legalCards(next,next.turn).length===0)goStartedAt=wall;return next;}
  async function advance(ms:number){wall+=ms;for(const page of pages)await page.clock.setFixedTime(wall);}
  async function automatic(actor:number,intent:Intent,ms=3000){await advance(ms);expected=applyExpected(ids[actor],intent);await photograph(actor,`${names[actor]} · ${intent.type==='go'?'Go plays automatically':'the crib is ready'}`);}
  async function verify(page:Page,viewer:number){
@@ -37,6 +37,7 @@ for(const count of [4,2,3])test(count===4?'four friends gather, peg a complete h
    await expect(page.getByRole('button',{name:'Deal',exact:true})).toHaveCount(viewer===0&&expected.players.length>=2?1:0);
   }
   if(expected.phase==='discard')expect(actual.prompt).toBe(needsDiscard(expected,viewer)?expected.hands[viewer].length===6?'Choose two for the crib':expected.discards[viewer].length?'Choose one more for the crib':'Choose one for the crib':'Waiting for the crib');
+  if(expected.phase==='pegging'&&expected.turn===viewer&&legalCards(expected,viewer).length===0)await expect(page.getByRole('button',{name:'Go',exact:true})).toHaveAttribute('data-seconds',String(Math.max(0,Math.ceil((3000-(wall-goStartedAt))/1000))));
   expect(actual.awards).toEqual([]);
   for(const p of expected.players)expect(actual.pegs.filter((peg:{owner:string})=>peg.owner===p.id).map((peg:{score:number})=>peg.score).sort((a:number,b:number)=>a-b)).toEqual([pegOrigins[p.id],p.score].sort((a,b)=>a-b));
   expect(actual.scores).toEqual(expected.players.map(p=>({id:p.id,score:p.score})));
