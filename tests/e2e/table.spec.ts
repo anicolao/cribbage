@@ -15,7 +15,7 @@ for(const count of [4,2,3])test(count===4?'four friends gather, peg a complete h
  let wall=Date.UTC(2026,9,31,12);for(const page of pages)await page.clock.setFixedTime(wall);
  let expected=initialState(),room='',action=0;
  async function advance(ms:number){wall+=ms;for(const page of pages)await page.clock.setFixedTime(wall);}
- async function automatic(actor:number,intent:Intent,ms=5000){await advance(ms);expected=apply(expected,ids[actor],intent);await photograph(actor,`${names[actor]} · ${intent.type==='go'?'Go plays automatically':'the crib is ready'}`);}
+ async function automatic(actor:number,intent:Intent,ms=3000){await advance(ms);expected=apply(expected,ids[actor],intent);await photograph(actor,`${names[actor]} · ${intent.type==='go'?'Go plays automatically':'the crib is ready'}`);}
  async function verify(page:Page,viewer:number){
   await expect(page.locator('main')).toHaveAttribute('data-revision',String(expected.revision));
   await expect(page.getByRole('status')).toHaveAttribute('data-status','synced',{timeout:60_000});
@@ -92,21 +92,21 @@ for(const count of [4,2,3])test(count===4?'four friends gather, peg a complete h
    }
   }
   expect(discards).toBe(count===2?4:count);expect(expected.crib).toHaveLength(4);
-  await expect(pages[0].locator('[data-countdown="undo"]')).toHaveAttribute('data-seconds','5');
+  await expect(pages[0].locator('[data-countdown="undo"]')).toHaveAttribute('data-seconds','3');
   if(count===2){
    await pages[1].reload();await expect(pages[1].getByRole('status')).toHaveAttribute('data-status','synced',{timeout:60_000});
-   await advance(4000);await expect(pages[0].locator('[data-countdown="undo"]')).toHaveAttribute('data-seconds','1');
+   await advance(2000);await expect(pages[0].locator('[data-countdown="undo"]')).toHaveAttribute('data-seconds','1');
    await photograph(0,'One second remains after returning to the table');
    const card=expected.discards[0].at(-1)!;await perform(0,{type:'undo-discard',card});
    for(const page of pages)await expect(page.locator('[data-countdown="undo"]')).toHaveAttribute('data-seconds','');
-   await perform(0,{type:'discard',card});await expect(pages[0].locator('[data-countdown="undo"]')).toHaveAttribute('data-seconds','5');
+   await perform(0,{type:'discard',card});await expect(pages[0].locator('[data-countdown="undo"]')).toHaveAttribute('data-seconds','3');
   }
   await automatic(0,{type:'accept-crib'});expect(expected.phase).toBe('cut');await perform(expected.turn,{type:'cut'});
   let steps=0,autoGo=false;while(expected.phase==='pegging'&&steps++<40){
    const actor=expected.turn,intent=botIntent(expected,actor)!;
    if(intent.type==='go'&&!autoGo){
-    await expect(pages[actor].getByRole('button',{name:'Go',exact:true})).toHaveAttribute('data-seconds','5');
-    await advance(4000);await expect(pages[actor].getByRole('button',{name:'Go',exact:true})).toHaveAttribute('data-seconds','1');
+    await expect(pages[actor].getByRole('button',{name:'Go',exact:true})).toHaveAttribute('data-seconds','3');
+    await advance(2000);await expect(pages[actor].getByRole('button',{name:'Go',exact:true})).toHaveAttribute('data-seconds','1');
     await photograph(actor,'Go will play automatically in one second');await automatic(actor,intent,1000);autoGo=true;
    }else await perform(actor,intent);
   }

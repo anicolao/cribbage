@@ -7,7 +7,7 @@
  import {cardName,handScore} from './game/cards';
  import {tablePlayers} from './game/layout';
  import {statusFor} from './presentation/frame';
- import {TableClock,countdownAction,automaticChoice,type Windows} from './game/countdowns';
+ import {BOT_DELAY_MS,TableClock,countdownAction,automaticChoice,type Windows} from './game/countdowns';
  let game=$state<State>(initialState()),viewer=$state(''),room=$state(''),name=$state(''),busy=$state(false),error=$state(''),ready=$state(false),animating=$state(false),renderedRevision=$state(-1),connected=$state(false),copied=$state(false);
  let now=$state(Date.now()),windows=$state.raw<Windows>({discards:[]});
  let clock:TableClock|undefined,clockKey='';const autoAttempts=new Map<string,number>();
@@ -61,7 +61,7 @@
   const index=game.phase==='discard'?game.players.findIndex((p,i)=>p.bot&&needsDiscard(game,i)):game.turn;
   if(index<0||!game.players[index]?.bot)return;
   const intent=botIntent(game,index);if(!intent||intent.type==='go'||intent.type==='accept-crib')return;
-  const timer=setTimeout(()=>void act(intent,game.players[index].id),700);return()=>clearTimeout(timer);
+  const timer=setTimeout(()=>void act(intent,game.players[index].id),BOT_DELAY_MS);return()=>clearTimeout(timer);
  });
  function chooseAction(){if(choiceAction?.kind==='undo'&&choiceAction.card)void act({type:'undo-discard',card:choiceAction.card});else if(choiceAction?.kind==='go')void act({type:'go'});}
  function play(card:string){void act({type:game.phase==='discard'?'discard':'play',card});}
