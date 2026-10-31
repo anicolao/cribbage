@@ -10,6 +10,7 @@ Use Bun for package management and scripts. Work on `codex/` branches and use pu
 - Support two, three and four players. Two players receive six and discard two each; three receive five and discard one each plus one automatic concealed crib card; four receive five and discard one each. Every player has an individual track. Seating and play proceed clockwise. Only the viewer's held cards are revealed in either graphics or the accessible DOM.
 - Crib contributions stay undoable until the whole crib is complete, followed by a shared five-second grace window. Undo cancels the window; completing the crib again restarts it. Store presentation deadlines locally, never in the event log. Record undo, acceptance and Go as intents, with no computed values.
 - Companion decisions use their own hand and public play and submit ordinary player intents.
+- Cumulative totals stay engraved in the nameplates. Show hand and crib counting points beside the revealed cards, timed with the count animation.
 - Product UI speaks to players. Prefer the cards and table to explanatory words or dialogs; keep lab and implementation controls outside the playable table.
 
 ## Verification
