@@ -27,3 +27,5 @@ Semantic checks read a complete DOM snapshot after the expected revision has set
 UI actions allow 20 seconds for full-quality software-rendered browser work on CI. This changes only the deadline: retries remain zero and every decoded screenshot pixel must still match.
 
 The two-player story leaves the first contribution in the crib for six seconds, verifies untimed Undo, returns it to the fan, and contributes again. Once the whole crib is full, it reloads an observer, checks one second remains, undoes a card, verifies the timer disappears for both perspectives, fills the crib again and checks a fresh five seconds. Every game captures automatic crib acceptance and a mandatory Go at five and one seconds followed by automatic play. Printed scene scores must exactly match the semantic player scores after peg landing.
+
+A browser canvas-text drawing counter verifies that card motion reuses score and nameplate textures while their text is unchanged. This observes rendering work without changing game state, graphics or clocks.

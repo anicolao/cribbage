@@ -146,11 +146,35 @@ Viewpoint: **Rowan**
 
 - [x] Exact phase, revision, round, count, crib size, clockwise seats, scores, private hands, public plays and legal native-card controls
 
+## Alex · the crib is ready · actor
+
+Viewpoint: **Alex**
+
+![Alex · the crib is ready · actor](./screenshots/018-3p-action-7-alex-linux.png)
+
+- [x] Exact phase, revision, round, count, crib size, clockwise seats, scores, private hands, public plays and legal native-card controls
+
+## Alex · the crib is ready · observer
+
+Viewpoint: **Rowan**
+
+![Alex · the crib is ready · observer](./screenshots/019-3p-action-7-rowan-linux.png)
+
+- [x] Exact phase, revision, round, count, crib size, clockwise seats, scores, private hands, public plays and legal native-card controls
+
+## Alex · the crib is ready · observer
+
+Viewpoint: **Jules**
+
+![Alex · the crib is ready · observer](./screenshots/020-3p-action-7-jules-linux.png)
+
+- [x] Exact phase, revision, round, count, crib size, clockwise seats, scores, private hands, public plays and legal native-card controls
+
 ## Rowan cuts the deck · actor
 
 Viewpoint: **Rowan**
 
-![Rowan cuts the deck · actor](./screenshots/018-3p-action-7-rowan-linux.png)
+![Rowan cuts the deck · actor](./screenshots/021-3p-action-8-rowan-linux.png)
 
 - [x] Exact phase, revision, round, count, crib size, clockwise seats, scores, private hands, public plays and legal native-card controls
 
@@ -158,7 +182,7 @@ Viewpoint: **Rowan**
 
 Viewpoint: **Alex**
 
-![Rowan cuts the deck · observer](./screenshots/019-3p-action-7-alex-linux.png)
+![Rowan cuts the deck · observer](./screenshots/022-3p-action-8-alex-linux.png)
 
 - [x] Exact phase, revision, round, count, crib size, clockwise seats, scores, private hands, public plays and legal native-card controls
 
@@ -166,7 +190,7 @@ Viewpoint: **Alex**
 
 Viewpoint: **Jules**
 
-![Rowan cuts the deck · observer](./screenshots/020-3p-action-7-jules-linux.png)
+![Rowan cuts the deck · observer](./screenshots/023-3p-action-8-jules-linux.png)
 
 - [x] Exact phase, revision, round, count, crib size, clockwise seats, scores, private hands, public plays and legal native-card controls
 
@@ -174,7 +198,7 @@ Viewpoint: **Jules**
 
 Viewpoint: **Rowan**
 
-![Rowan plays 2 of hearts · actor](./screenshots/021-3p-action-8-rowan-linux.png)
+![Rowan plays 2 of hearts · actor](./screenshots/024-3p-action-9-rowan-linux.png)
 
 - [x] Exact phase, revision, round, count, crib size, clockwise seats, scores, private hands, public plays and legal native-card controls
 
@@ -182,7 +206,7 @@ Viewpoint: **Rowan**
 
 Viewpoint: **Alex**
 
-![Rowan plays 2 of hearts · observer](./screenshots/022-3p-action-8-alex-linux.png)
+![Rowan plays 2 of hearts · observer](./screenshots/025-3p-action-9-alex-linux.png)
 
 - [x] Exact phase, revision, round, count, crib size, clockwise seats, scores, private hands, public plays and legal native-card controls
 
@@ -190,7 +214,7 @@ Viewpoint: **Alex**
 
 Viewpoint: **Jules**
 
-![Rowan plays 2 of hearts · observer](./screenshots/023-3p-action-8-jules-linux.png)
+![Rowan plays 2 of hearts · observer](./screenshots/026-3p-action-9-jules-linux.png)
 
 - [x] Exact phase, revision, round, count, crib size, clockwise seats, scores, private hands, public plays and legal native-card controls
 
@@ -198,7 +222,7 @@ Viewpoint: **Jules**
 
 Viewpoint: **Jules**
 
-![Jules plays 4 of spades · actor](./screenshots/024-3p-action-9-jules-linux.png)
+![Jules plays 4 of spades · actor](./screenshots/027-3p-action-10-jules-linux.png)
 
 - [x] Exact phase, revision, round, count, crib size, clockwise seats, scores, private hands, public plays and legal native-card controls
 
@@ -206,7 +230,7 @@ Viewpoint: **Jules**
 
 Viewpoint: **Alex**
 
-![Jules plays 4 of spades · observer](./screenshots/025-3p-action-9-alex-linux.png)
+![Jules plays 4 of spades · observer](./screenshots/028-3p-action-10-alex-linux.png)
 
 - [x] Exact phase, revision, round, count, crib size, clockwise seats, scores, private hands, public plays and legal native-card controls
 
@@ -214,7 +238,7 @@ Viewpoint: **Alex**
 
 Viewpoint: **Rowan**
 
-![Jules plays 4 of spades · observer](./screenshots/026-3p-action-9-rowan-linux.png)
+![Jules plays 4 of spades · observer](./screenshots/029-3p-action-10-rowan-linux.png)
 
 - [x] Exact phase, revision, round, count, crib size, clockwise seats, scores, private hands, public plays and legal native-card controls
 
@@ -222,7 +246,7 @@ Viewpoint: **Rowan**
 
 Viewpoint: **Alex**
 
-![Alex plays 6 of clubs · actor](./screenshots/027-3p-action-10-alex-linux.png)
+![Alex plays 6 of clubs · actor](./screenshots/030-3p-action-11-alex-linux.png)
 
 - [x] Exact phase, revision, round, count, crib size, clockwise seats, scores, private hands, public plays and legal native-card controls
 
@@ -230,7 +254,7 @@ Viewpoint: **Alex**
 
 Viewpoint: **Rowan**
 
-![Alex plays 6 of clubs · observer](./screenshots/028-3p-action-10-rowan-linux.png)
+![Alex plays 6 of clubs · observer](./screenshots/031-3p-action-11-rowan-linux.png)
 
 - [x] Exact phase, revision, round, count, crib size, clockwise seats, scores, private hands, public plays and legal native-card controls
 
@@ -238,7 +262,7 @@ Viewpoint: **Rowan**
 
 Viewpoint: **Jules**
 
-![Alex plays 6 of clubs · observer](./screenshots/029-3p-action-10-jules-linux.png)
+![Alex plays 6 of clubs · observer](./screenshots/032-3p-action-11-jules-linux.png)
 
 - [x] Exact phase, revision, round, count, crib size, clockwise seats, scores, private hands, public plays and legal native-card controls
 
@@ -246,7 +270,7 @@ Viewpoint: **Jules**
 
 Viewpoint: **Rowan**
 
-![Rowan plays 5 of diamonds · actor](./screenshots/030-3p-action-11-rowan-linux.png)
+![Rowan plays 5 of diamonds · actor](./screenshots/033-3p-action-12-rowan-linux.png)
 
 - [x] Exact phase, revision, round, count, crib size, clockwise seats, scores, private hands, public plays and legal native-card controls
 
@@ -254,7 +278,7 @@ Viewpoint: **Rowan**
 
 Viewpoint: **Alex**
 
-![Rowan plays 5 of diamonds · observer](./screenshots/031-3p-action-11-alex-linux.png)
+![Rowan plays 5 of diamonds · observer](./screenshots/034-3p-action-12-alex-linux.png)
 
 - [x] Exact phase, revision, round, count, crib size, clockwise seats, scores, private hands, public plays and legal native-card controls
 
@@ -262,7 +286,7 @@ Viewpoint: **Alex**
 
 Viewpoint: **Jules**
 
-![Rowan plays 5 of diamonds · observer](./screenshots/032-3p-action-11-jules-linux.png)
+![Rowan plays 5 of diamonds · observer](./screenshots/035-3p-action-12-jules-linux.png)
 
 - [x] Exact phase, revision, round, count, crib size, clockwise seats, scores, private hands, public plays and legal native-card controls
 
@@ -270,7 +294,7 @@ Viewpoint: **Jules**
 
 Viewpoint: **Jules**
 
-![Jules plays 3 of diamonds · actor](./screenshots/033-3p-action-12-jules-linux.png)
+![Jules plays 3 of diamonds · actor](./screenshots/036-3p-action-13-jules-linux.png)
 
 - [x] Exact phase, revision, round, count, crib size, clockwise seats, scores, private hands, public plays and legal native-card controls
 
@@ -278,7 +302,7 @@ Viewpoint: **Jules**
 
 Viewpoint: **Alex**
 
-![Jules plays 3 of diamonds · observer](./screenshots/034-3p-action-12-alex-linux.png)
+![Jules plays 3 of diamonds · observer](./screenshots/037-3p-action-13-alex-linux.png)
 
 - [x] Exact phase, revision, round, count, crib size, clockwise seats, scores, private hands, public plays and legal native-card controls
 
@@ -286,7 +310,7 @@ Viewpoint: **Alex**
 
 Viewpoint: **Rowan**
 
-![Jules plays 3 of diamonds · observer](./screenshots/035-3p-action-12-rowan-linux.png)
+![Jules plays 3 of diamonds · observer](./screenshots/038-3p-action-13-rowan-linux.png)
 
 - [x] Exact phase, revision, round, count, crib size, clockwise seats, scores, private hands, public plays and legal native-card controls
 
@@ -294,7 +318,7 @@ Viewpoint: **Rowan**
 
 Viewpoint: **Alex**
 
-![Alex plays 6 of spades · actor](./screenshots/036-3p-action-13-alex-linux.png)
+![Alex plays 6 of spades · actor](./screenshots/039-3p-action-14-alex-linux.png)
 
 - [x] Exact phase, revision, round, count, crib size, clockwise seats, scores, private hands, public plays and legal native-card controls
 
@@ -302,7 +326,7 @@ Viewpoint: **Alex**
 
 Viewpoint: **Rowan**
 
-![Alex plays 6 of spades · observer](./screenshots/037-3p-action-13-rowan-linux.png)
+![Alex plays 6 of spades · observer](./screenshots/040-3p-action-14-rowan-linux.png)
 
 - [x] Exact phase, revision, round, count, crib size, clockwise seats, scores, private hands, public plays and legal native-card controls
 
@@ -310,7 +334,7 @@ Viewpoint: **Rowan**
 
 Viewpoint: **Jules**
 
-![Alex plays 6 of spades · observer](./screenshots/038-3p-action-13-jules-linux.png)
+![Alex plays 6 of spades · observer](./screenshots/041-3p-action-14-jules-linux.png)
 
 - [x] Exact phase, revision, round, count, crib size, clockwise seats, scores, private hands, public plays and legal native-card controls
 
@@ -318,7 +342,7 @@ Viewpoint: **Jules**
 
 Viewpoint: **Rowan**
 
-![Rowan plays 4 of hearts · actor](./screenshots/039-3p-action-14-rowan-linux.png)
+![Rowan plays 4 of hearts · actor](./screenshots/042-3p-action-15-rowan-linux.png)
 
 - [x] Exact phase, revision, round, count, crib size, clockwise seats, scores, private hands, public plays and legal native-card controls
 
@@ -326,7 +350,7 @@ Viewpoint: **Rowan**
 
 Viewpoint: **Alex**
 
-![Rowan plays 4 of hearts · observer](./screenshots/040-3p-action-14-alex-linux.png)
+![Rowan plays 4 of hearts · observer](./screenshots/043-3p-action-15-alex-linux.png)
 
 - [x] Exact phase, revision, round, count, crib size, clockwise seats, scores, private hands, public plays and legal native-card controls
 
@@ -334,31 +358,55 @@ Viewpoint: **Alex**
 
 Viewpoint: **Jules**
 
-![Rowan plays 4 of hearts · observer](./screenshots/041-3p-action-14-jules-linux.png)
+![Rowan plays 4 of hearts · observer](./screenshots/044-3p-action-15-jules-linux.png)
 
 - [x] Exact phase, revision, round, count, crib size, clockwise seats, scores, private hands, public plays and legal native-card controls
 
-## Jules says Go · actor
+## Go will play automatically in one second · actor
 
 Viewpoint: **Jules**
 
-![Jules says Go · actor](./screenshots/042-3p-action-15-jules-linux.png)
+![Go will play automatically in one second · actor](./screenshots/045-3p-action-16-jules-linux.png)
 
 - [x] Exact phase, revision, round, count, crib size, clockwise seats, scores, private hands, public plays and legal native-card controls
 
-## Jules says Go · observer
+## Go will play automatically in one second · observer
 
 Viewpoint: **Alex**
 
-![Jules says Go · observer](./screenshots/043-3p-action-15-alex-linux.png)
+![Go will play automatically in one second · observer](./screenshots/046-3p-action-16-alex-linux.png)
 
 - [x] Exact phase, revision, round, count, crib size, clockwise seats, scores, private hands, public plays and legal native-card controls
 
-## Jules says Go · observer
+## Go will play automatically in one second · observer
 
 Viewpoint: **Rowan**
 
-![Jules says Go · observer](./screenshots/044-3p-action-15-rowan-linux.png)
+![Go will play automatically in one second · observer](./screenshots/047-3p-action-16-rowan-linux.png)
+
+- [x] Exact phase, revision, round, count, crib size, clockwise seats, scores, private hands, public plays and legal native-card controls
+
+## Jules · Go plays automatically · actor
+
+Viewpoint: **Jules**
+
+![Jules · Go plays automatically · actor](./screenshots/048-3p-action-17-jules-linux.png)
+
+- [x] Exact phase, revision, round, count, crib size, clockwise seats, scores, private hands, public plays and legal native-card controls
+
+## Jules · Go plays automatically · observer
+
+Viewpoint: **Alex**
+
+![Jules · Go plays automatically · observer](./screenshots/049-3p-action-17-alex-linux.png)
+
+- [x] Exact phase, revision, round, count, crib size, clockwise seats, scores, private hands, public plays and legal native-card controls
+
+## Jules · Go plays automatically · observer
+
+Viewpoint: **Rowan**
+
+![Jules · Go plays automatically · observer](./screenshots/050-3p-action-17-rowan-linux.png)
 
 - [x] Exact phase, revision, round, count, crib size, clockwise seats, scores, private hands, public plays and legal native-card controls
 
@@ -366,7 +414,7 @@ Viewpoint: **Rowan**
 
 Viewpoint: **Alex**
 
-![Alex says Go · actor](./screenshots/045-3p-action-16-alex-linux.png)
+![Alex says Go · actor](./screenshots/051-3p-action-18-alex-linux.png)
 
 - [x] Exact phase, revision, round, count, crib size, clockwise seats, scores, private hands, public plays and legal native-card controls
 
@@ -374,7 +422,7 @@ Viewpoint: **Alex**
 
 Viewpoint: **Rowan**
 
-![Alex says Go · observer](./screenshots/046-3p-action-16-rowan-linux.png)
+![Alex says Go · observer](./screenshots/052-3p-action-18-rowan-linux.png)
 
 - [x] Exact phase, revision, round, count, crib size, clockwise seats, scores, private hands, public plays and legal native-card controls
 
@@ -382,7 +430,7 @@ Viewpoint: **Rowan**
 
 Viewpoint: **Jules**
 
-![Alex says Go · observer](./screenshots/047-3p-action-16-jules-linux.png)
+![Alex says Go · observer](./screenshots/053-3p-action-18-jules-linux.png)
 
 - [x] Exact phase, revision, round, count, crib size, clockwise seats, scores, private hands, public plays and legal native-card controls
 
@@ -390,7 +438,7 @@ Viewpoint: **Jules**
 
 Viewpoint: **Rowan**
 
-![Rowan says Go · actor](./screenshots/048-3p-action-17-rowan-linux.png)
+![Rowan says Go · actor](./screenshots/054-3p-action-19-rowan-linux.png)
 
 - [x] Exact phase, revision, round, count, crib size, clockwise seats, scores, private hands, public plays and legal native-card controls
 
@@ -398,7 +446,7 @@ Viewpoint: **Rowan**
 
 Viewpoint: **Alex**
 
-![Rowan says Go · observer](./screenshots/049-3p-action-17-alex-linux.png)
+![Rowan says Go · observer](./screenshots/055-3p-action-19-alex-linux.png)
 
 - [x] Exact phase, revision, round, count, crib size, clockwise seats, scores, private hands, public plays and legal native-card controls
 
@@ -406,7 +454,7 @@ Viewpoint: **Alex**
 
 Viewpoint: **Jules**
 
-![Rowan says Go · observer](./screenshots/050-3p-action-17-jules-linux.png)
+![Rowan says Go · observer](./screenshots/056-3p-action-19-jules-linux.png)
 
 - [x] Exact phase, revision, round, count, crib size, clockwise seats, scores, private hands, public plays and legal native-card controls
 
@@ -414,7 +462,7 @@ Viewpoint: **Jules**
 
 Viewpoint: **Jules**
 
-![Jules plays 3 of hearts · actor](./screenshots/051-3p-action-18-jules-linux.png)
+![Jules plays 3 of hearts · actor](./screenshots/057-3p-action-20-jules-linux.png)
 
 - [x] Exact phase, revision, round, count, crib size, clockwise seats, scores, private hands, public plays and legal native-card controls
 
@@ -422,7 +470,7 @@ Viewpoint: **Jules**
 
 Viewpoint: **Alex**
 
-![Jules plays 3 of hearts · observer](./screenshots/052-3p-action-18-alex-linux.png)
+![Jules plays 3 of hearts · observer](./screenshots/058-3p-action-20-alex-linux.png)
 
 - [x] Exact phase, revision, round, count, crib size, clockwise seats, scores, private hands, public plays and legal native-card controls
 
@@ -430,7 +478,7 @@ Viewpoint: **Alex**
 
 Viewpoint: **Rowan**
 
-![Jules plays 3 of hearts · observer](./screenshots/053-3p-action-18-rowan-linux.png)
+![Jules plays 3 of hearts · observer](./screenshots/059-3p-action-20-rowan-linux.png)
 
 - [x] Exact phase, revision, round, count, crib size, clockwise seats, scores, private hands, public plays and legal native-card controls
 
@@ -438,7 +486,7 @@ Viewpoint: **Rowan**
 
 Viewpoint: **Alex**
 
-![Alex plays Jack of clubs · actor](./screenshots/054-3p-action-19-alex-linux.png)
+![Alex plays Jack of clubs · actor](./screenshots/060-3p-action-21-alex-linux.png)
 
 - [x] Exact phase, revision, round, count, crib size, clockwise seats, scores, private hands, public plays and legal native-card controls
 
@@ -446,7 +494,7 @@ Viewpoint: **Alex**
 
 Viewpoint: **Rowan**
 
-![Alex plays Jack of clubs · observer](./screenshots/055-3p-action-19-rowan-linux.png)
+![Alex plays Jack of clubs · observer](./screenshots/061-3p-action-21-rowan-linux.png)
 
 - [x] Exact phase, revision, round, count, crib size, clockwise seats, scores, private hands, public plays and legal native-card controls
 
@@ -454,7 +502,7 @@ Viewpoint: **Rowan**
 
 Viewpoint: **Jules**
 
-![Alex plays Jack of clubs · observer](./screenshots/056-3p-action-19-jules-linux.png)
+![Alex plays Jack of clubs · observer](./screenshots/062-3p-action-21-jules-linux.png)
 
 - [x] Exact phase, revision, round, count, crib size, clockwise seats, scores, private hands, public plays and legal native-card controls
 
@@ -462,7 +510,7 @@ Viewpoint: **Jules**
 
 Viewpoint: **Rowan**
 
-![Rowan plays 3 of spades · actor](./screenshots/057-3p-action-20-rowan-linux.png)
+![Rowan plays 3 of spades · actor](./screenshots/063-3p-action-22-rowan-linux.png)
 
 - [x] Exact phase, revision, round, count, crib size, clockwise seats, scores, private hands, public plays and legal native-card controls
 
@@ -470,7 +518,7 @@ Viewpoint: **Rowan**
 
 Viewpoint: **Alex**
 
-![Rowan plays 3 of spades · observer](./screenshots/058-3p-action-20-alex-linux.png)
+![Rowan plays 3 of spades · observer](./screenshots/064-3p-action-22-alex-linux.png)
 
 - [x] Exact phase, revision, round, count, crib size, clockwise seats, scores, private hands, public plays and legal native-card controls
 
@@ -478,7 +526,7 @@ Viewpoint: **Alex**
 
 Viewpoint: **Jules**
 
-![Rowan plays 3 of spades · observer](./screenshots/059-3p-action-20-jules-linux.png)
+![Rowan plays 3 of spades · observer](./screenshots/065-3p-action-22-jules-linux.png)
 
 - [x] Exact phase, revision, round, count, crib size, clockwise seats, scores, private hands, public plays and legal native-card controls
 
@@ -486,7 +534,7 @@ Viewpoint: **Jules**
 
 Viewpoint: **Jules**
 
-![Jules plays 5 of clubs · actor](./screenshots/060-3p-action-21-jules-linux.png)
+![Jules plays 5 of clubs · actor](./screenshots/066-3p-action-23-jules-linux.png)
 
 - [x] Exact phase, revision, round, count, crib size, clockwise seats, scores, private hands, public plays and legal native-card controls
 
@@ -494,7 +542,7 @@ Viewpoint: **Jules**
 
 Viewpoint: **Alex**
 
-![Jules plays 5 of clubs · observer](./screenshots/061-3p-action-21-alex-linux.png)
+![Jules plays 5 of clubs · observer](./screenshots/067-3p-action-23-alex-linux.png)
 
 - [x] Exact phase, revision, round, count, crib size, clockwise seats, scores, private hands, public plays and legal native-card controls
 
@@ -502,7 +550,7 @@ Viewpoint: **Alex**
 
 Viewpoint: **Rowan**
 
-![Jules plays 5 of clubs · observer](./screenshots/062-3p-action-21-rowan-linux.png)
+![Jules plays 5 of clubs · observer](./screenshots/068-3p-action-23-rowan-linux.png)
 
 - [x] Exact phase, revision, round, count, crib size, clockwise seats, scores, private hands, public plays and legal native-card controls
 
@@ -510,7 +558,7 @@ Viewpoint: **Rowan**
 
 Viewpoint: **Alex**
 
-![Alex plays Jack of spades · actor](./screenshots/063-3p-action-22-alex-linux.png)
+![Alex plays Jack of spades · actor](./screenshots/069-3p-action-24-alex-linux.png)
 
 - [x] Exact phase, revision, round, count, crib size, clockwise seats, scores, private hands, public plays and legal native-card controls
 
@@ -518,7 +566,7 @@ Viewpoint: **Alex**
 
 Viewpoint: **Rowan**
 
-![Alex plays Jack of spades · observer](./screenshots/064-3p-action-22-rowan-linux.png)
+![Alex plays Jack of spades · observer](./screenshots/070-3p-action-24-rowan-linux.png)
 
 - [x] Exact phase, revision, round, count, crib size, clockwise seats, scores, private hands, public plays and legal native-card controls
 
@@ -526,7 +574,7 @@ Viewpoint: **Rowan**
 
 Viewpoint: **Jules**
 
-![Alex plays Jack of spades · observer](./screenshots/065-3p-action-22-jules-linux.png)
+![Alex plays Jack of spades · observer](./screenshots/071-3p-action-24-jules-linux.png)
 
 - [x] Exact phase, revision, round, count, crib size, clockwise seats, scores, private hands, public plays and legal native-card controls
 
@@ -534,7 +582,7 @@ Viewpoint: **Jules**
 
 Viewpoint: **Rowan**
 
-![Rowan counts · actor](./screenshots/066-3p-action-23-rowan-linux.png)
+![Rowan counts · actor](./screenshots/072-3p-action-25-rowan-linux.png)
 
 - [x] Exact phase, revision, round, count, crib size, clockwise seats, scores, private hands, public plays and legal native-card controls
 
@@ -542,7 +590,7 @@ Viewpoint: **Rowan**
 
 Viewpoint: **Alex**
 
-![Rowan counts · observer](./screenshots/067-3p-action-23-alex-linux.png)
+![Rowan counts · observer](./screenshots/073-3p-action-25-alex-linux.png)
 
 - [x] Exact phase, revision, round, count, crib size, clockwise seats, scores, private hands, public plays and legal native-card controls
 
@@ -550,7 +598,7 @@ Viewpoint: **Alex**
 
 Viewpoint: **Jules**
 
-![Rowan counts · observer](./screenshots/068-3p-action-23-jules-linux.png)
+![Rowan counts · observer](./screenshots/074-3p-action-25-jules-linux.png)
 
 - [x] Exact phase, revision, round, count, crib size, clockwise seats, scores, private hands, public plays and legal native-card controls
 
@@ -558,7 +606,7 @@ Viewpoint: **Jules**
 
 Viewpoint: **Jules**
 
-![Jules counts · actor](./screenshots/069-3p-action-24-jules-linux.png)
+![Jules counts · actor](./screenshots/075-3p-action-26-jules-linux.png)
 
 - [x] Exact phase, revision, round, count, crib size, clockwise seats, scores, private hands, public plays and legal native-card controls
 
@@ -566,7 +614,7 @@ Viewpoint: **Jules**
 
 Viewpoint: **Alex**
 
-![Jules counts · observer](./screenshots/070-3p-action-24-alex-linux.png)
+![Jules counts · observer](./screenshots/076-3p-action-26-alex-linux.png)
 
 - [x] Exact phase, revision, round, count, crib size, clockwise seats, scores, private hands, public plays and legal native-card controls
 
@@ -574,7 +622,7 @@ Viewpoint: **Alex**
 
 Viewpoint: **Rowan**
 
-![Jules counts · observer](./screenshots/071-3p-action-24-rowan-linux.png)
+![Jules counts · observer](./screenshots/077-3p-action-26-rowan-linux.png)
 
 - [x] Exact phase, revision, round, count, crib size, clockwise seats, scores, private hands, public plays and legal native-card controls
 
@@ -582,7 +630,7 @@ Viewpoint: **Rowan**
 
 Viewpoint: **Alex**
 
-![Alex counts · actor](./screenshots/072-3p-action-25-alex-linux.png)
+![Alex counts · actor](./screenshots/078-3p-action-27-alex-linux.png)
 
 - [x] Exact phase, revision, round, count, crib size, clockwise seats, scores, private hands, public plays and legal native-card controls
 
@@ -590,7 +638,7 @@ Viewpoint: **Alex**
 
 Viewpoint: **Rowan**
 
-![Alex counts · observer](./screenshots/073-3p-action-25-rowan-linux.png)
+![Alex counts · observer](./screenshots/079-3p-action-27-rowan-linux.png)
 
 - [x] Exact phase, revision, round, count, crib size, clockwise seats, scores, private hands, public plays and legal native-card controls
 
@@ -598,7 +646,7 @@ Viewpoint: **Rowan**
 
 Viewpoint: **Jules**
 
-![Alex counts · observer](./screenshots/074-3p-action-25-jules-linux.png)
+![Alex counts · observer](./screenshots/080-3p-action-27-jules-linux.png)
 
 - [x] Exact phase, revision, round, count, crib size, clockwise seats, scores, private hands, public plays and legal native-card controls
 
@@ -606,7 +654,7 @@ Viewpoint: **Jules**
 
 Viewpoint: **Alex**
 
-![Alex counts · actor](./screenshots/075-3p-action-26-alex-linux.png)
+![Alex counts · actor](./screenshots/081-3p-action-28-alex-linux.png)
 
 - [x] Exact phase, revision, round, count, crib size, clockwise seats, scores, private hands, public plays and legal native-card controls
 
@@ -614,7 +662,7 @@ Viewpoint: **Alex**
 
 Viewpoint: **Rowan**
 
-![Alex counts · observer](./screenshots/076-3p-action-26-rowan-linux.png)
+![Alex counts · observer](./screenshots/082-3p-action-28-rowan-linux.png)
 
 - [x] Exact phase, revision, round, count, crib size, clockwise seats, scores, private hands, public plays and legal native-card controls
 
@@ -622,7 +670,7 @@ Viewpoint: **Rowan**
 
 Viewpoint: **Jules**
 
-![Alex counts · observer](./screenshots/077-3p-action-26-jules-linux.png)
+![Alex counts · observer](./screenshots/083-3p-action-28-jules-linux.png)
 
 - [x] Exact phase, revision, round, count, crib size, clockwise seats, scores, private hands, public plays and legal native-card controls
 
@@ -630,7 +678,7 @@ Viewpoint: **Jules**
 
 Viewpoint: **Alex**
 
-![Alex deals the next hand · actor](./screenshots/078-3p-action-27-alex-linux.png)
+![Alex deals the next hand · actor](./screenshots/084-3p-action-29-alex-linux.png)
 
 - [x] Exact phase, revision, round, count, crib size, clockwise seats, scores, private hands, public plays and legal native-card controls
 
@@ -638,7 +686,7 @@ Viewpoint: **Alex**
 
 Viewpoint: **Rowan**
 
-![Alex deals the next hand · observer](./screenshots/079-3p-action-27-rowan-linux.png)
+![Alex deals the next hand · observer](./screenshots/085-3p-action-29-rowan-linux.png)
 
 - [x] Exact phase, revision, round, count, crib size, clockwise seats, scores, private hands, public plays and legal native-card controls
 
@@ -646,7 +694,7 @@ Viewpoint: **Rowan**
 
 Viewpoint: **Jules**
 
-![Alex deals the next hand · observer](./screenshots/080-3p-action-27-jules-linux.png)
+![Alex deals the next hand · observer](./screenshots/086-3p-action-29-jules-linux.png)
 
 - [x] Exact phase, revision, round, count, crib size, clockwise seats, scores, private hands, public plays and legal native-card controls
 
@@ -654,7 +702,7 @@ Viewpoint: **Jules**
 
 Viewpoint: **Rowan**
 
-![Rowan returns to the same seat and hand · actor](./screenshots/081-3p-action-28-rowan-linux.png)
+![Rowan returns to the same seat and hand · actor](./screenshots/087-3p-action-30-rowan-linux.png)
 
 - [x] Exact phase, revision, round, count, crib size, clockwise seats, scores, private hands, public plays and legal native-card controls
 
@@ -662,7 +710,7 @@ Viewpoint: **Rowan**
 
 Viewpoint: **Alex**
 
-![Rowan returns to the same seat and hand · observer](./screenshots/082-3p-action-28-alex-linux.png)
+![Rowan returns to the same seat and hand · observer](./screenshots/088-3p-action-30-alex-linux.png)
 
 - [x] Exact phase, revision, round, count, crib size, clockwise seats, scores, private hands, public plays and legal native-card controls
 
@@ -670,6 +718,6 @@ Viewpoint: **Alex**
 
 Viewpoint: **Jules**
 
-![Rowan returns to the same seat and hand · observer](./screenshots/083-3p-action-28-jules-linux.png)
+![Rowan returns to the same seat and hand · observer](./screenshots/089-3p-action-30-jules-linux.png)
 
 - [x] Exact phase, revision, round, count, crib size, clockwise seats, scores, private hands, public plays and legal native-card controls
