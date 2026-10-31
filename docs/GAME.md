@@ -15,3 +15,5 @@ The seed is the host's shuffle input. The PRNG is Pantheon's version-1 FNV-1a/xo
 Clients are trusted, as in Pantheon/Istanbul: a determined client can derive everyone's hand from the shared seed. The interface conceals opponents' held and discarded cards, but this is not an adversarial hidden-information service. Companion bots use only their own hand and public play: maximize expected retained-hand points for discards; prioritize immediate pegging points, avoid leaving five or twenty-one, then prefer a low card. All tie breaks are stable.
 
 Tests exercise repeatable deals, strict intent shapes, 29 hands, crib flushes, pegging combinations, legal Go, 31, immediate wins, card conservation, dealer rotation, and exact event replay through eight complete bot matches.
+
+The host's tab runs companion turns; keep it open when using companions. Player positions advance clockwise around the table, so the next seat is visibly to the dealer's left from each personal perspective.
