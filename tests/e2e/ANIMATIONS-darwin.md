@@ -1,6 +1,6 @@
-# Four friends at the cribbage table
+# Shared animation review
 
-Every user action is followed by the actor's view and all seated observers. All captures are 1180×820 at 1×; verification allows zero different pixels.
+Each transition is paused at 0.50 seconds for review. All captures are 1180×820 at 1×; verification allows zero different pixels.
 
 ## Hover / keyboard focus
 
@@ -215,5 +215,53 @@ Viewpoint: **Lab**
 Viewpoint: **Lab**
 
 ![Winning peg and nameplate](./screenshots/026-motion-win-lab-darwin.png)
+
+- [x] Shared full-quality renderer; paused legal transition, native canvas, no SVG interaction overlay
+
+## Two players · six cards each
+
+Viewpoint: **Lab**
+
+![Two players · six cards each](./screenshots/027-motion-deal-2-lab-darwin.png)
+
+- [x] Shared full-quality renderer; paused legal transition, native canvas, no SVG interaction overlay
+
+## Two players · first crib card
+
+Viewpoint: **Lab**
+
+![Two players · first crib card](./screenshots/028-motion-two-discard-1-lab-darwin.png)
+
+- [x] Shared full-quality renderer; paused legal transition, native canvas, no SVG interaction overlay
+
+## Two players · second crib card
+
+Viewpoint: **Lab**
+
+![Two players · second crib card](./screenshots/029-motion-two-discard-2-lab-darwin.png)
+
+- [x] Shared full-quality renderer; paused legal transition, native canvas, no SVG interaction overlay
+
+## Two players · reveal the crib
+
+Viewpoint: **Lab**
+
+![Two players · reveal the crib](./screenshots/030-motion-crib-2-lab-darwin.png)
+
+- [x] Shared full-quality renderer; paused legal transition, native canvas, no SVG interaction overlay
+
+## Three players · a card for the crib
+
+Viewpoint: **Lab**
+
+![Three players · a card for the crib](./screenshots/031-motion-deal-3-lab-darwin.png)
+
+- [x] Shared full-quality renderer; paused legal transition, native canvas, no SVG interaction overlay
+
+## Three players · reveal the crib
+
+Viewpoint: **Lab**
+
+![Three players · reveal the crib](./screenshots/032-motion-crib-3-lab-darwin.png)
 
 - [x] Shared full-quality renderer; paused legal transition, native canvas, no SVG interaction overlay

@@ -75,7 +75,7 @@ The complete illustrated acceptance story is available for [Linux](tests/e2e/STO
 
 ## Hosted pull-request previews
 
-[PR3's playable preview](https://anicolao.github.io/cribbage/pr3/) uses the dedicated `cribbage-preview-anicolao` Firebase project with anonymous sign-in and Firestore. Invitations retain the PR's URL. Each PR has an isolated `previews/prN/tables` namespace; seats and intent history persist across reloads and are shared between devices. The host's open tab runs companions.
+Retained playable previews, linked from each pull request, use the dedicated `cribbage-preview-anicolao` Firebase project with anonymous sign-in and Firestore. Invitations retain the PR's URL. Each PR has an isolated `previews/prN/tables` namespace; seats and intent history persist across reloads and are shared between devices. The host's open tab runs companions.
 
 CI deploys retained GitHub Pages previews only after type, unit, Firestore rules/integration, build, and exact screenshot checks pass. Public Firebase web configuration is supplied through repository variables; deployment needs no Firebase service-account secret. Firestore rules and anonymous-provider configuration are versioned in `firestore.rules` and `firebase.json`; deploy those with `bun x firebase deploy --only auth,firestore --project cribbage-preview-anicolao` when changing the backend contract.
 
