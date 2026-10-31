@@ -16,7 +16,7 @@ export function playedCard(index:number,lane=0):{position:Position;rotation:numb
  const order=3-index;
  // Seat-local X always runs left to right, including the opposite seats.
  // Leave room beside the private fan, then raise each successive card.
- const left=inwardSign(lane)>0?1.8:-3.75;
+ const left=inwardSign(lane)>0?2.1:-4.05;
  return {position:[left+order*.65,.025+order*STACK_STEP,-1.1],rotation:0};
 }
 export function cardPose(scenario:string,time:number,lane:number,index:number):CardPose{
