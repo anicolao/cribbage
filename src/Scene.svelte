@@ -36,7 +36,6 @@
 </script>
 <CameraRig {fov} {resetKey} {preset} onChange={onCameraChange}/>
 <Environment onReady={()=>environmentReady=true}/>
-<T.Color attach="background" args={['#0e1715']}/>
 <T.HemisphereLight args={['#e5ede6','#38463d',.4*light]}/>
 <T.DirectionalLight position={[lightX,lightY,lightZ]} intensity={1.45*light} color="#fff1d4" castShadow shadow.mapSize.width={game?2048:4096} shadow.mapSize.height={game?2048:4096} shadow.camera.left={-13} shadow.camera.right={13} shadow.camera.top={11} shadow.camera.bottom={-11} shadow.camera.near={1} shadow.camera.far={50} shadow.bias={-.000035} shadow.normalBias={.003} shadow.radius={2}/>
 <T.DirectionalLight position={[7,9,-8]} intensity={.45*light} color="#c5e0e9" castShadow shadow.mapSize.width={game?1024:2048} shadow.mapSize.height={game?1024:2048} shadow.camera.left={-13} shadow.camera.right={13} shadow.camera.top={11} shadow.camera.bottom={-11} shadow.camera.near={1} shadow.camera.far={40} shadow.bias={-.000035} shadow.normalBias={.003} shadow.radius={1.5}/>
