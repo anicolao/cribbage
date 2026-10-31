@@ -1,0 +1,24 @@
+{
+  "name": "cribbage-animation-lab",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "vite --host 127.0.0.1 --port 5197 --strictPort",
+    "build": "vite build",
+    "check": "svelte-check --tsconfig ./tsconfig.json"
+  },
+  "dependencies": {
+    "@threlte/core": "8.5.16",
+    "svelte": "5.55.5",
+    "three": "0.185.1"
+  },
+  "devDependencies": {
+    "@sveltejs/vite-plugin-svelte": "7.1.0",
+    "@types/three": "0.185.4",
+    "svelte-check": "4.7.2",
+    "typescript": "5.9.3",
+    "vite": "8.1.4"
+  },
+  "license": "GPL-3.0-only"
+}
