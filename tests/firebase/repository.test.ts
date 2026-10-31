@@ -26,6 +26,7 @@ test('four Firebase clients gather, play and count one hand; observers replay ev
   await act(0,{type:'create',name:'Alex'});for(let i=1;i<4;i++)await act(i,{type:'join',name:['Alex','Rowan','Jules','Ada'][i]});
   const retry={id:'event-4',actor:'p3',expectedRevision:3,intent:{type:'join',name:'Ada'} as Intent};
   await appendFirestore(clients[3],'pr3','FIRE1','p3',retry);
+  await appendFirestore(clients[3],'pr3','FIRE1','p3',{...retry,intent:{name:'Ada',type:'join'}});
   expect((await getDocs(collection(tableRef(clients[0],'pr3','FIRE1'),'events'))).size).toBe(4);
   await expect(appendFirestore(clients[3],'pr3','FIRE1','p3',{...retry,intent:{type:'join',name:'Changed'}})).rejects.toThrow('already been used');
   await expect(appendFirestore(clients[0],'pr3','FIRE1','p0',{id:'stale',actor:'p0',expectedRevision:3,intent:{type:'begin',seed:'x'}})).rejects.toThrow('table changed');
