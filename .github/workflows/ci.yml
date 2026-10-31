@@ -73,6 +73,7 @@ jobs:
           path: |
             tests/e2e/screenshots/*-linux.png
             tests/e2e/STORY-linux.md
+            tests/e2e/ANIMATIONS-linux.md
             playwright-report/
             test-results/
 

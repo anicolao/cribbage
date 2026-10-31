@@ -18,3 +18,5 @@ Run `bun run check`, `bun run test:unit`, `bun run build`, and `bun run test:e2e
 Keep captures at 1180×820, scale 1. Compare every decoded RGBA byte. Do not weaken pixel tolerance, mask game content, remove graphics, or enable retries to get green results. Wait for actual assets and paint before interacting and capturing.
 
 Baseline generation is explicit: `bun run test:e2e:update`. Review generated images, then verify in a separate ordinary run. Preserve the pinned Linux ARM64/Playwright container for CI comparisons. CI generation dispatches only produce review artifacts; verification never updates references.
+
+The live game and animation lab must use the same `TableView`, scene quality, state-to-frame layout, and motion sampler. New transitions need a legal-intent example in the lab, with pause/scrub and perspective review. Put pointer handlers on Threlte meshes; keep DOM equivalents for keyboard accessibility, never a visible hit overlay. Exercise native canvas clicks and enabled motion in E2E. Keep the full rendering quality in tests.
