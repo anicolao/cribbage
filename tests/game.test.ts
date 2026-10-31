@@ -34,8 +34,7 @@ test('intents reject computed outcomes and invalid actions without changing stat
  expect(()=>apply(state,'p0',{type:'discard',card:state.stock[0]})).toThrow();
  expect(()=>apply(state,'p1',{type:'begin',seed:'x'})).toThrow();expect(state).toEqual(before);
 });
-test('all-bot games finish, replay exactly, conserve cards, and rotate the dealer',()=>{
- for(let seed=0;seed<8;seed++){
+for(let seed=0;seed<8;seed++)test(`complete bot match ${seed} replays exactly, conserves cards, and rotates the dealer`,()=>{
   const events:Event[]=[];let state=initialState();
   const act=(actor:string,intent:Intent)=>{events.push({version:1,id:`e${events.length}`,actor,sequence:events.length+1,intent});state=apply(state,actor,intent);};
   act('p0',{type:'create',name:'Alex'});for(let i=1;i<4;i++)act(`p${i}`,{type:'join',name:`Friend ${i}`});act('p0',{type:'begin',seed:`match-${seed}`});
@@ -51,7 +50,6 @@ test('all-bot games finish, replay exactly, conserve cards, and rotate the deale
    expect(state.total).toBeLessThanOrEqual(31);
   }
   expect(steps).toBeLessThan(2500);expect(state.winner).not.toBeNull();expect(state.players[state.winner!].score).toBe(121);expect(replay(events)).toEqual(state);
- }
 });
 test('Go is mandatory only when no card fits, awards last once, and clears the running count',()=>{
  let state=table();state.phase='pegging';state.turn=0;state.hands=[['king_of_clubs'],['queen_of_clubs'],[],[]];state.total=30;state.segment=['10_of_hearts','10_of_spades','10_of_diamonds'];state.last=1;
