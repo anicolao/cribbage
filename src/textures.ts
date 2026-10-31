@@ -1,9 +1,10 @@
 import { CanvasTexture, RepeatWrapping, SRGBColorSpace, type Texture } from 'three';
 import { BOARD_WIDTH, BOARD_DEPTH, TRACK_COLORS, holePoint, trackOutline, FINISH_POINT, seats, starter, cribCards } from './table';
 function canvas(w:number,h:number) {const c=document.createElement('canvas');c.width=w;c.height=h;return {c,g:c.getContext('2d')!};}
-let seed=731; function rand(){ seed=(seed*1664525+1013904223)>>>0;return seed/4294967296; }
+function noise(initial=731){let seed=initial;return ()=>{seed=(seed*1664525+1013904223)>>>0;return seed/4294967296;};}
 function texture(c:HTMLCanvasElement){const t=new CanvasTexture(c);t.colorSpace=SRGBColorSpace;t.anisotropy=16;return t;}
 export function wood(light=false){
+ const rand=noise();
  const {c,g}=canvas(2048,1024),pixels=g.createImageData(2048,1024);
  for(let y=0;y<1024;y++)for(let x=0;x<2048;x++){
   const warp=y+7*Math.sin(x/410+y/180)+2*Math.sin(x/113+y/100);
@@ -14,6 +15,7 @@ export function wood(light=false){
  }g.putImageData(pixels,0,0);return texture(c);
 }
 export function felt(){
+ const rand=noise();
  const {c,g}=canvas(512,512),data=g.createImageData(512,512);
  for(let y=0;y<512;y++)for(let x=0;x<512;x++){
   const weave=Math.sin(x*Math.PI)*1.2+Math.sin(y*Math.PI/2)*1.1;
@@ -23,7 +25,7 @@ export function felt(){
  for(let i=0;i<32000;i++){const x=rand()*512,y=rand()*512;g.strokeStyle=`rgba(163,192,153,${rand()*.055})`;g.lineWidth=.45;g.beginPath();g.moveTo(x,y);g.lineTo(x+rand()*2-1,y+2);g.stroke();}
  const t=texture(c);t.wrapS=t.wrapT=RepeatWrapping;t.repeat.set(9,7);return t;
 }
-export function paper(){const {c,g}=canvas(128,128),data=g.createImageData(128,128);for(let i=0;i<data.data.length;i+=4){const n=225+rand()*25;data.data[i]=data.data[i+1]=data.data[i+2]=n;data.data[i+3]=255;}g.putImageData(data,0,0);const t=texture(c);t.wrapS=t.wrapT=RepeatWrapping;t.repeat.set(4,6);return t;}
+export function paper(){const rand=noise();const {c,g}=canvas(128,128),data=g.createImageData(128,128);for(let i=0;i<data.data.length;i+=4){const n=225+rand()*25;data.data[i]=data.data[i+1]=data.data[i+2]=n;data.data[i+3]=255;}g.putImageData(data,0,0);const t=texture(c);t.wrapS=t.wrapT=RepeatWrapping;t.repeat.set(4,6);return t;}
 export function board(scannedWood?:CanvasImageSource){
  const {c,g}=canvas(1152,3072);
  if(scannedWood){g.save();g.translate(c.width/2,c.height/2);g.rotate(Math.PI/2);g.drawImage(scannedWood,-c.height/2,-c.width/2,c.height,c.width);g.restore();}
@@ -62,6 +64,7 @@ export function board(scannedWood?:CanvasImageSource){
  return texture(c);
 }
 export function nameplateTexture(name:string,score?:number){
+ const rand=noise();
  const {c,g}=canvas(1024,164);
  const brass=g.createLinearGradient(0,0,0,164);brass.addColorStop(0,'#cfaf72');brass.addColorStop(.32,'#dec18a');brass.addColorStop(1,'#b68d53');
  g.fillStyle=brass;g.fillRect(0,0,1024,164);
@@ -103,8 +106,7 @@ export function updateCardMargins(cards:Record<string,Texture>,faceMargin:number
   if(source&&t.userData.cardMargin!==inset){paintCard(t.image as HTMLCanvasElement,source,inset);t.userData.cardMargin=inset;t.needsUpdate=true;}
  }
 }
-export async function cardTextures():Promise<Record<string,Texture>>{
- const ids=[...new Set([...seats.flatMap(s=>s.cards),starter,...cribCards])];
+export async function cardTextures(ids=[...new Set([...seats.flatMap(s=>s.cards),starter,...cribCards])]):Promise<Record<string,Texture>>{
  const entries=await Promise.all(ids.map(async id=>{
   const response=await fetch('/cards/'+id+'.svg');if(!response.ok)throw new Error(`Card artwork could not load: ${id}`);
   const document=new DOMParser().parseFromString(await response.text(),'image/svg+xml');

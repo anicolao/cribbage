@@ -1,0 +1,16 @@
+import {seats,fanCard,type Position} from '../table';
+import {playedCard} from '../sceneLayout';
+import type {State} from './engine';
+export function tablePlayers(game:State,viewer:string){
+ const own=Math.max(0,game.players.findIndex(p=>p.id===viewer));
+ return game.players.map((player,index)=>{
+  const lane=(index-own+4)%4,place=seats[lane];
+  return {...player,index,lane,x:place.x,z:place.z,rotation:place.rotation,color:seats[index].color,cards:game.hands[index]};
+ });
+}
+export function heldPose(index:number,count:number){return fanCard(index-(count-4)/2);}
+export function publicPose(order:number,lane:number,counting=false){
+ if(counting)return {position:[(order-1.5)*1.48,.025,-.5] as Position,rotation:0};
+ return playedCard(3-order,lane);
+}
+export type HitTarget={id:string;label:string;card:string;points:string;enabled:boolean};
