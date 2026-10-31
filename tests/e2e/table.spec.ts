@@ -45,11 +45,11 @@ test('four friends gather, peg a complete hand, count every hand and crib, and r
   await photograph(actor,`${names[actor]} ${intent.type}${'card'in intent?'s '+cardName(intent.card):'s'}`);
  }
  try{
-  await pages[0].goto('/');await expect(pages[0].getByRole('textbox',{name:'Your name'})).toBeVisible({timeout:20_000});await pages[0].getByRole('textbox',{name:'Your name'}).fill(names[0]);await pages[0].getByRole('button',{name:'Take a seat',exact:true}).click();
+  await pages[0].goto('/');await expect(pages[0].locator('main')).toHaveAttribute('data-ready','true',{timeout:30_000});await pages[0].getByRole('textbox',{name:'Your name'}).fill(names[0]);await pages[0].getByRole('button',{name:'Take a seat',exact:true}).click();
   await expect(pages[0].getByRole('link',{name:'Invitation',exact:true})).toBeVisible();room=new URL(pages[0].url()).searchParams.get('table')!;
   expected=apply(expected,ids[0],{type:'create',name:names[0]});await photograph(0,'Alex opens the table');
   for(let i=1;i<4;i++){
-   await pages[i].goto(`/?table=${room}`);await expect(pages[i].getByRole('textbox',{name:'Your name'})).toBeVisible({timeout:20_000});await pages[i].getByRole('textbox',{name:'Your name'}).fill(names[i]);await pages[i].getByRole('button',{name:'Take a seat',exact:true}).click();
+   await pages[i].goto(`/?table=${room}`);await expect(pages[i].locator('main')).toHaveAttribute('data-ready','true',{timeout:30_000});await pages[i].getByRole('textbox',{name:'Your name'}).fill(names[i]);await pages[i].getByRole('button',{name:'Take a seat',exact:true}).click();
    expected=apply(expected,ids[i],{type:'join',name:names[i]});await photograph(i,`${names[i]} takes a chair`);
   }
   // Read the host's explicit seed choice after the genuine Deal click; nothing is predealt.
