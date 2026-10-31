@@ -1,4 +1,4 @@
-import type {State} from '../game/engine';
+import {handSize,isCribCount,type State} from '../game/engine';
 import {publicPose,tablePlayers} from '../game/layout';
 import {DECK_POSITION,STARTER_POSITION} from '../sceneLayout';
 import {type Position} from '../table';
@@ -20,16 +20,17 @@ function kindOf(before:State,after:State):MotionKind{
  if(after.players.length>before.players.length)return 'join';
  if(after.winner!==null&&before.winner===null)return 'win';
  if(after.phase==='discard'&&(before.phase!=='discard'||after.round!==before.round||after.seed!==before.seed))return before.phase==='gathering'?'deal':'next-hand';
- if(after.discards.filter(Boolean).length>before.discards.filter(Boolean).length)return 'discard';
+ if(after.discards.flat().length>before.discards.flat().length)return 'discard';
  if(after.cut&&!before.cut)return 'cut';
  if(after.plays.length>before.plays.length)return 'play';
- if(after.phase==='count'||before.phase==='count')return after.countIndex===4?'crib':'count';
+ if(after.phase==='count'||before.phase==='count')return isCribCount(after)?'crib':'count';
  if(after.revision!==before.revision)return 'go';return 'ready';
 }
 export function planMotion(before:State,after:State,viewer:string,from=buildFrame(before,viewer)):Plan{
  const target=buildFrame(after,viewer,from),kind=kindOf(before,after),collect=kind==='next-hand',deal=kind==='deal'||collect;
  const plan:Plan={from,target,kind,duration:kind==='ready'?0:MOTION.turn,cards:[],plates:[],pegs:[]};
  const deckPose=pose([STARTER_POSITION[0],STARTER_POSITION[1]+.014,STARTER_POSITION[2]],0,Math.PI);
+ const count=after.players.length,dealt=count*handSize(after)+(count===3?1:0);
  const collectionEnd=collect?1.5:0;
  const dealStart=collect?1.85:.15;
  const segment=(a:Pose,b:Pose,start:number,duration:number,lift=0)=>{plan.duration=Math.max(plan.duration,start+duration);return {from:clonePose(a),to:clonePose(b),start,duration,lift};};
@@ -41,9 +42,10 @@ export function planMotion(before:State,after:State,viewer:string,from=buildFram
    if(collect){const split=clonePose(card);split.position[0]+=(card.order<7?-1:1)*.5;split.position[1]+=.18;split.rotation+=(card.order<7?-1:1)*.08;segments.push(segment(card,split,collectionEnd,.16,.06),segment(split,card,collectionEnd+.16,.19,.1));}
   }else if(!old){
    if(card.zone==='hand'&&deal){
-    const player=after.players.findIndex(p=>p.id===card.owner),turn=(player-after.dealer-1+4)%4,order=card.order*4+turn;
+    const player=after.players.findIndex(p=>p.id===card.owner),turn=(player-after.dealer-1+count)%count,order=card.order*count+turn;
     appear=dealStart+order*MOTION.dealInterval;segments.push(segment(deckPose,card,appear,MOTION.deal,1.65));
-   }else if(card.zone==='cut'){segments.push(segment(deckPose,card,0,MOTION.cut,1.1));}
+   }else if(card.zone==='crib'&&deal){appear=dealStart+(dealt-1)*MOTION.dealInterval;segments.push(segment(deckPose,card,appear,MOTION.deal,1.65));}
+   else if(card.zone==='cut'){segments.push(segment(deckPose,card,0,MOTION.cut,1.1));}
    else segments.push(segment({...card,position:[card.position[0],card.position[1]+.8,card.position[2]],scale:0},card,0,.5));
   }else if(old.zone==='hand'&&card.zone==='crib')segments.push(segment(old,card,0,MOTION.discard,2));
   else if(old.zone==='hand'&&card.zone==='played'){
@@ -79,7 +81,7 @@ export function planMotion(before:State,after:State,viewer:string,from=buildFram
   else if(different(old,peg))segments.push(segment(old,peg,kind==='play'?MOTION.play*.65:kind==='cut'?.6:0,MOTION.peg,.9));
   plan.pegs.push({item:peg,segments});
  }
- if(collect)plan.duration=Math.max(plan.duration,dealStart+19*MOTION.dealInterval+MOTION.deal);
+ if(collect)plan.duration=Math.max(plan.duration,dealStart+(dealt-1)*MOTION.dealInterval+MOTION.deal);
  return plan;
 }
 function sampleTrack<T extends Pose>(track:Track<T>,time:number):T|undefined{

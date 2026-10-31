@@ -6,8 +6,8 @@ Use Bun for package management and scripts. Work on `codex/` branches and use pu
 
 - Clients are trusted. The ordered, versioned intent log is the source of truth.
 - Record choices, never computed hands, shuffles, scores, running totals, turns or winners. Outcomes belong in deterministic replay.
-- Preserve the versioned PRNG and per-round seed derivation; change the protocol version before changing replay semantics.
-- Every player has an individual track. Seating and play proceed clockwise. Only the viewer's held cards are revealed in either graphics or the accessible DOM.
+- Version 1 remains four-player-only; new tables use version 2. Preserve both replay and append compatibility. Preserve the versioned PRNG and per-round seed derivation; change the protocol version before changing replay semantics.
+- Support two, three and four players. Two players receive six and discard two each; three receive five and discard one each plus one automatic concealed crib card; four receive five and discard one each. Every player has an individual track. Seating and play proceed clockwise. Only the viewer's held cards are revealed in either graphics or the accessible DOM.
 - Companion decisions use their own hand and public play and submit ordinary player intents.
 - Product UI speaks to players. Prefer the cards and table to explanatory words or dialogs; keep lab and implementation controls outside the playable table.
 

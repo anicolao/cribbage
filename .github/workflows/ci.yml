@@ -30,8 +30,17 @@ jobs:
       - run: bun run test:firebase
       - run: bun run build
   screenshots:
+    name: screenshots (${{ matrix.id }})
     if: inputs.update_snapshots != true
     needs: verify
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - { id: four, grep: 'four friends', images: '[0-9][0-9][0-9]-action-*-linux.png', story: STORY-linux.md }
+          - { id: two, grep: '2 friends', images: '[0-9][0-9][0-9]-2p-action-*-linux.png', story: TWO-PLAYERS-linux.md }
+          - { id: three, grep: '3 friends', images: '[0-9][0-9][0-9]-3p-action-*-linux.png', story: THREE-PLAYERS-linux.md }
+          - { id: animations, grep: 'shared animation lab', images: '[0-9][0-9][0-9]-motion-*-linux.png', story: ANIMATIONS-linux.md }
     runs-on: ubuntu-24.04-arm
     container:
       image: mcr.microsoft.com/playwright:v1.61.1-noble@sha256:824f1a789072e648c62541c2cfa4479c4061a290d5c27766d67dc1dcbc19b321
@@ -43,17 +52,28 @@ jobs:
         with:
           bun-version: 1.3.10
       - run: bun install --frozen-lockfile
-      - run: bun run test:e2e
+      - run: bun run test:e2e --grep "$STORY"
+        env:
+          STORY: ${{ matrix.grep }}
       - uses: actions/upload-artifact@v4
         if: always()
         with:
-          name: playwright-report
+          name: playwright-report-${{ matrix.id }}
           path: |
             playwright-report/
             test-results/
   baseline-review:
+    name: baseline review (${{ matrix.id }})
     if: inputs.update_snapshots == true
     needs: verify
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - { id: four, grep: 'four friends', images: '[0-9][0-9][0-9]-action-*-linux.png', story: STORY-linux.md }
+          - { id: two, grep: '2 friends', images: '[0-9][0-9][0-9]-2p-action-*-linux.png', story: TWO-PLAYERS-linux.md }
+          - { id: three, grep: '3 friends', images: '[0-9][0-9][0-9]-3p-action-*-linux.png', story: THREE-PLAYERS-linux.md }
+          - { id: animations, grep: 'shared animation lab', images: '[0-9][0-9][0-9]-motion-*-linux.png', story: ANIMATIONS-linux.md }
     runs-on: ubuntu-24.04-arm
     container:
       image: mcr.microsoft.com/playwright:v1.61.1-noble@sha256:824f1a789072e648c62541c2cfa4479c4061a290d5c27766d67dc1dcbc19b321
@@ -65,15 +85,16 @@ jobs:
         with:
           bun-version: 1.3.10
       - run: bun install --frozen-lockfile
-      - run: bun run test:e2e:update
+      - run: bun run test:e2e:update --grep "$STORY"
+        env:
+          STORY: ${{ matrix.grep }}
       - uses: actions/upload-artifact@v4
         if: always()
         with:
-          name: linux-baselines-for-review
+          name: linux-baselines-for-review-${{ matrix.id }}
           path: |
-            tests/e2e/screenshots/*-linux.png
-            tests/e2e/STORY-linux.md
-            tests/e2e/ANIMATIONS-linux.md
+            tests/e2e/screenshots/${{ matrix.images }}
+            tests/e2e/${{ matrix.story }}
             playwright-report/
             test-results/
 

@@ -1,4 +1,4 @@
-import {initialState,apply,type State,type Intent} from '../game/engine';
+import {initialState,apply,needsDiscard,isCribCount,type State,type Intent} from '../game/engine';
 import {botIntent} from '../game/bot';
 import {planMotion,interactionLevel,type Plan} from './motion';
 import {buildFrame} from './frame';
@@ -16,7 +16,7 @@ function catalogue(){
  const dealt=act('you',{type:'begin',seed:'cribbage-animation-review-v1'});round.push(dealt);add('deal','Deal twenty cards','Five cards per player, dealt clockwise. Only your cards turn face up.',dealt);
  let safety=0;
  while(state.phase!=='finished'&&safety++<2000){
-  const seat=state.phase==='discard'?state.discards.findIndex(c=>c===null):state.turn;
+  const seat=state.phase==='discard'?state.players.findIndex((_,i)=>needsDiscard(state,i)):state.turn;
   const intent=botIntent(state,seat);if(!intent)throw new Error('Animation fixture has no legal next action.');
   const s=act(ids[seat],intent),name=names[seat];
   if(s.before.round===0)round.push(s);
@@ -29,8 +29,8 @@ function catalogue(){
   if(intent.type==='go'&&s.after.phase==='pegging')add('go','Go / next count','The turn and running count crossfade using the same presentation clock as the cards.',s);
   if(s.after.players.some((p,i)=>p.score!==s.before.players[i].score))add('peg','Score and leapfrog a peg','The rear physical peg lifts and lands in the new hole; the nameplate score changes when it lands.',s);
   if(s.before.phase!=='count'&&s.after.phase==='count')add('count-start','Finish pegging and begin counting','The last card lands in the pegging stack before the first hand spreads for counting.',s);
-  if(intent.type==='count')add(s.before.countIndex===4?'crib-close':`count-${ids[seat]}`,s.before.countIndex===4?'Finish the crib':`Count ${name}’s hand`,'The scoring peg moves while the counted hand closes and the next hand spreads.',s);
-  if(s.after.phase==='count'&&s.after.countIndex===4)add('crib','Reveal and count the crib','Every crib card turns face up and spreads beside the board.',s);
+  if(intent.type==='count')add(isCribCount(s.before)?'crib-close':`count-${ids[seat]}`,isCribCount(s.before)?'Finish the crib':`Count ${name}’s hand`,'The scoring peg moves while the counted hand closes and the next hand spreads.',s);
+  if(s.after.phase==='count'&&isCribCount(s.after))add('crib','Reveal and count the crib','Every crib card turns face up and spreads beside the board.',s);
   if(intent.type==='deal')add('next-hand','Collect, shuffle and deal again','Played cards and crib return to the deck, the deck cuts together, and the new hand is dealt clockwise.',s);
   if(s.after.phase==='finished')add('win','Winning peg and nameplate','The winning peg lands at 121 and the winner’s nameplate lifts in celebration.',s);
  }
@@ -38,6 +38,22 @@ function catalogue(){
  const hovering={...ready,actor:ids[ready.after.turn]};
  examples.splice(1,0,{id:'hover',name:'Hover / keyboard focus',hint:'The real card lifts and warms under the pointer or keyboard focus. No DOM drawing covers the card.',steps:[hovering],viewer:hovering.actor,interaction:'hover'},{id:'press',name:'Press a card',hint:'The real card depresses under the pointer before its committed play begins.',steps:[hovering],viewer:hovering.actor,interaction:'press'});
  examples.push({id:'whole-hand',name:'Complete hand, all four players',hint:'An uninterrupted replay of the same legal intents, from gathering to the next deal.',steps:round,viewer:'you'});
+ for(const count of [2,3]){
+  let small=initialState();const steps:Step[]=[];
+  const actSmall=(actor:string,intent:Intent)=>{const before=small;small=apply(small,actor,intent);const step={before,after:small,actor,intent};steps.push(step);return step;};
+  for(let i=0;i<count;i++)actSmall(ids[i],{type:i?'join':'create',name:names[i]});
+  const deal=actSmall('you',{type:'begin',seed:`cribbage-${count}-review-v2`});
+  add(`deal-${count}`,count===2?'Two players · six cards each':'Three players · a card for the crib',count===2?'Six cards are dealt to each player. Choose two, one at a time, for the crib.':'Five cards each; one extra concealed card is dealt directly to the crib.',deal);
+  let discarded=0;
+  while(small.phase!=='between'){
+   const seat=small.phase==='discard'?small.players.findIndex((_,i)=>needsDiscard(small,i)):small.turn;
+   const step=actSmall(ids[seat],botIntent(small,seat)!);
+   if(count===2&&step.intent.type==='discard'&&seat===0){discarded++;add(`two-discard-${discarded}`,`Two players · ${discarded===1?'first':'second'} crib card`,discarded===1?'The first card lands in the crib; five cards remain and you choose one more.':'The second card lands on top; the remaining four settle into their fan.',step);}
+   if(step.after.phase==='count'&&isCribCount(step.after))add(`crib-${count}`,`${count===2?'Two':'Three'} players · reveal the crib`,'After every hand has been counted, the dealer’s four-card crib turns and spreads.',step);
+  }
+  actSmall(ids[small.turn],{type:'deal'});
+  examples.push({id:`whole-hand-${count}`,name:`${count===2?'Two':'Three'} players · complete hand`,hint:'A complete legal hand, including gathering, discards, pegging, counting and the next deal.',steps,viewer:'you'});
+ }
  return examples;
 }
 export const animationExamples=catalogue();

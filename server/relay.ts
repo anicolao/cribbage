@@ -10,7 +10,7 @@ export function createRelay(database=':memory:',port=5198,hostname='127.0.0.1',s
   if(existing){if(existing.actor!==body.actor||JSON.stringify(existing.intent)!==JSON.stringify(intent))throw new Error('That action has already been used.');return events;}
   if(body.expectedRevision!==events.length)throw new Error('The table changed. Try again.');
   const state=replay(events);apply(state,body.actor,intent);
-  const event:Event={version:1,id:body.id,sequence:events.length+1,actor:body.actor,intent};
+  const event:Event={version:state.protocol,id:body.id,sequence:events.length+1,actor:body.actor,intent};
   db.query('INSERT INTO events(room,sequence,id,body) VALUES(?,?,?,?)').run(room,event.sequence,event.id,JSON.stringify(event));return [...events,event];
  });
  const server=Bun.serve({port,hostname,idleTimeout:0,maxRequestBodySize:4096,async fetch(request){

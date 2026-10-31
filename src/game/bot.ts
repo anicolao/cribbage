@@ -1,10 +1,14 @@
 import {deck,handScore,playScore,value} from './cards';
-import {countOwner,legalCards,type State,type Intent} from './engine';
+import {countOwner,legalCards,needsDiscard,type State,type Intent} from './engine';
 /** Reads its own hand and public play only. Tie breaks are deterministic. */
 export function botIntent(state:State,seat:number):Intent|null{
- if(state.phase==='discard'&&state.discards[seat]===null){
-  const hand=state.hands[seat],cuts=deck.filter(card=>!hand.includes(card));
-  const choices=hand.map(card=>({card,score:cuts.reduce((sum,cut)=>sum+handScore(hand.filter(c=>c!==card),cut),0)/cuts.length+(seat===state.dealer?.04:-.04)*value(card)}));
+ if(needsDiscard(state,seat)){
+  const hand=state.hands[seat],known=[...hand,...state.discards[seat]],cuts=deck.filter(card=>!known.includes(card));
+  const choices:{card:string;score:number}[]=[];
+  for(let i=0;i<hand.length;i++)for(let j=hand.length===6?i+1:hand.length;j<=hand.length-(hand.length===6?1:0);j++){
+   const discarded=hand.length===6?[hand[i],hand[j]]:[hand[i]],kept=hand.filter(card=>!discarded.includes(card));
+   choices.push({card:hand[i],score:cuts.reduce((sum,cut)=>sum+handScore(kept,cut),0)/cuts.length+(seat===state.dealer?.04:-.04)*discarded.reduce((sum,card)=>sum+value(card),0)});
+  }
   choices.sort((a,b)=>b.score-a.score||a.card.localeCompare(b.card));return {type:'discard',card:choices[0].card};
  }
  if(state.turn!==seat)return null;

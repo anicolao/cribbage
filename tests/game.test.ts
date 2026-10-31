@@ -1,5 +1,5 @@
 import {test,expect} from 'bun:test';
-import {apply,initialState,replay,parseIntent,type Event,type Intent,type State} from '../src/game/engine';
+import {apply,initialState,replay,parseIntent,VERSION,needsDiscard,type Event,type Intent,type State} from '../src/game/engine';
 import {deck,handScore,playScore} from '../src/game/cards';
 import {botIntent} from '../src/game/bot';
 import {shuffle} from '../src/game/random';
@@ -36,11 +36,11 @@ test('intents reject computed outcomes and invalid actions without changing stat
 });
 for(let seed=0;seed<8;seed++)test(`complete bot match ${seed} replays exactly, conserves cards, and rotates the dealer`,()=>{
   const events:Event[]=[];let state=initialState();
-  const act=(actor:string,intent:Intent)=>{events.push({version:1,id:`e${events.length}`,actor,sequence:events.length+1,intent});state=apply(state,actor,intent);};
+  const act=(actor:string,intent:Intent)=>{events.push({version:VERSION,id:`e${events.length}`,actor,sequence:events.length+1,intent});state=apply(state,actor,intent);};
   act('p0',{type:'create',name:'Alex'});for(let i=1;i<4;i++)act(`p${i}`,{type:'join',name:`Friend ${i}`});act('p0',{type:'begin',seed:`match-${seed}`});
   let steps=0;
   while(state.phase!=='finished'&&steps++<2500){
-   const seat=state.phase==='discard'?state.discards.findIndex(c=>c===null):state.turn;
+   const seat=state.phase==='discard'?state.players.findIndex((_,i)=>needsDiscard(state,i)):state.turn;
    const intent=botIntent(state,seat);expect(intent).not.toBeNull();
    const previous:State=state;act(state.players[seat].id,intent!);
    if(intent!.type==='deal')expect(state.dealer).toBe((previous.dealer+1)%4);

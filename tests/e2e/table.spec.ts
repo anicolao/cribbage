@@ -1,56 +1,54 @@
 import {test,expect,type Page} from '@playwright/test';
 import {TestStepHelper} from './helpers/test-step-helper';
-import {replay,apply,initialState,type State,type Intent,type Event} from '../../src/game/engine';
+import {replay,apply,initialState,needsDiscard,cribCards,legalCards,type Intent,type Event} from '../../src/game/engine';
 import {botIntent} from '../../src/game/bot';
 import {animationExamples} from '../../src/presentation/catalog';
 import {cardName} from '../../src/game/cards';
 
-test('four friends gather, peg a complete hand, count every hand and crib, and return to their seats',async({browser},info)=>{
- const helper=new TestStepHelper(info),names=['Alex','Rowan','Jules','Ada'];
- const contexts=await Promise.all(names.map(()=>browser.newContext({baseURL:'http://127.0.0.1:4197',locale:'en-CA',timezoneId:'America/Toronto',viewport:{width:1180,height:820},deviceScaleFactor:1,reducedMotion:'no-preference'})));
- const pages=await Promise.all(contexts.map(c=>c.newPage())),errors:string[]=[];
+for(const count of [4,2,3])test(count===4?'four friends gather, peg a complete hand, count every hand and crib, and return to their seats':`${count} friends start early, peg and count a complete hand, and deal again`,async({browser},info)=>{
+ const helper=new TestStepHelper(info,count===4?'STORY':count===2?'TWO-PLAYERS':'THREE-PLAYERS'),names=['Alex','Rowan','Jules','Ada'].slice(0,count);
+ const contexts=await Promise.all(names.map(()=>browser.newContext({baseURL:'http://127.0.0.1:4197',locale:'en-CA',timezoneId:'America/Toronto',viewport:{width:1180,height:820},deviceScaleFactor:1,reducedMotion:'no-preference',permissions:count===2?['clipboard-read','clipboard-write']:[]})));
+ const pages=await Promise.all(contexts.map(c=>c.newPage())),errors:string[]=[],ids=names.map((_,i)=>count===4?`player-${i}`:`small-${count}-player-${i}`);
  for(const page of pages){page.on('pageerror',e=>errors.push(e.message));page.on('console',message=>{if(message.type()==='error')errors.push(message.text());});}
- // These are inputs, not injected state: predictable invitation entropy and the host's shuffle choice.
- for(let i=0;i<4;i++)await contexts[i].addInitScript(({id})=>{let n=0;Object.defineProperty(crypto,'randomUUID',{value:()=>{if(n++===0)return id;return `${id}-choice-${n}`;}});},{id:`player-${i}`});
+ // Predictable invitation entropy and shuffle choices are inputs, never injected game state.
+ for(let i=0;i<count;i++)await contexts[i].addInitScript(({id})=>{let n=0;Object.defineProperty(crypto,'randomUUID',{value:()=>n++===0?id:`${id}-choice-${n}`});},{id:ids[i]});
  let expected=initialState(),room='',action=0;
- const ids=['player-0','player-1','player-2','player-3'];
  async function verify(page:Page,viewer:number){
   await expect(page.locator('main')).toHaveAttribute('data-revision',String(expected.revision));
-  await expect(page.locator('main')).toHaveAttribute('data-phase',expected.phase);
-  await expect(page.locator('main')).toHaveAttribute('data-round',String(expected.round));
-  await expect(page.getByTestId('running-count')).toHaveText(String(expected.total));
-  await expect(page.getByTestId('crib-size')).toHaveText(String(expected.discards.filter(Boolean).length));
-  await expect(page.locator('[data-player]')).toHaveCount(expected.players.length);
-  for(const [i,p] of expected.players.entries()){
-   const area=page.locator(`[data-player="${p.id}"]`);
-   await expect(area).toHaveAttribute('data-score',String(p.score));
-   await expect(area).toHaveAttribute('data-held',String(expected.hands[i].length));
-   await expect(area).toHaveAttribute('data-lane',String((viewer-i+4)%4));
-   await expect(area.getByRole('list',{name:'Held cards',exact:true}).getByRole('listitem')).toHaveText(expected.hands[i].map(c=>i===viewer?cardName(c):'Face down'));
-   await expect(area.getByRole('list',{name:'Played cards',exact:true}).getByRole('listitem')).toHaveText(expected.plays.filter(play=>play.seat===i).map(play=>cardName(play.card)));
+  await expect(page.getByRole('status')).toHaveAttribute('data-status','synced');
+  // One atomic DOM read keeps every semantic check without thousands of polling round trips.
+  const actual=await page.evaluate(()=>{
+   const root=document.querySelector('main')!,table=document.querySelector('[data-table-view]')!,canvas=document.querySelector('canvas')!;
+   const text=(selector:string)=>document.querySelector(selector)?.textContent??null;
+   return {phase:root.getAttribute('data-phase'),round:root.getAttribute('data-round'),total:text('[data-testid="running-count"]'),crib:text('[data-testid="crib-size"]'),starter:text('[data-testid="starter"]'),prompt:text('[role="status"]'),quality:table.getAttribute('data-render-quality'),buffer:[canvas.width,canvas.height],svg:document.querySelectorAll('svg').length,alerts:document.querySelectorAll('[role="alert"]').length,
+    players:Array.from(document.querySelectorAll('[data-player]')).map(area=>({id:area.getAttribute('data-player'),score:area.getAttribute('data-score'),held:area.getAttribute('data-held'),lane:area.getAttribute('data-lane'),cards:Array.from(area.querySelectorAll('[aria-label="Held cards"] li')).map(li=>li.textContent),plays:Array.from(area.querySelectorAll('[aria-label="Played cards"] li')).map(li=>li.textContent)})),
+    controls:Array.from(document.querySelectorAll('button[data-card]')).map(card=>({card:card.getAttribute('data-card'),disabled:card.getAttribute('aria-disabled'),label:card.getAttribute('aria-label'),x:Number(card.getAttribute('data-hit-x')),y:Number(card.getAttribute('data-hit-y'))}))};
+  });
+  expect(actual.phase).toBe(expected.phase);expect(actual.round).toBe(String(expected.round));expect(actual.total).toBe(String(expected.total));expect(actual.crib).toBe(String(cribCards(expected).length));expect(actual.starter).toBe(expected.cut?cardName(expected.cut):null);
+  expect(actual.players).toEqual(expected.players.map((player,i)=>{const relative=(i-viewer+expected.players.length)%expected.players.length;return {id:player.id,score:String(player.score),held:String(expected.hands[i].length),lane:String(expected.players.length===2?relative*2:[0,3,2,1][relative]),cards:expected.hands[i].map(c=>i===viewer?cardName(c):'Face down'),plays:expected.plays.filter(p=>p.seat===i).map(p=>cardName(p.card))};}));
+  if(expected.phase!=='gathering'){
+   expect(actual.controls.map(c=>c.card)).toEqual(expected.hands[viewer]);
+   for(const control of actual.controls){const enabled=needsDiscard(expected,viewer)||expected.phase==='pegging'&&expected.turn===viewer&&legalCards(expected,viewer).includes(control.card!);expect(control.disabled).toBe(String(!enabled));expect(control.label).toBe(`${expected.phase==='discard'?'Crib':'Play'} ${cardName(control.card!)}`);expect(control.x).toBeGreaterThan(0);expect(control.x).toBeLessThan(1180);expect(control.y).toBeGreaterThan(0);expect(control.y).toBeLessThan(820);}
+  }else{
+   await expect(page.getByRole('button',{name:'Deal',exact:true})).toHaveCount(viewer===0&&expected.players.length>=2?1:0);
   }
-  if(expected.cut)await expect(page.getByTestId('starter')).toHaveText(cardName(expected.cut));else await expect(page.getByTestId('starter')).toHaveCount(0);
-  const active=expected.players[viewer];
-  if(active&&expected.phase!=='gathering')await expect(page.locator('button[data-card]')).toHaveCount(expected.hands[viewer].length);
-  await expect(page.locator('[data-table-view]')).toHaveAttribute('data-render-quality','shared-lab');
-  await expect(page.locator('svg')).toHaveCount(0);
-  await expect(page.getByRole('alert')).toHaveCount(0);expect(errors).toEqual([]);
+  if(expected.phase==='discard')expect(actual.prompt).toBe(needsDiscard(expected,viewer)?expected.hands[viewer].length===6?'Choose two for the crib':expected.discards[viewer].length?'Choose one more for the crib':'Choose one for the crib':'Waiting for the crib');
+  expect(actual.quality).toBe('shared-lab');expect(actual.buffer).toEqual([1180,820]);expect(actual.svg).toBe(0);expect(actual.alerts).toBe(0);expect(errors).toEqual([]);
  }
  async function photograph(actor:number,description:string,viewers=expected.players.map((_,i)=>i)){
-  for(const viewer of [actor,...viewers.filter(i=>i!==actor)])await helper.step(`action-${action}`,pages[viewer],names[viewer],`${description} · ${viewer===actor?'actor':'observer'}`,[{spec:'Exact phase, revision, round, running count, crib size, seat orientation, scores, held-card privacy and public play order',check:()=>verify(pages[viewer],viewer)}]);
+  for(const viewer of [actor,...viewers.filter(i=>i!==actor)])await helper.step(`${count===4?'':`${count}p-`}action-${action}`,pages[viewer],names[viewer],`${description} · ${viewer===actor?'actor':'observer'}`,[{spec:'Exact phase, revision, round, count, crib size, clockwise seats, scores, private hands, public plays and legal native-card controls',check:()=>verify(pages[viewer],viewer)}]);
   action++;
  }
  async function perform(actor:number,intent:Intent){
   const page=pages[actor];
   if(intent.type==='discard'||intent.type==='play'){
-   const control=page.locator(`button[data-card="${intent.card}"]`);
-   await expect(control).toHaveAttribute('aria-disabled','false');
-   const x=Number(await control.getAttribute('data-hit-x')),y=Number(await control.getAttribute('data-hit-y'));
-   await page.mouse.move(x,y);
+   const control=page.locator(`button[data-card="${intent.card}"]`);await expect(control).toHaveAttribute('aria-disabled','false');
+   await page.mouse.move(Number(await control.getAttribute('data-hit-x')),Number(await control.getAttribute('data-hit-y')));
+   await expect(page.locator('[data-table-view]')).toHaveAttribute('data-hovered-card',await control.getAttribute('data-card-id')??'');
    await expect(page.locator('[data-table-view]')).toHaveAttribute('data-motion-idle','true');
-   await page.mouse.click(x,y);
-  }
-  else await page.getByRole('button',{name:intent.type==='cut'?'Cut':intent.type==='go'?'Go':intent.type==='count'?/^Peg \d+$/: 'Deal',exact:intent.type!=='count'}).click();
+   await page.mouse.move(Number(await control.getAttribute('data-hit-x')),Number(await control.getAttribute('data-hit-y')));
+   await page.mouse.down();await expect(page.locator('[data-table-view]')).toHaveAttribute('data-pressed-card',await control.getAttribute('data-card-id')??'');await page.mouse.up();
+  }else await page.getByRole('button',{name:intent.type==='cut'?'Cut':intent.type==='go'?'Go':intent.type==='count'?/^Peg \d+$/: 'Deal',exact:intent.type!=='count'}).click();
   expected=apply(expected,ids[actor],intent);
   const phrase=intent.type==='play'?`plays ${cardName(intent.card)}`:intent.type==='discard'?`puts ${cardName(intent.card)} in the crib`:intent.type==='go'?'says Go':intent.type==='cut'?'cuts the deck':intent.type==='count'?'counts':'deals the next hand';
   await photograph(actor,`${names[actor]} ${phrase}`);
@@ -59,36 +57,34 @@ test('four friends gather, peg a complete hand, count every hand and crib, and r
   await pages[0].goto('/');await expect(pages[0].locator('main')).toHaveAttribute('data-ready','true',{timeout:30_000});await pages[0].getByRole('textbox',{name:'Your name'}).fill(names[0]);await pages[0].getByRole('button',{name:'Take a seat',exact:true}).click();
   await expect(pages[0].getByRole('link',{name:'Invitation',exact:true})).toBeVisible();room=new URL(pages[0].url()).searchParams.get('table')!;
   expected=apply(expected,ids[0],{type:'create',name:names[0]});await photograph(0,'Alex opens the table');
-  for(let i=1;i<4;i++){
+  for(let i=1;i<count;i++){
    await pages[i].goto(`/?table=${room}`);await expect(pages[i].locator('main')).toHaveAttribute('data-ready','true',{timeout:30_000});await pages[i].getByRole('textbox',{name:'Your name'}).fill(names[i]);await pages[i].getByRole('button',{name:'Take a seat',exact:true}).click();
    expected=apply(expected,ids[i],{type:'join',name:names[i]});await photograph(i,`${names[i]} takes a chair`);
   }
-  // Read the host's explicit seed choice after the genuine Deal click; nothing is predealt.
-  await pages[0].getByRole('button',{name:'Deal',exact:true}).click();
-  await expect(pages[0].locator('main')).toHaveAttribute('data-phase','discard');
+  if(count===2){
+   await pages[0].bringToFront();await pages[0].getByRole('button',{name:'Copy invite link',exact:true}).click();await expect(pages[0].getByRole('button',{name:'Link copied',exact:true})).toBeVisible();
+   expect(await pages[0].evaluate(()=>navigator.clipboard.readText())).toBe(new URL(`/?table=${room}`,'http://127.0.0.1:4197').href);await photograph(0,'Alex copies the invitation');
+  }
+  await pages[0].getByRole('button',{name:'Deal',exact:true}).click();await expect(pages[0].locator('main')).toHaveAttribute('data-phase','discard');
   let events=await (await pages[0].request.get(`/api/tables/${room}`)).json() as Event[];
-  const begin=events.at(-1)!.intent;expect(begin.type).toBe('begin');expected=apply(expected,ids[0],begin);await photograph(0,'Alex deals five cards to everyone');
-  for(let i=0;i<4;i++)await perform(i,botIntent(expected,i)!);
-  expect(expected.phase).toBe('cut');await perform(expected.turn,{type:'cut'});
-  let steps=0;
-  while(expected.phase==='pegging'&&steps++<40){const actor=expected.turn;await perform(actor,botIntent(expected,actor)!);}
-  expect(expected.phase).toBe('count');expect(expected.plays.length).toBe(16);expect(expected.hands.flat()).toEqual([]);
-  for(let i=0;i<5;i++)await perform(expected.turn,{type:'count'});
+  const begin=events.at(-1)!.intent;expect(begin.type).toBe('begin');expected=apply(expected,ids[0],begin);await photograph(0,`Alex deals ${count===2?'six':'five'} cards to everyone`);
+  let discards=0;while(expected.phase==='discard'){const actor=expected.players.findIndex((_,i)=>needsDiscard(expected,i));await perform(actor,botIntent(expected,actor)!);discards++;}
+  expect(discards).toBe(count===2?4:count);expect(expected.crib).toHaveLength(4);expect(expected.phase).toBe('cut');await perform(expected.turn,{type:'cut'});
+  let steps=0;while(expected.phase==='pegging'&&steps++<40){const actor=expected.turn;await perform(actor,botIntent(expected,actor)!);}
+  expect(expected.phase).toBe('count');expect(expected.plays).toHaveLength(count*4);expect(expected.hands.flat()).toEqual([]);
+  for(let i=0;i<count+1;i++)await perform(expected.turn,{type:'count'});
   expect(expected.phase).toBe('between');await perform(expected.turn,{type:'deal'});expect(expected.round).toBe(1);
-  await pages[2].reload();await photograph(2,'Jules returns to the same seat and hand');
-  events=await (await pages[0].request.get(`/api/tables/${room}`)).json() as Event[];
-  expect(replay(events)).toEqual(expected);
-  expect(events.every(e=>Object.keys(e.intent).every(key=>['type','name','seed','card'].includes(key)))).toBe(true);
-  expect(errors).toEqual([]);helper.finish();
+  const returning=count===4?2:1;await pages[returning].reload();await photograph(returning,`${names[returning]} returns to the same seat and hand`);
+  events=await (await pages[0].request.get(`/api/tables/${room}`)).json() as Event[];expect(replay(events)).toEqual(expected);
+  expect(events.every(e=>Object.keys(e.intent).every(key=>['type','name','seed','card'].includes(key)))).toBe(true);expect(errors).toEqual([]);helper.finish();
  }finally{for(const context of contexts)await context.close();}
 });
-
 
 test('the shared animation lab reviews every real transition at a paused intermediate frame',async({page},info)=>{
  const helper=new TestStepHelper(info,'ANIMATIONS');
  await page.goto('/dev/animations/');
  await expect(page.locator('main')).toHaveAttribute('data-ready','true',{timeout:30_000});
- for(const example of animationExamples.filter(e=>!['ready','whole-hand'].includes(e.id))){
+ for(const example of animationExamples.filter(e=>e.id!=='ready'&&!e.id.startsWith('whole-hand'))){
   await page.getByRole('combobox',{name:'Scene',exact:true}).selectOption(example.id);
   const slider=page.locator('#timeline');
   await slider.press('Home');
