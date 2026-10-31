@@ -11,8 +11,9 @@
  const base=untrack(()=>slabGeometry(roundedShape(width,height,.08),width,height,.12));
  const metal=untrack(()=>slabGeometry(roundedShape(width-.24,height-.18,.045),width-.24,height-.18,.025));
  const baseMaterials:Material[]=[],metalMaterials:Material[]=[];
+ const label=$derived(name),points=$derived(score);
  let face=$state.raw<Texture>();
- $effect(()=>{const next=nameplateTexture(name,score);face=next;return()=>next.dispose();});
+ $effect(()=>{const next=nameplateTexture(label,points);face=next;return()=>next.dispose();});
  onDestroy(()=>{base.dispose();metal.dispose();});
 </script>
 <T.Group {position} {scale}>
