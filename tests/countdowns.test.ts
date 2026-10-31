@@ -26,11 +26,13 @@ for(const n of [2,3,4])test(`${n} players: global three-second grace survives re
  s=apply(s,'p0',{type:'discard',card});const fresh=clock.observe(s,20000,true);expect(fresh.crib?.deadline).toBe(23000);
  s=apply(s,'p0',{type:'accept-crib'});expect(s.phase).toBe('cut');expect(s.pendingDiscards).toEqual([]);expect(()=>apply(s,'p0',{type:'undo-discard',card})).toThrow();expect(countdownAction(s,'p0',clock.observe(s,21000,true),21000)).toBeUndefined();
 });
-test('Go begins after animation settles, can be tapped immediately, auto-plays once, and host can advance a disconnected seat honestly',()=>{
+test('Go begins after animation settles and auto-plays once; another human client does not override personal timing',()=>{
  let s=table();s.phase='pegging';s.turn=1;s.hands=[['king_of_clubs'],['queen_of_clubs'],[],[]];s.total=30;s.last=0;s.segment=['10_of_hearts','10_of_spades','10_of_diamonds'];
  const clock=new TableClock(storage(),'go');expect(clock.observe(s,0,false).go).toBeUndefined();const windows=clock.observe(s,1000,true);expect(windows.go?.deadline).toBe(4000);
  expect(countdownAction(s,'p1',windows,1000)?.remaining).toBe(3);expect(automaticChoice(s,'p1',windows,3999)).toBeUndefined();expect(automaticChoice(s,'p1',windows,4000)?.intent).toEqual({type:'go'});
- expect(automaticChoice(s,'p0',windows,4000)).toBeUndefined();const fallback=automaticChoice(s,'p0',windows,5000)!;expect(fallback.actor).toBe('p0');expect(fallback.intent).toEqual({type:'auto-go',player:'p1'});
+ expect(automaticChoice(s,'p0',windows,4000)).toBeUndefined();expect(automaticChoice(s,'p0',windows,999999)).toBeUndefined();
+ // Historical host auto-go intents remain valid for immutable replay.
+ const fallback={actor:'p0',intent:{type:'auto-go' as const,player:'p1'}};
  expect(()=>apply(s,'p1',fallback.intent)).toThrow();expect(apply(s,'p0',fallback.intent)).toEqual(apply(s,'p1',{type:'go'}));
  const after=apply(s,'p1',{type:'go'});expect(automaticChoice(after,'p1',windows,5000)).toBeUndefined();expect(clock.observe(after,5000,false).go).toBeUndefined();
  s.total=0;expect(()=>apply(s,'p0',fallback.intent)).toThrow();

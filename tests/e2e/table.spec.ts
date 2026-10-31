@@ -13,7 +13,7 @@ for(const count of [4,2,3])test(count===4?'four friends gather, peg a complete h
  // Predictable invitation entropy and shuffle choices are inputs, never injected game state.
  for(let i=0;i<count;i++)await contexts[i].addInitScript(({id})=>{let n=Number(sessionStorage.getItem('choice-counter')??0);Object.defineProperty(crypto,'randomUUID',{value:()=>{sessionStorage.setItem('choice-counter',String(n+1));return n++===0?id:`${id}-choice-${n}`;}});},{id:ids[i]});
  let wall=Date.UTC(2026,9,31,12);for(const page of pages)await page.clock.setFixedTime(wall);
- let expected=initialState(),room='',action=0;const pegOrigins:Record<string,number>={};let turnStartedAt=wall;
+ let expected=initialState(),room='',action=0;const pegOrigins:Record<string,number>={};let turnStartedAt=wall;const personalWaits:(number|null)[]=Array(count).fill(3);
  function applyExpected(actor:string,intent:Intent){const before=expected,next=apply(before,actor,intent);for(const p of next.players){const old=before.players.find(o=>o.id===p.id);if(!old||intent.type==='begin')pegOrigins[p.id]=-1;else if(p.score!==old.score)pegOrigins[p.id]=old.score;}turnStartedAt=wall;return next;}
  async function advance(ms:number){wall+=ms;for(const page of pages)await page.clock.setFixedTime(wall);}
  async function automatic(actor:number,intent:Intent,ms=3000){await advance(ms);expected=applyExpected(ids[actor],intent);await photograph(actor,`${names[actor]} · ${intent.type==='accept-crib'?'the crib is ready':intent.type==='play'?`plays ${cardName(intent.card)} automatically`:`${intent.type==='count'?'pegs':intent.type} automatically`}`);}
@@ -39,7 +39,7 @@ for(const count of [4,2,3])test(count===4?'four friends gather, peg a complete h
   if(expected.phase==='discard')expect(actual.prompt).toBe(needsDiscard(expected,viewer)?expected.hands[viewer].length===6?'Choose two for the crib':expected.discards[viewer].length?'Choose one more for the crib':'Choose one for the crib':'Waiting for the crib');
   const sole=expected.phase==='pegging'?legalCards(expected,expected.turn):[];
   const countdown=expected.phase==='cut'?'cut':expected.phase==='count'?'count':expected.phase==='between'?'deal':expected.phase==='pegging'&&sole.length<=1?(sole.length?'play':'go'):undefined;
-  if(countdown&&expected.turn===viewer)await expect(page.locator(`[data-countdown="${countdown}"]`)).toHaveAttribute('data-seconds',String(Math.max(0,Math.ceil((3000-(wall-turnStartedAt))/1000))));
+  if(countdown&&expected.turn===viewer)await expect(page.locator(`[data-countdown="${countdown}"]`)).toHaveAttribute('data-seconds',personalWaits[viewer]===null?'':String(Math.max(0,Math.ceil((personalWaits[viewer]!*1000-(wall-turnStartedAt))/1000))));
   await expect(page.locator('[data-table-view]')).toHaveAttribute('data-forced-card',countdown==='play'&&expected.turn===viewer?sole[0]:'');
   expect(actual.awards).toEqual([]);
   for(const p of expected.players)expect(actual.pegs.filter((peg:{owner:string})=>peg.owner===p.id).map((peg:{score:number})=>peg.score).sort((a:number,b:number)=>a-b)).toEqual([pegOrigins[p.id],p.score].sort((a,b)=>a-b));
@@ -118,8 +118,17 @@ for(const count of [4,2,3])test(count===4?'four friends gather, peg a complete h
    }else if(intent.type==='go')await automatic(actor,intent);
    else if(intent.type==='play'&&legalCards(expected,actor).length===1){
     if(count===2&&!autoCard){
+     const settingsButton=pages[actor].getByRole('button',{name:'Settings',exact:true}),closeSettings=pages[actor].getByRole('button',{name:'Close settings',exact:true});
+     const changeWait=async(seconds:number|null)=>{await settingsButton.click();await pages[actor].getByLabel('Auto-play',{exact:true}).selectOption(seconds===null?'manual':String(seconds));personalWaits[actor]=seconds;await closeSettings.click();turnStartedAt=wall;};
+     await settingsButton.click();await advance(5000);await expect(pages[actor].locator('main')).toHaveAttribute('data-revision',String(expected.revision));await closeSettings.click();turnStartedAt=wall;
+     await expect(pages[actor].locator('[data-countdown="play"]')).toHaveAttribute('data-seconds','3');
+     await changeWait(null);await advance(6000);await expect(pages[actor].locator('main')).toHaveAttribute('data-revision',String(expected.revision));await expect(pages[actor].locator('[data-countdown="play"]')).toHaveAttribute('data-seconds','');
+     await photograph(actor,'Manual timing leaves the only playable card in your hand');
+     await changeWait(5);await expect(pages[actor].locator('[data-countdown="play"]')).toHaveAttribute('data-seconds','5');await advance(2000);
+
      await pages[actor].reload();await expect(pages[actor].getByRole('status')).toHaveAttribute('data-status','synced',{timeout:60_000});
      await expect(pages[actor].locator('[data-countdown="play"]')).toHaveAttribute('data-seconds','3');
+     await changeWait(3);await expect(pages[actor].locator('[data-countdown="play"]')).toHaveAttribute('data-seconds','3');
      await advance(2000);await expect(pages[actor].locator('[data-countdown="play"]')).toHaveAttribute('data-seconds','1');
      await photograph(actor,'The only playable card will play in one second after returning to the table');await automatic(actor,intent,1000);
     }else await automatic(actor,intent);

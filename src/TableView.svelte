@@ -1,4 +1,5 @@
 <script lang="ts">
+ import {preferences,ANIMATION_RATES} from './settings';
  import {untrack} from 'svelte';
  import {Canvas} from '@threlte/core';
  import {PCFShadowMap} from 'three';
@@ -17,7 +18,7 @@
 <div class="table-view" data-table-view data-forced-card={action?.kind==='play'?action.card:''} data-render-awards={JSON.stringify(frame.awards.map(a=>({id:a.id,owner:a.owner,points:a.points,label:a.label,cards:a.cards,opacity:a.scale})))} data-render-pegs={JSON.stringify(frame.pegs.map(p=>({id:p.id,owner:p.owner,score:p.score})))} data-render-counts={JSON.stringify(frame.counts.map(c=>({id:c.id,owner:c.owner,points:c.points,kind:c.kind,cards:c.cards,awarded:c.awarded,opacity:c.scale})))} data-render-scores={JSON.stringify(frame.plates.filter(p=>p.score!==undefined).map(p=>({id:p.id,score:p.score})))} data-hovered-card={hovered??''} data-pressed-card={pressed??''} data-motion-idle={idle} data-motion-active={active} data-motion-kind={kind} data-motion-duration={duration} data-render-width={metrics.width} data-render-height={metrics.height} data-render-dpr={metrics.dpr} data-render-quality="shared-lab" data-render-revision={frame.revision}>
  <Canvas shadows={PCFShadowMap} dpr={1} renderMode="on-demand">
   <RenderDensity width={renderWidth} onMetrics={value=>metrics=value}/>
-  <MotionScene automaticCard={action?.kind==='play'?`${game.round}:${action.card}`:undefined} {game} {viewer} {pegOrigins} {review} {hovered} {pressed} {respectReducedMotion} settings={{light,fov,resetKey,preset,faceMargin,backMargin,lightX,lightY,lightZ,onCameraChange}} onFrame={(value,settled)=>{frame=value;idle=settled;}} onMotion={motion} {onSettled} {onReady} {onCard} onHover={id=>hovered=id} onPress={id=>pressed=id} onControls={value=>controls=value}/>
+  <MotionScene animationRate={ANIMATION_RATES[$preferences.animationSpeed]} automaticCard={action?.kind==='play'?`${game.round}:${action.card}`:undefined} {game} {viewer} {pegOrigins} {review} {hovered} {pressed} {respectReducedMotion} settings={{light,fov,resetKey,preset,faceMargin,backMargin,lightX,lightY,lightZ,onCameraChange}} onFrame={(value,settled)=>{frame=value;idle=settled;}} onMotion={motion} {onSettled} {onReady} {onCard} onHover={id=>hovered=id} onPress={id=>pressed=id} onControls={value=>controls=value}/>
  </Canvas>
  <div class="table-readout" style:opacity={frame.status.opacity} aria-hidden="true"><p>{frame.status.primary}</p>{#if frame.status.secondary}<small>{frame.status.secondary}</small>{/if}</div>
  {#if action}<div class="choice-action" data-e2e-fit><CountdownButton {action} onactivate={onAction}/></div>{/if}

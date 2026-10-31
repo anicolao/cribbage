@@ -41,6 +41,7 @@ jobs:
           - { id: two, grep: '2 friends', images: '[0-9][0-9][0-9]-2p-action-*-linux.png', story: TWO-PLAYERS-linux.md }
           - { id: three, grep: '3 friends', images: '[0-9][0-9][0-9]-3p-action-*-linux.png', story: THREE-PLAYERS-linux.md }
           - { id: animations, grep: 'shared animation lab', images: '[0-9][0-9][0-9]-motion-*-linux.png', story: ANIMATIONS-linux.md }
+          - { id: settings, grep: 'personal table settings', images: '[0-9][0-9][0-9]-settings-*-linux.png', story: SETTINGS-linux.md }
     runs-on: ubuntu-24.04-arm
     container:
       image: mcr.microsoft.com/playwright:v1.61.1-noble@sha256:824f1a789072e648c62541c2cfa4479c4061a290d5c27766d67dc1dcbc19b321
@@ -74,6 +75,7 @@ jobs:
           - { id: two, grep: '2 friends', images: '[0-9][0-9][0-9]-2p-action-*-linux.png', story: TWO-PLAYERS-linux.md }
           - { id: three, grep: '3 friends', images: '[0-9][0-9][0-9]-3p-action-*-linux.png', story: THREE-PLAYERS-linux.md }
           - { id: animations, grep: 'shared animation lab', images: '[0-9][0-9][0-9]-motion-*-linux.png', story: ANIMATIONS-linux.md }
+          - { id: settings, grep: 'personal table settings', images: '[0-9][0-9][0-9]-settings-*-linux.png', story: SETTINGS-linux.md }
     runs-on: ubuntu-24.04-arm
     container:
       image: mcr.microsoft.com/playwright:v1.61.1-noble@sha256:824f1a789072e648c62541c2cfa4479c4061a290d5c27766d67dc1dcbc19b321
