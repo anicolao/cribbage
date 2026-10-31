@@ -17,3 +17,9 @@ Clients are trusted, as in Pantheon/Istanbul: a determined client can derive eve
 Tests exercise repeatable deals, strict intent shapes, 29 hands, crib flushes, pegging combinations, legal Go, 31, immediate wins, card conservation, dealer rotation, and exact event replay through eight complete bot matches.
 
 The host's tab runs companion turns; keep it open when using companions. Player positions advance clockwise around the table, so the next seat is visibly to the dealer's left from each personal perspective.
+
+## Firebase previews
+
+Hosted previews use anonymous Firebase Auth identities and a Firestore transaction for each intent. The transaction checks the current revision, reconciles the command ID, replays the committed prefix and validates the choice before atomically writing an immutable event, command lookup and access-control metadata. Only owner, members, companion IDs and revision are materialized; hands, scores and other game outcomes remain exclusively derived from replay. Rules enforce authentication, seat/companion ownership, append-only ordering and strict intent shapes. The host alone may start or invite companions. No Firebase administrator credentials enter the browser or deployment workflow.
+
+Each retained PR has its own namespace. The invitation's base path and every local asset URL follow the build base, so a shared `/cribbage/pr3/?table=…` invitation stays in the same preview. Local SQLite/SSE play remains available without Firebase configuration.

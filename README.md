@@ -70,3 +70,11 @@ The playable implementation lives at `/`; the original lab remains at `/dev/anim
 The [game rules and intent protocol](docs/GAME.md) explain this table's four-player individual scoring. The [end-to-end guide](docs/E2E.md) describes the zero-tolerance, four-perspective illustrated story. CI checks types, all unit/relay/render tests, the production build and the screenshot story. The repository is GPL-3.0-only; the asset-specific public-domain and CC0 attributions above remain in place.
 
 The complete illustrated acceptance story is available for [Linux](tests/e2e/STORY-linux.md) and [macOS](tests/e2e/STORY-darwin.md): 40 actions, each followed by the actor's view and every seated observer, for 154 captures per platform.
+
+## Hosted pull-request previews
+
+[PR3's playable preview](https://anicolao.github.io/cribbage/pr3/) uses the dedicated `cribbage-preview-anicolao` Firebase project with anonymous sign-in and Firestore. Invitations retain the PR's URL. Each PR has an isolated `previews/prN/tables` namespace; seats and intent history persist across reloads and are shared between devices. The host's open tab runs companions.
+
+CI deploys retained GitHub Pages previews only after type, unit, Firestore rules/integration, build, and exact screenshot checks pass. Public Firebase web configuration is supplied through repository variables; deployment needs no Firebase service-account secret. Firestore rules and anonymous-provider configuration are versioned in `firestore.rules` and `firebase.json`; deploy those with `bun x firebase deploy --only auth,firestore --project cribbage-preview-anicolao` when changing the backend contract.
+
+Local play keeps the SQLite relay by default. To exercise Firebase locally, populate `.env.local` using `.env.example` and choose a separate preview ID. `bun run test:firebase` runs four-client integration and authorization tests against an isolated demo Firestore emulator (Java 21 required).

@@ -23,6 +23,11 @@ jobs:
       - run: bun install --frozen-lockfile
       - run: bun run check
       - run: bun run test:unit
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+      - run: bun run test:firebase
       - run: bun run build
   screenshots:
     if: inputs.update_snapshots != true
@@ -70,3 +75,60 @@ jobs:
             tests/e2e/STORY-linux.md
             playwright-report/
             test-results/
+
+  deploy:
+    needs: [verify, screenshots]
+    if: inputs.update_snapshots != true && (github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository)
+    runs-on: ubuntu-24.04
+    concurrency:
+      group: pages-publish
+      cancel-in-progress: false
+    permissions:
+      contents: write
+      pull-requests: write
+    steps:
+      - uses: actions/checkout@v4
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: 1.3.10
+      - run: bun install --frozen-lockfile
+      - name: Choose preview namespace
+        id: preview
+        env:
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+        run: |
+          if [ -n "$PR_NUMBER" ]; then
+            echo "scope=pr$PR_NUMBER" >> "$GITHUB_OUTPUT"
+            echo "base=/cribbage/pr$PR_NUMBER/" >> "$GITHUB_OUTPUT"
+            echo "destination=pr$PR_NUMBER" >> "$GITHUB_OUTPUT"
+          else
+            echo "scope=main" >> "$GITHUB_OUTPUT"
+            echo "base=/cribbage/" >> "$GITHUB_OUTPUT"
+            echo "destination=" >> "$GITHUB_OUTPUT"
+          fi
+      - name: Build Firebase-backed table
+        run: |
+          test -n "$VITE_FIREBASE_PROJECT_ID"
+          bun run build
+          mkdir -p dist/dev/animations
+          cp dist/index.html dist/dev/animations/index.html
+        env:
+          PUBLIC_BASE_PATH: ${{ steps.preview.outputs.base }}
+          VITE_PREVIEW_ID: ${{ steps.preview.outputs.scope }}
+          VITE_FIREBASE_API_KEY: ${{ vars.VITE_FIREBASE_API_KEY }}
+          VITE_FIREBASE_AUTH_DOMAIN: ${{ vars.VITE_FIREBASE_AUTH_DOMAIN }}
+          VITE_FIREBASE_PROJECT_ID: ${{ vars.VITE_FIREBASE_PROJECT_ID }}
+          VITE_FIREBASE_APP_ID: ${{ vars.VITE_FIREBASE_APP_ID }}
+      - uses: peaceiris/actions-gh-pages@v4
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: dist
+          destination_dir: ${{ steps.preview.outputs.destination }}
+          keep_files: true
+      - name: Link the playable preview
+        if: github.event_name == 'pull_request'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+          PREVIEW_URL: https://${{ github.repository_owner }}.github.io/cribbage/pr${{ github.event.pull_request.number }}/
+        run: gh pr comment "$PR_NUMBER" --repo "$GITHUB_REPOSITORY" --edit-last --create-if-none --body "Playable preview: [$PREVIEW_URL]($PREVIEW_URL)"
