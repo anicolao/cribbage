@@ -289,3 +289,19 @@ Viewpoint: **Lab**
 ![Three players · reveal the crib](./screenshots/035-motion-crib-3-lab-linux.png)
 
 - [x] Shared full-quality renderer; paused legal transition, native canvas, no SVG interaction overlay
+
+## Pair of aces
+
+Viewpoint: **Lab**
+
+![Pair of aces](./screenshots/036-motion-pair-lab-linux.png)
+
+- [x] Shared full-quality renderer; paused legal transition, native canvas, no SVG interaction overlay
+
+## Pair and last card · peg three together
+
+Viewpoint: **Lab**
+
+![Pair and last card · peg three together](./screenshots/037-motion-pair-last-lab-linux.png)
+
+- [x] Shared full-quality renderer; paused legal transition, native canvas, no SVG interaction overlay
