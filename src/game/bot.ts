@@ -11,6 +11,7 @@ export function botIntent(state:State,seat:number):Intent|null{
   }
   choices.sort((a,b)=>b.score-a.score||a.card.localeCompare(b.card));return {type:'discard',card:choices[0].card};
  }
+ if(state.phase==='discard'&&state.pendingDiscards.length&&!state.players.some((_,i)=>needsDiscard(state,i)))return {type:'accept-crib'};
  if(state.turn!==seat)return null;
  if(state.phase==='cut')return {type:'cut'};
  if(state.phase==='pegging'){

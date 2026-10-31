@@ -1,28 +1,31 @@
 import {deck,rank,value,handScore,playScore,type Card} from './cards';
 import {shuffle,createPrng} from './random';
-export const VERSION=2;
-export type Protocol=1|2;
+export const VERSION=3;
+export type Protocol=1|2|3;
 export type Intent=
  |{type:'create';name:string}|{type:'join';name:string}|{type:'invite-bot';id:string;name:string}
  |{type:'begin';seed:string}|{type:'discard';card:Card}|{type:'cut'}|{type:'play';card:Card}
- |{type:'go'}|{type:'count'}|{type:'deal'};
+ |{type:'go'}|{type:'count'}|{type:'deal'}
+ |{type:'undo-discard';card:Card}|{type:'accept-crib'}|{type:'auto-go';player:string};
 export type Event={version:Protocol;id:string;actor:string;sequence:number;intent:Intent};
 export type Player={id:string;name:string;bot:boolean;score:number;previous:number};
 export type Phase='gathering'|'discard'|'cut'|'pegging'|'count'|'between'|'finished';
-export type State={protocol:Protocol;revision:number;players:Player[];host:string;phase:Phase;seed:string;round:number;dealer:number;turn:number;hands:Card[][];kept:Card[][];discards:Card[][];crib:Card[];cut:Card|null;stock:Card[];plays:{seat:number;card:Card}[];segment:Card[];passed:number[];total:number;last:number;countIndex:number;winner:number|null;message:string};
-export function initialState(protocol:Protocol=VERSION):State{return {protocol,revision:0,players:[],host:'',phase:'gathering',seed:'',round:0,dealer:0,turn:0,hands:[[],[],[],[]],kept:[[],[],[],[]],discards:[[],[],[],[]],crib:[],cut:null,stock:[],plays:[],segment:[],passed:[],total:0,last:-1,countIndex:0,winner:null,message:''};}
+export type PendingDiscard={seat:number;card:Card;revision:number};
+export type State={protocol:Protocol;revision:number;players:Player[];host:string;phase:Phase;seed:string;round:number;dealer:number;turn:number;hands:Card[][];kept:Card[][];discards:Card[][];pendingDiscards:PendingDiscard[];crib:Card[];cut:Card|null;stock:Card[];plays:{seat:number;card:Card}[];segment:Card[];passed:number[];total:number;last:number;countIndex:number;winner:number|null;message:string};
+export function initialState(protocol:Protocol=VERSION):State{return {protocol,revision:0,players:[],host:'',phase:'gathering',seed:'',round:0,dealer:0,turn:0,hands:[[],[],[],[]],kept:[[],[],[],[]],discards:[[],[],[],[]],pendingDiscards:[],crib:[],cut:null,stock:[],plays:[],segment:[],passed:[],total:0,last:-1,countIndex:0,winner:null,message:''};}
 const requireChoice=(condition:unknown,message:string)=>{if(!condition)throw new Error(message);};
 const nameValid=(name:unknown)=>typeof name==='string'&&name.trim().length>0&&name.trim().length<=24;
 /** Reject extra payload fields: computed cards, scores, totals and winners never enter the log. */
 export function parseIntent(input:unknown):Intent{
  requireChoice(!!input&&typeof input==='object'&&!Array.isArray(input),'Choose an action.');
  const obj=input as Record<string,unknown>;
- const keys:Record<string,string[]>={create:['name'],join:['name'],'invite-bot':['id','name'],begin:['seed'],discard:['card'],cut:[],play:['card'],go:[],count:[],deal:[]};
+ const keys:Record<string,string[]>={create:['name'],join:['name'],'invite-bot':['id','name'],begin:['seed'],discard:['card'],'undo-discard':['card'],'accept-crib':[],'auto-go':['player'],cut:[],play:['card'],go:[],count:[],deal:[]};
  requireChoice(typeof obj.type==='string'&&Object.hasOwn(keys,obj.type),'Choose an action.');
  const fields=['type',...keys[obj.type as string]];
  requireChoice(Object.keys(obj).length===fields.length&&fields.every(key=>Object.hasOwn(obj,key)),'That action has unexpected details.');
  if('name'in obj)requireChoice(nameValid(obj.name),'Choose a name of 1–24 characters.');
  if('id'in obj)requireChoice(typeof obj.id==='string'&&/^bot-[\w-]{1,80}$/.test(obj.id),'Choose a companion.');
+ if('player'in obj)requireChoice(typeof obj.player==='string'&&/^[\w-]{1,128}$/.test(obj.player),'Choose a player.');
  if('seed'in obj)requireChoice(typeof obj.seed==='string'&&obj.seed.length>0&&obj.seed.length<=96,'Shuffle again.');
  if('card'in obj)requireChoice(typeof obj.card==='string'&&deck.includes(obj.card),'Choose a card.');
  return obj as Intent;
@@ -41,7 +44,15 @@ function deal(state:State){
  const count=state.players.length,cards=shuffle(deck,`${state.seed}:deal:${state.round}`),dealt=count*handSize(state);
  state.hands=[[],[],[],[]];
  for(let i=0;i<dealt;i++)state.hands[(state.dealer+1+i)%count].push(cards[i]);
- state.kept=[[],[],[],[]];state.discards=[[],[],[],[]];state.crib=count===3?[cards[dealt]]:[];state.cut=null;state.stock=cards.slice(dealt+(count===3?1:0));state.plays=[];state.segment=[];state.passed=[];state.total=0;state.last=-1;state.countIndex=0;state.turn=(state.dealer+1)%count;state.phase='discard';state.message=count===2?'Choose two for the crib':'Choose one for the crib';
+ state.kept=[[],[],[],[]];state.discards=[[],[],[],[]];state.pendingDiscards=[];state.crib=count===3?[cards[dealt]]:[];state.cut=null;state.stock=cards.slice(dealt+(count===3?1:0));state.plays=[];state.segment=[];state.passed=[];state.total=0;state.last=-1;state.countIndex=0;state.turn=(state.dealer+1)%count;state.phase='discard';state.message=count===2?'Choose two for the crib':'Choose one for the crib';
+}
+/** The next deterministic choice for fixtures/bots; UI deadlines stay outside replay. */
+export function discardActor(state:State){const needing=state.players.findIndex((_,i)=>needsDiscard(state,i));return needing>=0?needing:state.pendingDiscards.length?state.players.findIndex(p=>p.id===state.host):-1;}
+export const cribComplete=(state:State)=>state.phase==='discard'&&state.crib.length===4&&state.players.every((_,i)=>state.hands[i].length===4);
+function readyCrib(state:State){
+ if(state.players.every((_,i)=>state.hands[i].length===4)&&state.pendingDiscards.length===0){
+  if(state.protocol===1)state.crib=state.discards.flat();state.phase='cut';state.turn=(state.dealer+1)%state.players.length;state.message='Cut the deck';
+ }
 }
 export function legalCards(state:State,seat:number){return state.hands[seat].filter(card=>state.total+value(card)<=31);}
 export const countOwner=(state:State)=>isCribCount(state)?state.dealer:(state.dealer+1+state.countIndex)%state.players.length;
@@ -78,8 +89,18 @@ export function apply(state:State,actor:string,input:Intent):State{
    requireChoice(needsDiscard(next,seat)&&next.hands[seat].includes(intent.card),'Choose one card for the crib.');
    next.hands[seat]=next.hands[seat].filter(card=>card!==intent.card);next.discards[seat].push(intent.card);
    if(next.hands[seat].length===4)next.kept[seat]=[...next.hands[seat]];
-   if(next.protocol===2)next.crib.push(intent.card);
-   if(next.players.every((_,i)=>next.hands[i].length===4)){if(next.protocol===1)next.crib=next.discards.flat();next.phase='cut';next.turn=(next.dealer+1)%next.players.length;next.message='Cut the deck';}
+   if(next.protocol>=2)next.crib.push(intent.card);
+   if(next.protocol===3)next.pendingDiscards.push({seat,card:intent.card,revision:state.revision+1});
+   readyCrib(next);
+  }else if(intent.type==='undo-discard'){
+   const pending=next.pendingDiscards.find(p=>p.card===intent.card&&p.seat===seat);
+   requireChoice(next.protocol===3&&next.phase==='discard'&&pending,'That contribution is already in the crib.');
+   next.pendingDiscards=next.pendingDiscards.filter(p=>p!==pending);next.discards[seat]=next.discards[seat].filter(card=>card!==intent.card);next.crib=next.crib.filter(card=>card!==intent.card);
+   const order=shuffle(deck,`${next.seed}:deal:${next.round}`).filter((_,i)=>i<next.players.length*handSize(next)&&(next.dealer+1+i)%next.players.length===seat);
+   next.hands[seat].push(intent.card);next.hands[seat].sort((a,b)=>order.indexOf(a)-order.indexOf(b));next.kept[seat]=next.hands[seat].length===4?[...next.hands[seat]]:[];
+  }else if(intent.type==='accept-crib'){
+   requireChoice(next.protocol===3&&cribComplete(next)&&next.pendingDiscards.length>0,'The crib is not ready.');
+   next.pendingDiscards=[];readyCrib(next);
   }else if(intent.type==='cut'){
    requireChoice(next.phase==='cut'&&seat===next.turn,'Wait for the cut.');
    next.cut=next.stock[0];next.stock=next.stock.slice(1);next.phase='pegging';next.message='Play a card';
@@ -90,9 +111,11 @@ export function apply(state:State,actor:string,input:Intent):State{
    next.hands[seat]=next.hands[seat].filter(card=>card!==intent.card);next.plays.push({seat,card:intent.card});next.segment.push(intent.card);next.total+=value(intent.card);next.last=seat;next.message=`${next.players[seat].name} · ${next.total}`;
    award(next,seat,points,`${next.total}`);
    if(next.phase!=='finished')advance(next,seat,next.total===31);
-  }else if(intent.type==='go'){
-   requireChoice(next.phase==='pegging'&&seat===next.turn&&legalCards(next,seat).length===0,'You can still play.');
-   next.passed.push(seat);next.message=`${next.players[seat].name} · Go`;advance(next,seat);
+  }else if(intent.type==='go'||intent.type==='auto-go'){
+   const passing=intent.type==='go'?seat:next.turn;
+   if(intent.type==='auto-go')requireChoice(next.protocol===3&&actor===next.host&&next.players[passing]?.id===intent.player,'Wait for that player.');
+   requireChoice(next.phase==='pegging'&&passing===next.turn&&legalCards(next,passing).length===0,'You can still play.');
+   next.passed.push(passing);next.message=`${next.players[passing].name} · Go`;advance(next,passing);
   }else if(intent.type==='count'){
    requireChoice(next.phase==='count'&&seat===countOwner(next),'Wait for your hand.');
    const crib=isCribCount(next),points=handScore(crib?next.crib:next.kept[seat],next.cut!,crib);
@@ -106,7 +129,8 @@ export function apply(state:State,actor:string,input:Intent):State{
  next.revision++;return next;
 }
 export function replay(events:readonly Event[]):State{
- let state=initialState(events[0]?.version===1?1:VERSION);const seen=new Set<string>();
+ const protocol=events[0]?.version??VERSION;requireChoice([1,2,3].includes(protocol),'This table needs a newer version.');
+ let state=initialState(protocol);const seen=new Set<string>();
  for(const event of events){
   requireChoice(event.version===state.protocol&&event.sequence===state.revision+1&&!seen.has(event.id),'This table needs a newer version.');
   seen.add(event.id);state=apply(state,event.actor,event.intent);

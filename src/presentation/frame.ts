@@ -5,7 +5,7 @@ import {seats,trackPoint,type Position,STACK_STEP} from '../table';
 import {BOARD_ROTATION,DECK_POSITION,DECK_LAYERS,STARTER_POSITION,CRIB_POSITION} from '../sceneLayout';
 export type Pose={position:Position;rotation:number;flip:number;scale:number;glow:number};
 export type CardVisual=Pose&{id:string;card:string;owner:string;zone:'deck'|'hand'|'played'|'crib'|'cut';order:number};
-export type PlateVisual=Pose&{id:string;name:string;score?:number;color?:string};
+export type PlateVisual=Pose&{id:string;name:string;score?:number;color?:string;scorePosition?:Position};
 export type PegVisual=Pose&{id:string;owner:string;color:string;score:number};
 export type Status={primary:string;secondary:string;opacity:number};
 export function statusFor(game:State,viewer:string):Status{
@@ -26,7 +26,7 @@ export function buildFrame(game:State,viewer:string,prior?:Frame):Frame{
   seat.cards.forEach((card,index)=>{const held=heldPose(index,seat.cards.length);frame.cards.push({...pose(place(held.position),seat.rotation+held.rotation,seat.id===viewer?0:Math.PI),id:cardId(game,card),card,owner:seat.id,zone:'hand',order:index});});
   game.plays.filter(play=>play.seat===seat.index).forEach((play,order)=>{const played=publicPose(order,seat.lane,game.phase==='count'&&game.turn===seat.index&&!isCribCount(game));frame.cards.push({...pose(place(played.position),seat.rotation),id:cardId(game,play.card),card:play.card,owner:seat.id,zone:'played',order});});
   const counting=game.phase==='count'&&!isCribCount(game)&&game.turn===seat.index;
-  frame.plates.push({...pose([seat.x,.012,seat.z+(seat.lane>=2?-1:1)*(counting?.95:1.7)]),id:seat.id,name:seat.name,score:seat.score,color:seat.color});
+  frame.plates.push({...pose([seat.x,.012,seat.z+(seat.lane>=2?-1:1)*(counting?.95:1.7)]),id:seat.id,name:seat.name,score:seat.score,color:seat.color,scorePosition:[seat.x+(seat.x<0?3:-3),.004,seat.z+(seat.z>0?.95:-.95)]});
   const previous=prior?.pegs.filter(p=>p.owner===seat.id);
   // The rear physical peg leapfrogs the front; peg identity never swaps at a score update.
   const front=previous?.find(p=>p.score===seat.score)??previous?.find(p=>p.score!==seat.previous);

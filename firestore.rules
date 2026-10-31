@@ -9,8 +9,9 @@ service cloud.firestore {
     (i.type in ['create','join'] && i.keys().hasOnly(['type','name']) && i.name is string && i.name.size()>0 && i.name.size()<=24 && i.name.matches('.*\\S.*'))
     || (i.type=='invite-bot' && i.keys().hasOnly(['type','id','name']) && i.id is string && i.id.matches('bot-[A-Za-z0-9_-]{1,80}') && i.name is string && i.name.size()>0 && i.name.size()<=24 && i.name.matches('.*\\S.*'))
     || (i.type=='begin' && i.keys().hasOnly(['type','seed']) && i.seed is string && i.seed.size()>0 && i.seed.size()<=96)
-    || (i.type in ['play','discard'] && i.keys().hasOnly(['type','card']) && i.card is string && i.card.matches('(ace|[2-9]|10|jack|queen|king)_of_(clubs|diamonds|hearts|spades)'))
-    || (i.type in ['cut','go','count','deal'] && i.keys().hasOnly(['type']))
+    || (i.type in ['play','discard','undo-discard'] && i.keys().hasOnly(['type','card']) && i.card is string && i.card.matches('(ace|[2-9]|10|jack|queen|king)_of_(clubs|diamonds|hearts|spades)'))
+    || (i.type=='auto-go' && i.keys().hasOnly(['type','player']) && i.player is string && i.player.matches('[A-Za-z0-9_-]{1,128}'))
+    || (i.type in ['cut','go','count','deal','accept-crib'] && i.keys().hasOnly(['type']))
    );
   }
   function metadata(d){return d.keys().hasOnly(['owner','members','bots','revision']) && d.owner is string && d.members is list && d.bots is list && d.members.size()>=1 && d.members.size()<=4 && d.bots.size()<4 && d.bots.hasOnly(d.members) && d.owner in d.members && d.revision is int && d.revision>=1;}
@@ -39,9 +40,11 @@ service cloud.firestore {
     allow read: if signedIn();
     allow create: if signedIn()
      && request.resource.data.keys().hasOnly(['version','id','sequence','actor','intent'])
-     && request.resource.data.version in [1,2] && request.resource.data.id is string && request.resource.data.id.matches('[A-Za-z0-9_-]{1,128}')
+     && request.resource.data.version in [1,2,3] && request.resource.data.id is string && request.resource.data.id.matches('[A-Za-z0-9_-]{1,128}')
      && request.resource.data.actor is string && request.resource.data.sequence is int
      && intent(request.resource.data.intent)
+     && (!(request.resource.data.intent.type in ['undo-discard','accept-crib','auto-go']) || request.resource.data.version==3)
+     && (request.resource.data.intent.type!='auto-go' || request.resource.data.actor==getAfter(table(scope,room)).data.owner)
      && sequence==string(request.resource.data.sequence)
      && getAfter(table(scope,room)).data.revision==request.resource.data.sequence
      && controls(getAfter(table(scope,room)).data,request.resource.data.actor)

@@ -1,6 +1,6 @@
 import {test,expect,type Page} from '@playwright/test';
 import {TestStepHelper} from './helpers/test-step-helper';
-import {replay,apply,initialState,needsDiscard,cribCards,legalCards,type Intent,type Event} from '../../src/game/engine';
+import {replay,apply,initialState,needsDiscard,cribComplete,cribCards,legalCards,type Intent,type Event} from '../../src/game/engine';
 import {botIntent} from '../../src/game/bot';
 import {animationExamples} from '../../src/presentation/catalog';
 import {cardName} from '../../src/game/cards';
@@ -12,7 +12,10 @@ for(const count of [4,2,3])test(count===4?'four friends gather, peg a complete h
  for(const page of pages){page.on('pageerror',e=>errors.push(e.message));page.on('console',message=>{if(message.type()==='error')errors.push(message.text());});}
  // Predictable invitation entropy and shuffle choices are inputs, never injected game state.
  for(let i=0;i<count;i++)await contexts[i].addInitScript(({id})=>{let n=0;Object.defineProperty(crypto,'randomUUID',{value:()=>n++===0?id:`${id}-choice-${n}`});},{id:ids[i]});
+ let wall=Date.UTC(2026,9,31,12);for(const page of pages)await page.clock.setFixedTime(wall);
  let expected=initialState(),room='',action=0;
+ async function advance(ms:number){wall+=ms;for(const page of pages)await page.clock.setFixedTime(wall);}
+ async function automatic(actor:number,intent:Intent,ms=5000){await advance(ms);expected=apply(expected,ids[actor],intent);await photograph(actor,`${names[actor]} · ${intent.type==='go'?'Go plays automatically':'the crib is ready'}`);}
  async function verify(page:Page,viewer:number){
   await expect(page.locator('main')).toHaveAttribute('data-revision',String(expected.revision));
   await expect(page.getByRole('status')).toHaveAttribute('data-status','synced');
@@ -20,7 +23,7 @@ for(const count of [4,2,3])test(count===4?'four friends gather, peg a complete h
   const actual=await page.evaluate(()=>{
    const root=document.querySelector('main')!,table=document.querySelector('[data-table-view]')!,canvas=document.querySelector('canvas')!;
    const text=(selector:string)=>document.querySelector(selector)?.textContent??null;
-   return {phase:root.getAttribute('data-phase'),round:root.getAttribute('data-round'),total:text('[data-testid="running-count"]'),crib:text('[data-testid="crib-size"]'),starter:text('[data-testid="starter"]'),prompt:text('[role="status"]'),quality:table.getAttribute('data-render-quality'),buffer:[canvas.width,canvas.height],svg:document.querySelectorAll('svg').length,alerts:document.querySelectorAll('[role="alert"]').length,
+   return {phase:root.getAttribute('data-phase'),round:root.getAttribute('data-round'),total:text('[data-testid="running-count"]'),crib:text('[data-testid="crib-size"]'),starter:text('[data-testid="starter"]'),prompt:text('[role="status"]'),scores:JSON.parse(table.getAttribute('data-render-scores')??'[]'),quality:table.getAttribute('data-render-quality'),buffer:[canvas.width,canvas.height],svg:document.querySelectorAll('svg').length,alerts:document.querySelectorAll('[role="alert"]').length,
     players:Array.from(document.querySelectorAll('[data-player]')).map(area=>({id:area.getAttribute('data-player'),score:area.getAttribute('data-score'),held:area.getAttribute('data-held'),lane:area.getAttribute('data-lane'),cards:Array.from(area.querySelectorAll('[aria-label="Held cards"] li')).map(li=>li.textContent),plays:Array.from(area.querySelectorAll('[aria-label="Played cards"] li')).map(li=>li.textContent)})),
     controls:Array.from(document.querySelectorAll('button[data-card]')).map(card=>({card:card.getAttribute('data-card'),disabled:card.getAttribute('aria-disabled'),label:card.getAttribute('aria-label'),x:Number(card.getAttribute('data-hit-x')),y:Number(card.getAttribute('data-hit-y'))}))};
   });
@@ -33,6 +36,9 @@ for(const count of [4,2,3])test(count===4?'four friends gather, peg a complete h
    await expect(page.getByRole('button',{name:'Deal',exact:true})).toHaveCount(viewer===0&&expected.players.length>=2?1:0);
   }
   if(expected.phase==='discard')expect(actual.prompt).toBe(needsDiscard(expected,viewer)?expected.hands[viewer].length===6?'Choose two for the crib':expected.discards[viewer].length?'Choose one more for the crib':'Choose one for the crib':'Waiting for the crib');
+  expect(actual.scores).toEqual(expected.players.map(p=>({id:p.id,score:p.score})));
+  await expect(page.getByRole('button',{name:'Undo crib contribution',exact:true})).toHaveCount(expected.pendingDiscards.some(p=>p.seat===viewer)?1:0);
+  await expect(page.getByRole('button',{name:/Confirm/})).toHaveCount(0);
   expect(actual.quality).toBe('shared-lab');expect(actual.buffer).toEqual([1180,820]);expect(actual.svg).toBe(0);expect(actual.alerts).toBe(0);expect(errors).toEqual([]);
  }
  async function photograph(actor:number,description:string,viewers=expected.players.map((_,i)=>i)){
@@ -48,9 +54,10 @@ for(const count of [4,2,3])test(count===4?'four friends gather, peg a complete h
    await expect(page.locator('[data-table-view]')).toHaveAttribute('data-motion-idle','true');
    await page.mouse.move(Number(await control.getAttribute('data-hit-x')),Number(await control.getAttribute('data-hit-y')));
    await page.mouse.down();await expect(page.locator('[data-table-view]')).toHaveAttribute('data-pressed-card',await control.getAttribute('data-card-id')??'');await page.mouse.up();
-  }else await page.getByRole('button',{name:intent.type==='cut'?'Cut':intent.type==='go'?'Go':intent.type==='count'?/^Peg \d+$/: 'Deal',exact:intent.type!=='count'}).click();
+  }else if(intent.type==='undo-discard')await page.getByRole('button',{name:'Undo crib contribution',exact:true}).click();
+  else await page.getByRole('button',{name:intent.type==='cut'?'Cut':intent.type==='go'?'Go':intent.type==='count'?/^Peg \d+$/: 'Deal',exact:intent.type!=='count'}).click();
   expected=apply(expected,ids[actor],intent);
-  const phrase=intent.type==='play'?`plays ${cardName(intent.card)}`:intent.type==='discard'?`puts ${cardName(intent.card)} in the crib`:intent.type==='go'?'says Go':intent.type==='cut'?'cuts the deck':intent.type==='count'?'counts':'deals the next hand';
+  const phrase=intent.type==='undo-discard'?'returns a crib card to their hand':intent.type==='play'?`plays ${cardName(intent.card)}`:intent.type==='discard'?`puts ${cardName(intent.card)} in the crib`:intent.type==='go'?'says Go':intent.type==='cut'?'cuts the deck':intent.type==='count'?'counts':'deals the next hand';
   await photograph(actor,`${names[actor]} ${phrase}`);
  }
  try{
@@ -68,9 +75,34 @@ for(const count of [4,2,3])test(count===4?'four friends gather, peg a complete h
   await pages[0].getByRole('button',{name:'Deal',exact:true}).click();await expect(pages[0].locator('main')).toHaveAttribute('data-phase','discard');
   let events=await (await pages[0].request.get(`/api/tables/${room}`)).json() as Event[];
   const begin=events.at(-1)!.intent;expect(begin.type).toBe('begin');expected=apply(expected,ids[0],begin);await photograph(0,`Alex deals ${count===2?'six':'five'} cards to everyone`);
-  let discards=0;while(expected.phase==='discard'){const actor=expected.players.findIndex((_,i)=>needsDiscard(expected,i));await perform(actor,botIntent(expected,actor)!);discards++;}
-  expect(discards).toBe(count===2?4:count);expect(expected.crib).toHaveLength(4);expect(expected.phase).toBe('cut');await perform(expected.turn,{type:'cut'});
-  let steps=0;while(expected.phase==='pegging'&&steps++<40){const actor=expected.turn;await perform(actor,botIntent(expected,actor)!);}
+  let discards=0;while(!cribComplete(expected)){
+   const actor=expected.players.findIndex((_,i)=>needsDiscard(expected,i)),intent=botIntent(expected,actor)!;await perform(actor,intent);discards++;
+   if(count===2&&discards===1&&intent.type==='discard'){
+    await advance(6000);await expect(pages[actor].locator('[data-countdown="undo"]')).toHaveAttribute('data-seconds','');
+    await photograph(actor,'The first crib card stays undoable after six seconds, with no countdown');
+    await perform(actor,{type:'undo-discard',card:intent.card});await perform(actor,intent);
+   }
+  }
+  expect(discards).toBe(count===2?4:count);expect(expected.crib).toHaveLength(4);
+  await expect(pages[0].locator('[data-countdown="undo"]')).toHaveAttribute('data-seconds','5');
+  if(count===2){
+   await pages[1].reload();await expect(pages[1].getByRole('status')).toHaveAttribute('data-status','synced');
+   await advance(4000);await expect(pages[0].locator('[data-countdown="undo"]')).toHaveAttribute('data-seconds','1');
+   await photograph(0,'One second remains after returning to the table');
+   const card=expected.discards[0].at(-1)!;await perform(0,{type:'undo-discard',card});
+   for(const page of pages)await expect(page.locator('[data-countdown="undo"]')).toHaveAttribute('data-seconds','');
+   await perform(0,{type:'discard',card});await expect(pages[0].locator('[data-countdown="undo"]')).toHaveAttribute('data-seconds','5');
+  }
+  await automatic(0,{type:'accept-crib'});expect(expected.phase).toBe('cut');await perform(expected.turn,{type:'cut'});
+  let steps=0,autoGo=false;while(expected.phase==='pegging'&&steps++<40){
+   const actor=expected.turn,intent=botIntent(expected,actor)!;
+   if(intent.type==='go'&&!autoGo){
+    await expect(pages[actor].getByRole('button',{name:'Go',exact:true})).toHaveAttribute('data-seconds','5');
+    await advance(4000);await expect(pages[actor].getByRole('button',{name:'Go',exact:true})).toHaveAttribute('data-seconds','1');
+    await photograph(actor,'Go will play automatically in one second');await automatic(actor,intent,1000);autoGo=true;
+   }else await perform(actor,intent);
+  }
+  expect(autoGo).toBe(true);
   expect(expected.phase).toBe('count');expect(expected.plays).toHaveLength(count*4);expect(expected.hands.flat()).toEqual([]);
   for(let i=0;i<count+1;i++)await perform(expected.turn,{type:'count'});
   expect(expected.phase).toBe('between');await perform(expected.turn,{type:'deal'});expect(expected.round).toBe(1);
