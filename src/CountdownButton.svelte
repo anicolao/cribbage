@@ -1,9 +1,12 @@
 <script lang="ts">
+ import {cardName} from './game/cards';
  import type {CountdownAction} from './game/countdowns';
  let {action,onactivate=()=>{}}:{action:CountdownAction;onactivate?:()=>void}=$props();
+ const label=$derived(action.kind==='undo'?'Undo':action.kind==='go'?'Go':action.kind==='cut'?'Cut':action.kind==='count'?`Peg ${action.points??0}`:action.kind==='deal'?'Deal':'Play');
+ const accessible=$derived(action.kind==='undo'?'Undo crib contribution':action.kind==='play'&&action.card?`Play ${cardName(action.card)}`:label);
 </script>
-<button class="countdown" type="button" aria-label={action.kind==='undo'?'Undo crib contribution':'Go'} title={action.remaining===undefined?'Return your most recent crib card to your hand.':action.kind==='undo'?'Your contribution stands when the countdown ends.':'Played automatically when the countdown ends.'} disabled={action.disabled} onclick={onactivate} data-countdown={action.kind} data-seconds={action.remaining??''} data-undo-card={action.kind==='undo'?action.card:undefined}>
- <span>{action.kind==='undo'?'Undo':'Go'}</span>{#if action.remaining!==undefined}<span class="seconds" aria-hidden="true">{action.remaining}</span>{/if}
+<button class="countdown" type="button" aria-label={accessible} title={action.remaining===undefined?'Return your most recent crib card to your hand.':action.kind==='undo'?'Your contribution stands when the countdown ends.':action.kind==='play'&&action.card?`${cardName(action.card)} plays when the countdown ends.`:'Continues automatically when the countdown ends.'} disabled={action.disabled} onclick={onactivate} data-countdown={action.kind} data-seconds={action.remaining??''} data-undo-card={action.kind==='undo'?action.card:undefined}>
+ <span>{label}</span>{#if action.remaining!==undefined}<span class="seconds" aria-hidden="true">{action.remaining}</span>{/if}
  {#if action.fraction!==undefined}<span class="progress" aria-hidden="true" style:transform={`scaleX(${Math.min(1,action.fraction)})`}></span>{/if}
 </button>
 <style>

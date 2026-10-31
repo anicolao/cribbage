@@ -1,26 +1,24 @@
 <script lang="ts">
  import {onMount,untrack} from 'svelte';
  import TableView from './TableView.svelte';
- import {initialState,legalCards,countOwner,needsDiscard,isCribCount,cribCards,type State,type Event,type Intent} from './game/engine';
+ import {initialState,legalCards,needsDiscard,isCribCount,cribCards,type State,type Event,type Intent} from './game/engine';
  import {repository,playerIdentity} from './game/repository';
  import {botIntent} from './game/bot';
- import {cardName,handScore} from './game/cards';
+ import {cardName} from './game/cards';
  import {tablePlayers} from './game/layout';
  import {replayTable} from './presentation/replay';
  import {statusFor} from './presentation/frame';
- import {BOT_DELAY_MS,TableClock,countdownAction,automaticChoice,type Windows} from './game/countdowns';
+ import {BOT_DELAY_MS,TableClock,countdownAction,automaticChoice,automaticIntent,intentForAction,type Windows} from './game/countdowns';
  let game=$state<State>(initialState()),viewer=$state(''),room=$state(''),name=$state(''),busy=$state(false),error=$state(''),ready=$state(false),animating=$state(false),renderedRevision=$state(-1),connected=$state(false),copied=$state(false);
  let pegOrigins=$state<Record<string,number>>({});
  let now=$state(Date.now()),windows=$state.raw<Windows>({discards:[]});
  let clock:TableClock|undefined,clockKey='';const autoAttempts=new Map<string,number>();
- const choiceAction=$derived(countdownAction(game,viewer,windows,Math.max(now,Date.now()),busy||!connected||!ready));
+ const choiceAction=$derived.by(()=>{const action=countdownAction(game,viewer,windows,Math.max(now,Date.now()),busy||!connected||!ready);return action?{...action,disabled:action.disabled||action.kind!=='undo'&&animating}:undefined;});
  let repo:ReturnType<typeof repository>|undefined;
  const seat=$derived(game.players.findIndex(p=>p.id===viewer));
  const own=$derived(seat>=0?game.players[seat]:undefined);
  const gathering=$derived(game.phase==='gathering');
- const isTurn=$derived(seat>=0&&game.turn===seat);
  const invitation=$derived(typeof location==='undefined'?'':`${location.origin}${import.meta.env.BASE_URL}?table=${room}`);
- const countPoints=$derived(game.phase==='count'&&game.cut?handScore(isCribCount(game)?game.crib:game.kept[countOwner(game)],game.cut,isCribCount(game)):0);
  const tableStatus=$derived(statusFor(game,viewer,pegOrigins));
  const prompt=$derived(gathering?(own?'':'Take a seat'):tableStatus.primary);
  async function initialize(){
@@ -30,14 +28,14 @@
  }
  onMount(()=>{void initialize();const ticker=setInterval(()=>now=Date.now(),100);return()=>clearInterval(ticker);});
  $effect(()=>{
-  const state=game,key=`cribbage:choice-windows:${import.meta.env.BASE_URL}:${room}:${viewer}`,stamp=now,goReady=ready&&!animating&&renderedRevision===game.revision;
+  const state=game,key=`cribbage:choice-windows:${import.meta.env.BASE_URL}:${room}:${viewer}`,stamp=Math.max(now,Date.now()),goReady=ready&&!animating&&renderedRevision===game.revision;
   if(!room||!viewer||!connected)return;
-  untrack(()=>{if(key!==clockKey){clockKey=key;clock=new TableClock(localStorage,key);}windows=clock!.observe(state,Date.now(),goReady);});
+  untrack(()=>{if(key!==clockKey){clockKey=key;clock=new TableClock(localStorage,key);}windows=clock!.observe(state,stamp,goReady);});
  });
  $effect(()=>{
-  const state=game,active=windows,stamp=now,id=viewer;
+  const state=game,active=windows,stamp=Math.max(now,Date.now()),id=viewer,settled=!animating&&renderedRevision===game.revision;
   if(!connected||busy||!ready||error||gathering||game.phase==='finished')return;
-  untrack(()=>{const choice=automaticChoice(state,id,active,Date.now());if(!choice)return;const last=autoAttempts.get(choice.key)??-Infinity;if(performance.now()-last<300)return;autoAttempts.set(choice.key,performance.now());void act(choice.intent,choice.actor,true);});
+  untrack(()=>{const choice=automaticChoice(state,id,active,stamp);if(!choice||choice.intent.type!=='accept-crib'&&!settled)return;const last=autoAttempts.get(choice.key)??-Infinity;if(performance.now()-last<300)return;autoAttempts.set(choice.key,performance.now());void act(choice.intent,choice.actor,true);});
  });
  $effect(()=>{
   if(!room||!viewer)return;
@@ -63,10 +61,10 @@
   if(viewer!==game.host||busy||animating||!ready||renderedRevision!==game.revision||error||!connected||gathering||game.phase==='finished')return;
   const index=game.phase==='discard'?game.players.findIndex((p,i)=>p.bot&&needsDiscard(game,i)):game.turn;
   if(index<0||!game.players[index]?.bot)return;
-  const intent=botIntent(game,index);if(!intent||intent.type==='go'||intent.type==='accept-crib')return;
+  const intent=botIntent(game,index);if(!intent||intent.type==='accept-crib'||intent.type===automaticIntent(game)?.type)return;
   const timer=setTimeout(()=>void act(intent,game.players[index].id),BOT_DELAY_MS);return()=>clearTimeout(timer);
  });
- function chooseAction(){if(choiceAction?.kind==='undo'&&choiceAction.card)void act({type:'undo-discard',card:choiceAction.card});else if(choiceAction?.kind==='go')void act({type:'go'});}
+ function chooseAction(){const intent=intentForAction(choiceAction);if(intent)void act(intent);}
  function play(card:string){void act({type:game.phase==='discard'?'discard':'play',card});}
  async function copy(){try{await navigator.clipboard.writeText(invitation);copied=true;}catch{error='Select the invitation to share it.';}}
 </script>
@@ -96,11 +94,7 @@
  {:else}
   <div class="sr-only"><p class="prompt" role="status" data-status={ready&&connected&&!busy&&!animating&&renderedRevision===game.revision?'synced':'waiting'}>{prompt}</p>{#if tableStatus.secondary}<p class="last-play">{tableStatus.secondary}</p>{/if}</div>
   <div class="turn-action" class:arriving={animating} data-e2e-fit>
-   {#if isTurn&&game.phase==='cut'}<button class="brass" onclick={()=>act({type:'cut'})} disabled={busy||animating}>Cut</button>
-
-   {:else if isTurn&&game.phase==='count'}<button class="brass" onclick={()=>act({type:'count'})} disabled={busy||animating}>Peg {countPoints}</button>
-   {:else if isTurn&&game.phase==='between'}<button class="brass" onclick={()=>act({type:'deal'})} disabled={busy||animating}>Deal</button>
-   {:else if game.phase==='finished'&&viewer===game.host}<button class="brass" onclick={()=>act({type:'begin',seed:crypto.randomUUID()})} disabled={busy||animating}>Play again</button>{/if}
+   {#if game.phase==='finished'&&viewer===game.host}<button class="brass" onclick={()=>act({type:'begin',seed:crypto.randomUUID()})} disabled={busy||animating}>Play again</button>{/if}
   </div>
  {/if}
  {#if gathering}<span role="status" class="sr-only" data-status={ready&&connected&&!busy&&!animating&&renderedRevision===game.revision?'synced':'waiting'}>{prompt}</span>{/if}
