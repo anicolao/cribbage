@@ -54,10 +54,13 @@ for(const count of [4,2,3])test(count===4?'four friends gather, peg a complete h
   const page=pages[actor];
   if(intent.type==='discard'||intent.type==='play'){
    const control=page.locator(`button[data-card="${intent.card}"]`);await expect(control).toHaveAttribute('aria-disabled','false');
-   await page.mouse.move(Number(await control.getAttribute('data-hit-x')),Number(await control.getAttribute('data-hit-y')));
+   const point=()=>control.evaluate(b=>({x:Number(b.getAttribute('data-hit-x')),y:Number(b.getAttribute('data-hit-y'))}));
+   let target=await point();await page.mouse.move(target.x,target.y);
    await expect(page.locator('[data-table-view]')).toHaveAttribute('data-hovered-card',await control.getAttribute('data-card-id')??'');
    await expect(page.locator('[data-table-view]')).toHaveAttribute('data-motion-idle','true');
-   await page.mouse.move(Number(await control.getAttribute('data-hit-x')),Number(await control.getAttribute('data-hit-y')));
+   target=await point();await page.mouse.move(target.x,target.y);
+   await expect(page.locator('[data-table-view]')).toHaveAttribute('data-hovered-card',await control.getAttribute('data-card-id')??'');
+   await expect(page.locator('[data-table-view]')).toHaveAttribute('data-motion-idle','true');
    await page.mouse.down();await expect(page.locator('[data-table-view]')).toHaveAttribute('data-pressed-card',await control.getAttribute('data-card-id')??'');await page.mouse.up();
   }else if(intent.type==='undo-discard')await page.getByRole('button',{name:'Undo crib contribution',exact:true}).click();
   else await page.getByRole('button',{name:intent.type==='cut'?'Cut':intent.type==='go'?'Go':intent.type==='count'?/^Peg \d+$/: 'Deal',exact:intent.type!=='count'}).click();
