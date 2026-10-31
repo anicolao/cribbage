@@ -30,6 +30,6 @@
  $effect(()=>{fov; $size.width; $size.height;untrack(()=>{const direction=previous.position.clone().sub(controls?.target??target).normalize();project(heightAtTarget(),direction);});});
  $effect(()=>{resetKey;preset;untrack(()=>{const aim=controls?.target??target;aim.set(0,0,.1);const angle=(preset==='top'?89.9:preset==='low'?25:53)*Math.PI/180;project(Math.max(16.3,22.7/(size.current.width/Math.max(1,size.current.height))),new Vector3(0,Math.sin(angle),Math.cos(angle)));});});
  onMount(()=>{controls=new OrbitControls(untrack(()=>active),renderer.domElement);controls.target.copy(target);controls.enableDamping=true;controls.dampingFactor=.09;controls.minPolarAngle=.001;controls.maxPolarAngle=Math.PI/2-.015;controls.minDistance=2;controls.maxDistance=1000;controls.minZoom=.15;controls.maxZoom=12;controls.screenSpacePanning=true;controls.addEventListener('change',report);controls.update();return()=>{controls?.removeEventListener('change',report);controls?.dispose();};});
- useTask(()=>{controls?.update();});
+ useTask(()=>{controls?.update();},{autoInvalidate:false});
 </script>
 <T is={active} makeDefault manual />
