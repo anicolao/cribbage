@@ -1,7 +1,7 @@
 import {initialState,apply,needsDiscard,cribComplete,legalCards,discardActor,isCribCount,type State,type Intent} from '../game/engine';
 import {botIntent} from '../game/bot';
 import {planMotion,interactionLevel,type Plan} from './motion';
-import {countdownAction,type Windows} from '../game/countdowns';
+import {CHOICE_WINDOW_MS,BOT_DELAY_MS,countdownAction,type Windows} from '../game/countdowns';
 import {buildFrame} from './frame';
 export type Step={before:State;after:State;intent:Intent;actor:string;delay?:number};
 export type Example={id:string;name:string;hint:string;steps:Step[];viewer:string;interaction?:'hover'|'press'};
@@ -22,13 +22,13 @@ function catalogue(){
   const s=act(ids[seat],intent),name=names[seat];
   if(s.before.round===0)round.push(s);
   if(intent.type==='discard')add(`discard-${ids[seat]}`,seat?`${name} chooses the crib`:'You choose the crib','The card flips face down, flies clear of the board and lands on top of the crib. The remaining fan settles.',s);
-  if(intent.type==='accept-crib')add('crib-ready','Crib ready · five seconds to undo','Every player can undo a contribution while this countdown runs. The starter waits until it ends.',{...s,delay:5});
+  if(intent.type==='accept-crib')add('crib-ready','Crib ready · three seconds to undo','Every player can undo a contribution while this countdown runs. The starter waits until it ends.',{...s,delay:CHOICE_WINDOW_MS/1000});
   if(intent.type==='cut'){
    add('cut','Cut and turn the starter','The starter rises, turns and settles on top of the deck.',s);
    if(!seen.has('ready')){examples.unshift({id:'ready',name:'Ready table',hint:'The same table, materials, lighting and native-resolution renderer used by the real game.',steps:[{...s,before:s.after}],viewer:'you'});seen.add('ready');}
   }
   if(intent.type==='play')add(`play-${ids[seat]}`,seat?`${name} plays a card`:'You play a card','The actual card leaves its fan, turns if concealed, and lands to the right and above the previous play.',s);
-  if(intent.type==='go'&&s.after.phase==='pegging')add('go','Go · play automatically after five seconds','Tap Go immediately, or let the five-second countdown play it for you.',{...s,delay:5});
+  if(intent.type==='go'&&s.after.phase==='pegging')add('go','Go · play automatically after three seconds','Tap Go immediately, or let the three-second countdown play it for you.',{...s,delay:CHOICE_WINDOW_MS/1000});
   if(s.after.players.some((p,i)=>p.score!==s.before.players[i].score))add('peg','Score and leapfrog a peg','The rear physical peg lifts and lands in the new hole; the nameplate score changes when it lands.',s);
   if(s.before.phase!=='count'&&s.after.phase==='count')add('count-start','Finish pegging and begin counting','The last card lands before the first hand spreads. Its points appear beside the revealed cards; cumulative totals stay in the nameplates.',s);
   if(intent.type==='count')add(isCribCount(s.before)?'crib-close':`count-${ids[seat]}`,isCribCount(s.before)?'Finish the crib':`Count ${name}’s hand`,'The counted hand’s points remain beside its cards through the peg flight, then fade as the next hand spreads and shows its own points.',s);
@@ -51,7 +51,7 @@ function catalogue(){
    const seat=small.phase==='discard'?discardActor(small):small.turn;
    const step=actSmall(ids[seat],botIntent(small,seat)!);
    if(count===2&&step.intent.type==='discard'&&seat===0&&small.discards[0].length===1){const before=small,after=apply(before,'you',{type:'undo-discard',card:step.intent.card});add('undo-first','Undo the first of two crib cards','Undo stays available without a countdown until the whole crib is ready.',{before,after,actor:'you',intent:{type:'undo-discard',card:step.intent.card},delay:2});}
-   if(count===2&&step.intent.type==='accept-crib'){const before=step.before,card=before.discards[0].at(-1)!;add('undo-ready','Undo while the crib is ready','Returning a card cancels the countdown. Completing the crib again starts a fresh five seconds.',{before,after:apply(before,'you',{type:'undo-discard',card}),actor:'you',intent:{type:'undo-discard',card},delay:2});}
+   if(count===2&&step.intent.type==='accept-crib'){const before=step.before,card=before.discards[0].at(-1)!;add('undo-ready','Undo while the crib is ready','Returning a card cancels the countdown. Completing the crib again starts a fresh three seconds.',{before,after:apply(before,'you',{type:'undo-discard',card}),actor:'you',intent:{type:'undo-discard',card},delay:2});}
    if(count===2&&step.intent.type==='discard'&&seat===0){discarded++;add(`two-discard-${discarded}`,`Two players · ${discarded===1?'first':'second'} crib card`,discarded===1?'The first card lands in the crib; five cards remain and you choose one more.':'The second card lands on top; the remaining four settle into their fan.',step);}
    if(step.after.phase==='count'&&isCribCount(step.after))add(`crib-${count}`,`${count===2?'Two':'Three'} players · reveal the crib`,'After every hand has been counted, the dealer’s four-card crib turns and spreads.',step);
   }
@@ -65,8 +65,8 @@ export type Timeline={plans:{plan:Plan;before:State;state:State;start:number;hol
 export function buildTimeline(example:Example,viewer:string):Timeline{
  let previous=buildFrame(example.steps[0].before,viewer),duration=0,fullAt=cribComplete(example.steps[0].before)?0:-1;
  const plans=example.steps.map(step=>{
-  let hold=step.delay??(step.intent.type==='go'?5:0);
-  if(step.intent.type==='accept-crib')hold=Math.max(hold,fullAt+5-duration);
+  let hold=step.delay??(step.intent.type==='go'?(step.before.players[step.before.turn].bot?BOT_DELAY_MS:CHOICE_WINDOW_MS)/1000:0);
+  if(step.intent.type==='accept-crib')hold=Math.max(hold,fullAt+CHOICE_WINDOW_MS/1000-duration);
   const start=duration+hold,plan=planMotion(step.before,step.after,viewer,previous);previous=plan.target;
   if(cribComplete(step.after)&&!cribComplete(step.before))fullAt=start;
   if(!cribComplete(step.after))fullAt=-1;
@@ -84,7 +84,7 @@ export function timelineAt(timeline:Timeline,time:number){
  const windows:Windows={discards:state.pendingDiscards};
  if(cribComplete(state)){
   const filled=timeline.plans.findLast(p=>p.start<=time&&cribComplete(p.state)&&!cribComplete(p.before));
-  windows.crib={revision:state.revision,deadline:((filled?.start??0)+5)*1000};
+  windows.crib={revision:state.revision,deadline:((filled?.start??0)+CHOICE_WINDOW_MS/1000)*1000};
  }
  if(state.phase==='pegging'&&legalCards(state,state.turn).length===0){
   const passing=timeline.plans.find(p=>p.before.revision===state.revision&&(p.plan.kind==='go'));

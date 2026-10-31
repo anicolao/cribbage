@@ -1,5 +1,6 @@
 import {cribComplete,legalCards,type State,type Intent,type PendingDiscard} from './engine';
-export const CHOICE_WINDOW_MS=5000;
+export const CHOICE_WINDOW_MS=3000;
+export const BOT_DELAY_MS=600;
 export const HOST_FALLBACK_MS=1000;
 export type Windows={discards:PendingDiscard[];crib?:{revision:number;deadline:number};go?:{seat:number;revision:number;deadline:number}};
 export type CountdownAction={kind:'undo'|'go';remaining?:number;fraction?:number;card?:string;disabled?:boolean};
@@ -10,13 +11,13 @@ export class TableClock{
  constructor(private storage:ClockStorage,private key:string){try{const saved=JSON.parse(storage.getItem(key)??'{}');for(const [id,value]of Object.entries(saved))if(typeof value==='number'&&Number.isFinite(value))this.deadlines[id]=value;}catch{}}
  observe(state:State,now:number,goReady:boolean):Windows{
   const active=new Set<string>();let changed=false;
-  const deadline=(key:string)=>{active.add(key);if(this.deadlines[key]===undefined){this.deadlines[key]=now+CHOICE_WINDOW_MS;changed=true;}return this.deadlines[key];};
+  const deadline=(key:string,duration=CHOICE_WINDOW_MS)=>{active.add(key);if(this.deadlines[key]===undefined){this.deadlines[key]=now+duration;changed=true;}return this.deadlines[key];};
   const discards=state.pendingDiscards;
   const crib=state.protocol===3&&cribComplete(state)?{revision:state.revision,deadline:deadline(`crib:${state.round}:${state.revision}`)}:undefined;
   let go:Windows['go'];
   if(state.phase==='pegging'&&legalCards(state,state.turn).length===0){
    const key=`go:${state.round}:${state.revision}:${state.turn}`;
-   if(goReady||this.deadlines[key]!==undefined)go={seat:state.turn,revision:state.revision,deadline:deadline(key)};
+   if(goReady||this.deadlines[key]!==undefined)go={seat:state.turn,revision:state.revision,deadline:deadline(key,state.players[state.turn].bot?BOT_DELAY_MS:CHOICE_WINDOW_MS)};
   }
   for(const key of Object.keys(this.deadlines))if(!active.has(key)){delete this.deadlines[key];changed=true;}
   if(changed)try{this.storage.setItem(this.key,JSON.stringify(this.deadlines));}catch{}
@@ -27,7 +28,7 @@ export function countdownAction(state:State,viewer:string,windows:Windows,now:nu
  const seat=state.players.findIndex(p=>p.id===viewer);
  const pending=windows.discards.filter(p=>p.seat===seat).sort((a,b)=>b.revision-a.revision)[0];
  if(pending&&(!windows.crib||windows.crib.deadline>now))return {kind:'undo',remaining:windows.crib?Math.ceil((windows.crib.deadline-now)/1000):undefined,fraction:windows.crib?Math.max(0,(windows.crib.deadline-now)/CHOICE_WINDOW_MS):undefined,card:pending.card,disabled};
- if(windows.go?.seat===seat)return {kind:'go',remaining:Math.max(0,Math.ceil((windows.go.deadline-now)/1000)),fraction:Math.max(0,(windows.go.deadline-now)/CHOICE_WINDOW_MS),disabled};
+ if(windows.go?.seat===seat)return {kind:'go',remaining:Math.max(0,Math.ceil((windows.go.deadline-now)/1000)),fraction:Math.max(0,(windows.go.deadline-now)/(state.players[seat].bot?BOT_DELAY_MS:CHOICE_WINDOW_MS)),disabled};
 }
 export function automaticChoice(state:State,viewer:string,windows:Windows,now:number):{key:string;actor:string;intent:Intent}|undefined{
  const seat=state.players.findIndex(p=>p.id===viewer),host=viewer===state.host;
