@@ -13,4 +13,3 @@ export function publicPose(order:number,lane:number,counting=false){
  if(counting)return {position:[(order-1.5)*1.48,.025,-.5] as Position,rotation:0};
  return playedCard(3-order,lane);
 }
-export type HitTarget={id:string;label:string;card:string;points:string;enabled:boolean};

@@ -1,5 +1,4 @@
 <script lang="ts">
- import Peg from './Peg.svelte';
  import { T } from '@threlte/core';
  import { onDestroy, untrack } from 'svelte';
  import { Path, CylinderGeometry, MeshBasicMaterial, Object3D, type InstancedMesh, type Material } from 'three';
@@ -7,8 +6,8 @@
  import { roundedShape, slabGeometry } from './geometry';
  import type { MaterialLibrary } from './materials';
  import { board, wood } from './textures';
- import { BOARD_WIDTH, BOARD_DEPTH, boardHoles, trackPoint, seats, ease } from './table';
- let {time,scenario,materials,players=seats}:{time:number;scenario:string;materials?:MaterialLibrary;players?:{score:number;previous:number;color:string}[]}=$props();
+ import { BOARD_WIDTH, BOARD_DEPTH, boardHoles } from './table';
+ let {materials}:{materials?:MaterialLibrary}=$props();
  const walnut=wood();
  let maple=$state.raw(board());
  $effect(()=>{if(materials){const next=board(materials.maple.color.image as CanvasImageSource),previous=untrack(()=>maple);maple=next;previous.dispose();}});
@@ -20,7 +19,6 @@
  const panelMaterials:Material[]=[];
  const holeGeometry=new CylinderGeometry(.047,.047,.012,12),holeMaterial=new MeshBasicMaterial({color:'#100c08'});
  function holes(mesh:InstancedMesh){const dummy=new Object3D();boardHoles.forEach(({point:[x,z]},i)=>{dummy.position.set(x,.427,z);dummy.updateMatrix();mesh.setMatrixAt(i,dummy.matrix);});mesh.instanceMatrix.needsUpdate=true;}
- function pegScore(lane:number,which:number){const seat=players[lane];if(lane===0&&which===1&&scenario==='peg')return seat.previous+(seat.score+12-seat.previous)*ease(time/1.7);return which?seat.previous:seat.score;}
  onDestroy(()=>[walnut,maple,base,edging,panel,holeGeometry,holeMaterial].forEach(value=>value.dispose()));
 </script>
 <T.Group position={[0,0,0]}>
@@ -32,11 +30,4 @@
   <T.MeshStandardMaterial attach="material.2" color="#4b3320" roughness={.82}/>
  </T.Mesh>
  <T.InstancedMesh args={[holeGeometry,holeMaterial,boardHoles.length]} oncreate={holes}/>
- {#each players as seat,lane}
-  {#each [0,1] as which}
-   {@const point=trackPoint(pegScore(lane,which),lane)}
-   {@const lift=lane===0&&which===1&&scenario==='peg'?Math.sin(ease(time/1.7)*Math.PI)*.95:0}
-   <Peg color={seat.color} position={[point[0],.467+lift,point[1]]}/>
-  {/each}
- {/each}
 </T.Group>
