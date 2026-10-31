@@ -1,19 +1,20 @@
 import pairedAces from './fixtures/paired-aces.json' with {type:'json'};
+import {nextPegOrigins} from './replay';
 import {initialState,apply,needsDiscard,cribComplete,legalCards,discardActor,isCribCount,type State,type Intent} from '../game/engine';
 import {botIntent} from '../game/bot';
 import {planMotion,interactionLevel,type Plan} from './motion';
 import {CHOICE_WINDOW_MS,BOT_DELAY_MS,countdownAction,type Windows} from '../game/countdowns';
 import {buildFrame} from './frame';
-export type Step={before:State;after:State;intent:Intent;actor:string;delay?:number};
+export type Step={before:State;after:State;intent:Intent;actor:string;pegOrigins?:Record<string,number>;delay?:number};
 export type Example={id:string;name:string;hint:string;steps:Step[];viewer:string;interaction?:'hover'|'press'};
 function catalogue(){
  const examples:Example[]=[],seen=new Set<string>(),round:Step[]=[];
- let state=initialState();
+ let state=initialState(),origins:Record<string,number>={};
  const ids=['you','rowan','jules','ada'],names=['You','Rowan','Jules','Ada'];
  function add(id:string,name:string,hint:string,step:Step,interaction?:Example['interaction']){
   if(seen.has(id))return;seen.add(id);examples.push({id,name,hint,steps:[step],viewer:step.actor,interaction});
  }
- function act(actor:string,intent:Intent){const before=state;state=apply(state,actor,intent);return {before,after:state,actor,intent};}
+ function act(actor:string,intent:Intent){const before=state,pegOrigins=origins;state=apply(state,actor,intent);origins=nextPegOrigins(origins,before,state,intent);return {before,after:state,actor,intent,pegOrigins};}
  ids.forEach((id,i)=>{const s=act(id,{type:i?'join':'create',name:names[i]});add(`join-${id}`,i?`${names[i]} takes a seat`:'You take a seat','The actual player-entry transition: nameplate and pegs arrive at the table.',s);round.push(s);});
  const dealt=act('you',{type:'begin',seed:'cribbage-animation-review-v1'});round.push(dealt);add('deal','Deal twenty cards','Five cards per player, dealt clockwise. Only your cards turn face up.',dealt);
  let safety=0;
@@ -26,7 +27,7 @@ function catalogue(){
   if(intent.type==='accept-crib')add('crib-ready','Crib ready · three seconds to undo','Every player can undo a contribution while this countdown runs. The starter waits until it ends.',{...s,delay:CHOICE_WINDOW_MS/1000});
   if(intent.type==='cut'){
    add('cut','Cut and turn the starter','The starter rises, turns and settles on top of the deck.',s);
-   if(!seen.has('ready')){examples.unshift({id:'ready',name:'Ready table',hint:'The same table, materials, lighting and native-resolution renderer used by the real game.',steps:[{...s,before:s.after}],viewer:'you'});seen.add('ready');}
+   if(!seen.has('ready')){examples.unshift({id:'ready',name:'Ready table',hint:'The same table, materials, lighting and native-resolution renderer used by the real game.',steps:[{...s,before:s.after,pegOrigins:origins}],viewer:'you'});seen.add('ready');}
   }
   if(intent.type==='play')add(`play-${ids[seat]}`,seat?`${name} plays a card`:'You play a card','The actual card leaves its fan, turns if concealed, and lands to the right and above the previous play.',s);
   if(intent.type==='go'&&s.after.phase==='pegging')add('go','Go · play automatically after three seconds','Tap Go immediately, or let the three-second countdown play it for you.',{...s,delay:CHOICE_WINDOW_MS/1000});
@@ -42,8 +43,8 @@ function catalogue(){
  examples.splice(1,0,{id:'hover',name:'Hover / keyboard focus',hint:'The real card lifts and warms under the pointer or keyboard focus. No DOM drawing covers the card.',steps:[hovering],viewer:hovering.actor,interaction:'hover'},{id:'press',name:'Press a card',hint:'The real card depresses under the pointer before its committed play begins.',steps:[hovering],viewer:hovering.actor,interaction:'press'});
  examples.push({id:'whole-hand',name:'Complete hand, all four players',hint:'An uninterrupted replay of the same legal intents, from gathering to the next deal.',steps:round,viewer:'you'});
  for(const count of [2,3]){
-  let small=initialState();const steps:Step[]=[];
-  const actSmall=(actor:string,intent:Intent)=>{const before=small;small=apply(small,actor,intent);const step={before,after:small,actor,intent};steps.push(step);return step;};
+  let small=initialState(),smallOrigins:Record<string,number>={};const steps:Step[]=[];
+  const actSmall=(actor:string,intent:Intent)=>{const before=small,pegOrigins=smallOrigins;small=apply(small,actor,intent);smallOrigins=nextPegOrigins(smallOrigins,before,small,intent);const step={before,after:small,actor,intent,pegOrigins};steps.push(step);return step;};
   for(let i=0;i<count;i++)actSmall(ids[i],{type:i?'join':'create',name:names[i]});
   const deal=actSmall('you',{type:'begin',seed:`cribbage-${count}-review-v2`});
   add(`deal-${count}`,count===2?'Two players · six cards each':'Three players · a card for the crib',count===2?'Six cards are dealt to each player. Choose two, one at a time, for the crib.':'Five cards each; one extra concealed card is dealt directly to the crib.',deal);
@@ -59,17 +60,17 @@ function catalogue(){
   actSmall(ids[small.turn],{type:'deal'});
   examples.push({id:`whole-hand-${count}`,name:`${count===2?'Two':'Three'} players · complete hand`,hint:'A complete legal hand, including gathering, discards, pegging, counting and the next deal.',steps,viewer:'you'});
  }
- let paired=initialState();
+ let paired=initialState(),pairedOrigins:Record<string,number>={};
  for(const [index,event] of pairedAces.entries()){
-  const before=paired,intent=event.intent as Intent;paired=apply(before,event.actor,intent);
-  if(index===50||index===74)add(index===50?'pair':'pair-last',index===50?'Pair of aces':'Pair and last card · peg three together','Points appear beside the scoring cards. The combined award moves one peg; the other stays put.',{before,after:paired,actor:event.actor,intent});
+  const before=paired,intent=event.intent as Intent,pegOrigins=pairedOrigins;paired=apply(before,event.actor,intent);pairedOrigins=nextPegOrigins(pairedOrigins,before,paired,intent);
+  if(index===50||index===74)add(index===50?'pair':'pair-last',index===50?'Pair of aces':'Pair and last card · peg three together','Points appear beside the scoring cards. The combined award moves one peg; the other stays put.',{before,after:paired,actor:event.actor,intent,pegOrigins});
  }
  return examples;
 }
 export const animationExamples=catalogue();
 export type Timeline={plans:{plan:Plan;before:State;state:State;start:number;hold:number}[];duration:number;example:Example;viewer:string};
 export function buildTimeline(example:Example,viewer:string):Timeline{
- let previous=buildFrame(example.steps[0].before,viewer),duration=0,fullAt=cribComplete(example.steps[0].before)?0:-1;
+ let previous=buildFrame(example.steps[0].before,viewer,undefined,example.steps[0].pegOrigins),duration=0,fullAt=cribComplete(example.steps[0].before)?0:-1;
  const plans=example.steps.map(step=>{
   let hold=step.delay??(step.intent.type==='go'?(step.before.players[step.before.turn].bot?BOT_DELAY_MS:CHOICE_WINDOW_MS)/1000:0);
   if(step.intent.type==='accept-crib')hold=Math.max(hold,fullAt+CHOICE_WINDOW_MS/1000-duration);
