@@ -59,14 +59,14 @@ export function apply(state:State,actor:string,input:Intent):State{
   requireChoice(intent.type==='create'?next.players.length===0:next.players.length>0,'That table is not available.');
   requireChoice(seat<0&&next.players.length<4,'That seat is taken.');
   if(intent.type==='create')next.host=actor;
-  next.players.push({id:actor,name:intent.name.trim(),bot:false,score:0,previous:0});
+  next.players.push({id:actor,name:intent.name.trim(),bot:false,score:0,previous:-1});
  }else if(intent.type==='invite-bot'){
   requireChoice(actor===next.host&&next.phase==='gathering'&&next.players.length<4&&!next.players.some(p=>p.id===intent.id),'That seat is not available.');
-  next.players.push({id:intent.id,name:intent.name.trim(),bot:true,score:0,previous:0});
+  next.players.push({id:intent.id,name:intent.name.trim(),bot:true,score:0,previous:-1});
  }else if(intent.type==='begin'){
   requireChoice(actor===next.host&&next.players.length===4&&(next.phase==='gathering'||next.phase==='finished'),'Wait for everyone to take a seat.');
   next.seed=intent.seed;next.round=0;next.dealer=Math.floor(createPrng(`${intent.seed}:dealer`)()*4);next.winner=null;
-  next.players.forEach(p=>{p.score=0;p.previous=0;});deal(next);
+  next.players.forEach(p=>{p.score=0;p.previous=-1;});deal(next);
  }else{
   requireChoice(seat>=0,'Take a seat.');
   if(intent.type==='discard'){
