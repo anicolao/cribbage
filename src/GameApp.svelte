@@ -13,7 +13,7 @@
  let pegOrigins=$state<Record<string,number>>({});
  let now=$state(Date.now()),windows=$state.raw<Windows>({discards:[]});
  let clock:TableClock|undefined,clockKey='';const autoAttempts=new Map<string,number>();
- const choiceAction=$derived(countdownAction(game,viewer,windows,now,busy||!connected||!ready));
+ const choiceAction=$derived(countdownAction(game,viewer,windows,Math.max(now,Date.now()),busy||!connected||!ready));
  let repo:ReturnType<typeof repository>|undefined;
  const seat=$derived(game.players.findIndex(p=>p.id===viewer));
  const own=$derived(seat>=0?game.players[seat]:undefined);
@@ -32,12 +32,12 @@
  $effect(()=>{
   const state=game,key=`cribbage:choice-windows:${import.meta.env.BASE_URL}:${room}:${viewer}`,stamp=now,goReady=ready&&!animating&&renderedRevision===game.revision;
   if(!room||!viewer||!connected)return;
-  untrack(()=>{if(key!==clockKey){clockKey=key;clock=new TableClock(localStorage,key);}windows=clock!.observe(state,stamp,goReady);});
+  untrack(()=>{if(key!==clockKey){clockKey=key;clock=new TableClock(localStorage,key);}windows=clock!.observe(state,Date.now(),goReady);});
  });
  $effect(()=>{
   const state=game,active=windows,stamp=now,id=viewer;
   if(!connected||busy||!ready||error||gathering||game.phase==='finished')return;
-  untrack(()=>{const choice=automaticChoice(state,id,active,stamp);if(!choice)return;const last=autoAttempts.get(choice.key)??-Infinity;if(performance.now()-last<300)return;autoAttempts.set(choice.key,performance.now());void act(choice.intent,choice.actor,true);});
+  untrack(()=>{const choice=automaticChoice(state,id,active,Date.now());if(!choice)return;const last=autoAttempts.get(choice.key)??-Infinity;if(performance.now()-last<300)return;autoAttempts.set(choice.key,performance.now());void act(choice.intent,choice.actor,true);});
  });
  $effect(()=>{
   if(!room||!viewer)return;
