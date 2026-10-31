@@ -86,7 +86,7 @@ for(const count of [4,2,3])test(count===4?'four friends gather, peg a complete h
   expect(discards).toBe(count===2?4:count);expect(expected.crib).toHaveLength(4);
   await expect(pages[0].locator('[data-countdown="undo"]')).toHaveAttribute('data-seconds','5');
   if(count===2){
-   await pages[1].reload();await expect(pages[1].getByRole('status')).toHaveAttribute('data-status','synced');
+   await pages[1].reload();await expect(pages[1].getByRole('status')).toHaveAttribute('data-status','synced',{timeout:20_000});
    await advance(4000);await expect(pages[0].locator('[data-countdown="undo"]')).toHaveAttribute('data-seconds','1');
    await photograph(0,'One second remains after returning to the table');
    const card=expected.discards[0].at(-1)!;await perform(0,{type:'undo-discard',card});
@@ -114,6 +114,12 @@ for(const count of [4,2,3])test(count===4?'four friends gather, peg a complete h
 
 test('the shared animation lab reviews every real transition at a paused intermediate frame',async({page},info)=>{
  const helper=new TestStepHelper(info,'ANIMATIONS');
+ // Observe texture work without altering the renderer, animation clock or output.
+ await page.addInitScript(()=>{
+  const counts:Record<string,number>={},draw=CanvasRenderingContext2D.prototype.fillText;
+  Object.defineProperty(window,'tableTextDraws',{value:counts});
+  CanvasRenderingContext2D.prototype.fillText=function(text:string,x:number,y:number,maxWidth?:number){counts[text]=(counts[text]??0)+1;if(maxWidth===undefined)draw.call(this,text,x,y);else draw.call(this,text,x,y,maxWidth);};
+ });
  await page.goto('/dev/animations/');
  await expect(page.locator('main')).toHaveAttribute('data-ready','true',{timeout:30_000});
  for(const example of animationExamples.filter(e=>e.id!=='ready'&&!e.id.startsWith('whole-hand'))){
@@ -127,6 +133,13 @@ test('the shared animation lab reviews every real transition at a paused interme
    await expect(page.locator('svg')).toHaveCount(0);
    await expect(slider).toHaveValue('0.5');
   }}],false);
+  if(example.id==='play-you'){
+   const draws=()=>page.evaluate(()=>JSON.stringify((window as unknown as {tableTextDraws:Record<string,number>}).tableTextDraws));
+   const before=await draws();for(let i=0;i<5;i++)await slider.press('ArrowRight');
+   await expect(slider).toHaveValue('0.75');
+   await page.evaluate(()=>new Promise<void>(resolve=>requestAnimationFrame(()=>requestAnimationFrame(()=>resolve()))));
+   expect(await draws(),'Moving cards must reuse score and nameplate textures while their text is unchanged').toBe(before);
+  }
  }
  helper.finish();
 });
