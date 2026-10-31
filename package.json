@@ -11,7 +11,9 @@
     "test:unit": "bun test tests/*.test.ts",
     "test:e2e": "playwright test",
     "test:e2e:update": "playwright test --update-snapshots",
-    "test:firebase": "firebase emulators:exec --project demo-cribbage --only firestore \"bun test tests/firebase\""
+    "test:firebase": "firebase emulators:exec --project demo-cribbage --only firestore \"bun test tests/firebase\"",
+    "music:compose": "bun scripts/compose-music.ts",
+    "music:render": "bun scripts/render-music.ts"
   },
   "dependencies": {
     "@threlte/core": "8.5.16",

@@ -1,0 +1,301 @@
+{
+  "title": "Baize at Dusk",
+  "subtitle": "Pastorale for flute, violin and violoncello",
+  "license": "GPL-3.0-only",
+  "key": "D major",
+  "meter": [
+    6,
+    8
+  ],
+  "quarterBpm": 84,
+  "measures": [
+    {
+      "chord": "D",
+      "flute": "F#5:2 E5:1 D5:2 A4:1",
+      "violin": "A3:3 F#4:3",
+      "cello": "D3:3 A2:3"
+    },
+    {
+      "chord": "G",
+      "flute": "B4:2 D5:1 G5:2 F#5:1",
+      "violin": "B3:3 D4:3",
+      "cello": "G2:3 D3:3"
+    },
+    {
+      "chord": "D/F#",
+      "flute": "E5:1 F#5:1 A5:1 F#5:2 D5:1",
+      "violin": "D4:3 A3:3",
+      "cello": "F#2:3 D3:3"
+    },
+    {
+      "chord": "A",
+      "flute": "C#5:3 E5:2 r:1",
+      "violin": "E4:3 C#4:3",
+      "cello": "A2:3 E3:3"
+    },
+    {
+      "chord": "Bm",
+      "flute": "D5:2 F#5:1 B5:2 A5:1",
+      "violin": "F#4:3 D4:3",
+      "cello": "B2:3 F#3:3"
+    },
+    {
+      "chord": "G",
+      "flute": "G5:2 F#5:1 E5:1 D5:2",
+      "violin": "D4:3 B3:3",
+      "cello": "G2:3 D3:3"
+    },
+    {
+      "chord": "Em",
+      "flute": "E5:2 G5:1 F#5:2 E5:1",
+      "violin": "B3:3 G4:3",
+      "cello": "E3:3 B2:3"
+    },
+    {
+      "chord": "A",
+      "flute": "C#5:3 r:1 E5:1 C#5:1",
+      "violin": "E4:3 G4:2 E4:1",
+      "cello": "A2:3 E3:3"
+    },
+    {
+      "chord": "D",
+      "flute": "F#5:1 A5:1 F#5:1 E5:1 D5:2",
+      "violin": "F#4:2 E4:1 D4:3",
+      "cello": "D3:3 A2:3"
+    },
+    {
+      "chord": "G",
+      "flute": "D5:2 G5:1 B5:2 A5:1",
+      "violin": "B3:3 D4:3",
+      "cello": "G2:3 D3:3"
+    },
+    {
+      "chord": "Bm",
+      "flute": "F#5:2 D5:1 B4:2 C#5:1",
+      "violin": "D4:3 F#4:3",
+      "cello": "B2:3 F#3:3"
+    },
+    {
+      "chord": "F#7",
+      "flute": "A#4:2 C#5:1 E5:2 F#5:1",
+      "violin": "C#4:3 A#3:3",
+      "cello": "F#2:3 C#3:3"
+    },
+    {
+      "chord": "G",
+      "flute": "G5:3 E5:1 D5:1 B4:1",
+      "violin": "B3:3 D4:3",
+      "cello": "G2:3 D3:3"
+    },
+    {
+      "chord": "D/A",
+      "flute": "A4:2 D5:1 F#5:2 E5:1",
+      "violin": "F#4:3 D4:3",
+      "cello": "A2:3 D3:3"
+    },
+    {
+      "chord": "A7",
+      "flute": "E5:2 G5:1 F#5:1 E5:1 C#5:1",
+      "violin": "G4:2 E4:1 C#4:3",
+      "cello": "A2:3 G3:3"
+    },
+    {
+      "chord": "D",
+      "flute": "D5:3 r:3",
+      "violin": "A3:3 F#4:2 r:1",
+      "cello": "D3:6"
+    },
+    {
+      "chord": "Bm",
+      "flute": "B4:6",
+      "violin": "F#4:2 D4:1 B3:2 D4:1",
+      "cello": "B2:3 F#3:3"
+    },
+    {
+      "chord": "F#m",
+      "flute": "r:3 C#5:3",
+      "violin": "C#4:2 F#4:1 A4:3",
+      "cello": "F#2:3 C#3:3"
+    },
+    {
+      "chord": "G",
+      "flute": "D5:6",
+      "violin": "G4:2 F#4:1 E4:2 D4:1",
+      "cello": "G2:3 D3:3"
+    },
+    {
+      "chord": "D/F#",
+      "flute": "r:3 D5:3",
+      "violin": "F#4:3 A4:2 r:1",
+      "cello": "F#2:3 D3:3"
+    },
+    {
+      "chord": "Em",
+      "flute": "B4:3 E5:3",
+      "violin": "G4:1 B4:1 G4:1 F#4:2 E4:1",
+      "cello": "E3:3 B2:3"
+    },
+    {
+      "chord": "Bm/F#",
+      "flute": "F#5:6",
+      "violin": "D4:2 F#4:1 B4:2 A4:1",
+      "cello": "F#2:3 B2:3"
+    },
+    {
+      "chord": "F#7",
+      "flute": "E5:3 C#5:3",
+      "violin": "G#4:1 A#4:1 C#5:1 E5:2 C#5:1",
+      "cello": "F#2:3 C#3:3"
+    },
+    {
+      "chord": "Bm",
+      "flute": "F#5:3 r:3",
+      "violin": "D5:3 B4:2 r:1",
+      "cello": "B2:3 F#3:3"
+    },
+    {
+      "chord": "G",
+      "flute": "D5:6",
+      "violin": "B4:2 G4:1 D4:3",
+      "cello": "G2:3 D3:3"
+    },
+    {
+      "chord": "A",
+      "flute": "E5:6",
+      "violin": "C#4:2 E4:1 A4:2 G4:1",
+      "cello": "A2:3 E3:3"
+    },
+    {
+      "chord": "D",
+      "flute": "A5:3 F#5:3",
+      "violin": "F#4:2 A4:1 D5:2 C#5:1",
+      "cello": "D3:3 A2:3"
+    },
+    {
+      "chord": "Bm",
+      "flute": "D5:6",
+      "violin": "B4:3 F#4:3",
+      "cello": "B2:3 F#3:3"
+    },
+    {
+      "chord": "Em",
+      "flute": "G5:3 E5:3",
+      "violin": "E4:2 G4:1 B4:2 A4:1",
+      "cello": "E3:3 B2:3"
+    },
+    {
+      "chord": "G",
+      "flute": "B4:3 D5:3",
+      "violin": "G4:2 F#4:1 E4:2 D4:1",
+      "cello": "G2:3 D3:3"
+    },
+    {
+      "chord": "A7",
+      "flute": "E5:6",
+      "violin": "C#4:2 E4:1 G4:2 E4:1",
+      "cello": "A2:3 G3:3"
+    },
+    {
+      "chord": "A",
+      "flute": "E5:3 C#5:2 r:1",
+      "violin": "C#5:3 r:3",
+      "cello": "A2:6"
+    },
+    {
+      "chord": "D",
+      "flute": "A5:2 F#5:1 E5:2 D5:1",
+      "violin": "A3:3 F#4:3",
+      "cello": "D3:3 A2:3"
+    },
+    {
+      "chord": "G",
+      "flute": "D5:2 G5:1 B5:2 A5:1",
+      "violin": "B3:3 D4:3",
+      "cello": "G2:3 D3:3"
+    },
+    {
+      "chord": "D/F#",
+      "flute": "E5:1 F#5:1 A5:1 F#5:2 D5:1",
+      "violin": "D4:3 A3:3",
+      "cello": "F#2:3 D3:3"
+    },
+    {
+      "chord": "A",
+      "flute": "C#5:3 E5:2 r:1",
+      "violin": "E4:3 C#4:3",
+      "cello": "A2:3 E3:3"
+    },
+    {
+      "chord": "Bm",
+      "flute": "D5:2 F#5:1 B5:2 A5:1",
+      "violin": "F#4:3 D4:3",
+      "cello": "B2:3 F#3:3"
+    },
+    {
+      "chord": "G",
+      "flute": "G5:2 F#5:1 E5:1 D5:2",
+      "violin": "D4:3 B3:3",
+      "cello": "G2:3 D3:3"
+    },
+    {
+      "chord": "Em",
+      "flute": "E5:2 G5:1 F#5:2 E5:1",
+      "violin": "B3:3 G4:3",
+      "cello": "E3:3 B2:3"
+    },
+    {
+      "chord": "A",
+      "flute": "C#5:3 r:1 E5:1 C#5:1",
+      "violin": "E4:3 G4:2 E4:1",
+      "cello": "A2:3 E3:3"
+    },
+    {
+      "chord": "D",
+      "flute": "A5:1 F#5:1 E5:1 D5:2 A4:1",
+      "violin": "F#4:2 E4:1 D4:3",
+      "cello": "D3:3 A2:3"
+    },
+    {
+      "chord": "G",
+      "flute": "D5:2 G5:1 B5:2 A5:1",
+      "violin": "B3:3 D4:3",
+      "cello": "G2:3 D3:3"
+    },
+    {
+      "chord": "Bm",
+      "flute": "F#5:2 D5:1 B4:2 C#5:1",
+      "violin": "D4:3 F#4:3",
+      "cello": "B2:3 F#3:3"
+    },
+    {
+      "chord": "F#7",
+      "flute": "A#4:2 C#5:1 E5:2 F#5:1",
+      "violin": "C#4:3 A#3:3",
+      "cello": "F#2:3 C#3:3"
+    },
+    {
+      "chord": "G",
+      "flute": "B5:2 A5:1 G5:2 F#5:1",
+      "violin": "B3:3 D4:3",
+      "cello": "G2:3 D3:3"
+    },
+    {
+      "chord": "D/A",
+      "flute": "A4:2 D5:1 F#5:2 E5:1",
+      "violin": "F#4:3 D4:3",
+      "cello": "A2:3 D3:3"
+    },
+    {
+      "chord": "A7",
+      "flute": "E5:2 G5:1 F#5:1 E5:1 C#5:1",
+      "violin": "G4:2 E4:1 C#4:3",
+      "cello": "A2:3 G3:3"
+    },
+    {
+      "chord": "D",
+      "flute": "D5:3 r:3",
+      "violin": "A3:3 F#4:2 r:1",
+      "cello": "D3:6"
+    }
+  ]
+}

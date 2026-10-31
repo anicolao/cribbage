@@ -1,5 +1,8 @@
 <script lang="ts">
- import {onMount} from 'svelte';
+ import {onMount,untrack} from 'svelte';
+ import {preferences,settingsOpen,ANIMATION_RATES} from './settings';
+ import {tableAudio} from './audio/engine';
+ import type {Plan} from './presentation/motion';
  import TableView from './TableView.svelte';
  import {animationExamples,buildTimeline,timelineAt} from './presentation/catalog';
  let ready=$state(false);
@@ -12,12 +15,17 @@
  function choosePreview(){const url=new URL(location.href);if(preview==='ipad')url.searchParams.set('preview','ipad');else url.searchParams.delete('preview');history.replaceState(null,'',url);requestAnimationFrame(()=>requestAnimationFrame(()=>resetKey++));}
  const scenarios=animationExamples;
  const active=$derived(scenarios.find(s=>s.id===scenario)??scenarios[0]);
- const timeline=$derived(buildTimeline(active,viewer));
+ const hint=$derived(/^(auto-|forced-fit$|last-card$|go$)/.test(active.id)&&$preferences.autoSeconds!==3?($preferences.autoSeconds===null?'Manual play. Replay shows the action after a short pause.':$preferences.autoSeconds===0?'The turn continues as soon as the animation settles.':active.hint.replaceAll('three-second',`${$preferences.autoSeconds}-second`).replaceAll('three seconds',`${$preferences.autoSeconds} seconds`)):active.hint);
+ const autoMs=$derived($preferences.autoSeconds===null?null:$preferences.autoSeconds*1000),animationRate=$derived(ANIMATION_RATES[$preferences.animationSpeed]);
+ const timeline=$derived(buildTimeline(active,viewer,{autoMs,animationRate}));
  const current=$derived(timelineAt(timeline,time));
- const moving=$derived(!paused&&time<timeline.duration);
+ const moving=$derived(!paused&&!$settingsOpen&&time<timeline.duration);
+ let soundPlan:Plan|undefined,soundTime=0;
+ $effect(()=>{const plan=current.plan,t=current.time,playing=moving;untrack(()=>{if(plan!==soundPlan){tableAudio.resetCues();soundPlan=plan;soundTime=-.001;}tableAudio.review(plan,soundTime,t,playing);soundTime=t;});});
+ $effect(()=>{const duration=timeline.duration;if(time>duration)time=duration;});
  function reset(play=false){time=play?0:timeline.duration;paused=!play;}
  function choose(){viewer=active.viewer;time=0;paused=true;const url=new URL(location.href);url.searchParams.set('scenario',scenario);history.replaceState(null,'',url);}
- onMount(()=>{const params=new URLSearchParams(location.search);if(params.get('preview')==='ipad'){preview='ipad';minimal=true;}const id=params.get('scenario');if(id&&scenarios.some(s=>s.id===id)){scenario=id;viewer=scenarios.find(s=>s.id===id)!.viewer;}let last=performance.now(),frame=0;function step(now:number){if(!paused)time=Math.min(timeline.duration,time+Math.min((now-last)/1000,.1)*speed);last=now;frame=requestAnimationFrame(step);}frame=requestAnimationFrame(step);return()=>cancelAnimationFrame(frame);});
+ onMount(()=>{const params=new URLSearchParams(location.search);if(params.get('preview')==='ipad'){preview='ipad';minimal=true;}const id=params.get('scenario');if(id&&scenarios.some(s=>s.id===id)){scenario=id;viewer=scenarios.find(s=>s.id===id)!.viewer;}let last=performance.now(),frame=0;function step(now:number){if(!paused&&!$settingsOpen)time=Math.min(timeline.duration,time+Math.min((now-last)/1000,.1)*speed);last=now;frame=requestAnimationFrame(step);}frame=requestAnimationFrame(step);return()=>cancelAnimationFrame(frame);});
 </script>
 <svelte:head><title>Cribbage · Animation room</title><meta name="description" content="A Threlte cribbage animation and material study, inspired by a warm wooden tabletop."/></svelte:head>
 <header class="workspace-toolbar" aria-label="Preview tools">
@@ -31,7 +39,7 @@
 
   <section><div class="section-heading"><span>Motion</span><span class="status"><i class:moving></i>{paused?'Paused':moving?'Playing':'Settled'}</span></div>
    <label for="scenario">Scene</label><select id="scenario" bind:value={scenario} onchange={choose}>{#each scenarios as s}<option value={s.id}>{s.name}</option>{/each}</select>
-   <p class="hint">{active.hint}</p>
+   <p class="hint">{hint}</p>
    <label for="perspective">Perspective</label><select id="perspective" bind:value={viewer}>{#each current.state.players as player}<option value={player.id}>{player.name}</option>{/each}</select>
    <label for="timeline">Timeline <span>{time.toFixed(2)} / {timeline.duration.toFixed(2)} s</span></label><input id="timeline" type="range" min="0" max={Math.max(.01,timeline.duration)} step=".05" bind:value={time} oninput={()=>paused=true}/>
    <p class="hint">These are the real game’s transitions, driven by legal player intents. Native-resolution rendering and lighting are shared.</p>

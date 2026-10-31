@@ -1,4 +1,5 @@
 <script lang="ts">
+ import {preferences,settingsOpen} from './settings';
  import {onMount,untrack} from 'svelte';
  import TableView from './TableView.svelte';
  import {initialState,legalCards,needsDiscard,isCribCount,cribCards,type State,type Event,type Intent} from './game/engine';
@@ -28,14 +29,14 @@
  }
  onMount(()=>{void initialize();const ticker=setInterval(()=>now=Date.now(),100);return()=>clearInterval(ticker);});
  $effect(()=>{
-  const state=game,key=`cribbage:choice-windows:${import.meta.env.BASE_URL}:${room}:${viewer}`,stamp=Math.max(now,Date.now()),goReady=ready&&!animating&&renderedRevision===game.revision;
+  const state=game,key=`cribbage:choice-windows:${import.meta.env.BASE_URL}:${room}:${viewer}`,stamp=Math.max(now,Date.now()),goReady=ready&&!animating&&renderedRevision===game.revision,autoMs=$settingsOpen?null:$preferences.autoSeconds===null?null:$preferences.autoSeconds*1000;
   if(!room||!viewer||!connected)return;
-  untrack(()=>{if(key!==clockKey){clockKey=key;clock=new TableClock(localStorage,key);}windows=clock!.observe(state,stamp,goReady);});
+  untrack(()=>{if(key!==clockKey){clockKey=key;clock=new TableClock(localStorage,key);}windows=clock!.observe(state,stamp,goReady,autoMs);});
  });
  $effect(()=>{
-  const state=game,active=windows,stamp=Math.max(now,Date.now()),id=viewer,settled=!animating&&renderedRevision===game.revision;
+  const state=game,active=windows,stamp=Math.max(now,Date.now()),id=viewer,dialog=$settingsOpen,settled=!animating&&renderedRevision===game.revision;
   if(!connected||busy||!ready||error||gathering||game.phase==='finished')return;
-  untrack(()=>{const choice=automaticChoice(state,id,active,stamp);if(!choice||choice.intent.type!=='accept-crib'&&!settled)return;const last=autoAttempts.get(choice.key)??-Infinity;if(performance.now()-last<300)return;autoAttempts.set(choice.key,performance.now());void act(choice.intent,choice.actor,true);});
+  untrack(()=>{const choice=automaticChoice(state,id,active,stamp);if(!choice||choice.intent.type!=='accept-crib'&&(!settled||dialog&&choice.actor===id))return;const last=autoAttempts.get(choice.key)??-Infinity;if(performance.now()-last<300)return;autoAttempts.set(choice.key,performance.now());void act(choice.intent,choice.actor,true);});
  });
  $effect(()=>{
   if(!room||!viewer)return;

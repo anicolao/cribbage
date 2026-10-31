@@ -1,4 +1,6 @@
 <script lang="ts">
+ import {tableAudio} from '../audio/engine';
+ import {retimePlan,retimedStart} from './timing';
  import {useTask,useThrelte} from '@threlte/core';
  import {interactivity} from '@threlte/extras';
  import {onMount,untrack} from 'svelte';
@@ -9,11 +11,11 @@
  import Scene from '../Scene.svelte';
  import CardTelemetry from './CardTelemetry.svelte';
  import type {CardControl} from './frame';
- let {game,viewer,pegOrigins,review,automaticCard,hovered=null,pressed=null,respectReducedMotion=true,onFrame=()=>{},onMotion=()=>{},onSettled=()=>{},onHover=()=>{},onPress=()=>{},onCard=()=>{},onControls=()=>{},onReady=()=>{},settings}:{game:State;viewer:string;automaticCard?:string;pegOrigins?:Record<string,number>;review?:{plan:Plan;time:number;interaction?:{card:string;hover:number;press:number}};hovered?:string|null;pressed?:string|null;respectReducedMotion?:boolean;onFrame?:(frame:Frame,idle:boolean)=>void;onMotion?:(active:boolean,kind:string,duration:number)=>void;onSettled?:(revision:number)=>void;onHover?:(id:string|null)=>void;onPress?:(id:string|null)=>void;onCard?:(card:string)=>void;onControls?:(controls:CardControl[])=>void;onReady?:()=>void;settings:{light:number;fov:number;resetKey:number;preset:string;faceMargin:number;backMargin:number;lightX:number;lightY:number;lightZ:number;onCameraChange:(info:{elevation:number;distance:number})=>void}}=$props();
+ let {game,viewer,pegOrigins,review,automaticCard,animationRate=1,hovered=null,pressed=null,respectReducedMotion=true,onFrame=()=>{},onMotion=()=>{},onSettled=()=>{},onHover=()=>{},onPress=()=>{},onCard=()=>{},onControls=()=>{},onReady=()=>{},settings}:{game:State;viewer:string;animationRate?:number;automaticCard?:string;pegOrigins?:Record<string,number>;review?:{plan:Plan;time:number;interaction?:{card:string;hover:number;press:number}};hovered?:string|null;pressed?:string|null;respectReducedMotion?:boolean;onFrame?:(frame:Frame,idle:boolean)=>void;onMotion?:(active:boolean,kind:string,duration:number)=>void;onSettled?:(revision:number)=>void;onHover?:(id:string|null)=>void;onPress?:(id:string|null)=>void;onCard?:(card:string)=>void;onControls?:(controls:CardControl[])=>void;onReady?:()=>void;settings:{light:number;fov:number;resetKey:number;preset:string;faceMargin:number;backMargin:number;lightX:number;lightY:number;lightZ:number;onCameraChange:(info:{elevation:number;distance:number})=>void}}=$props();
  interactivity();
  const {invalidate,renderer}=useThrelte();
  let frame=$state.raw<Frame>(untrack(()=>buildFrame(game,viewer,undefined,pegOrigins))),base=untrack(()=>frame);
- let previous=untrack(()=>game),previousViewer=untrack(()=>viewer),plan:Plan|undefined,start=0,reduced=false;
+ let previous=untrack(()=>game),previousViewer=untrack(()=>viewer),plan:Plan|undefined,canonical:Plan|undefined,start=0,reduced=false,activeRate=untrack(()=>animationRate);
  let major=$state(false);
  const levels=new Map<string,{hover:number;press:number;hFrom:number;pFrom:number;hTarget:number;pTarget:number;hStart:number;pStart:number}>();
  let lastMotion='',lastSettled=-1,motionName='ready',motionSeconds=0;
@@ -31,14 +33,14 @@
    const h=card.id===activeHover&&card.zone==='hand'?1:card.id===automaticCard&&card.zone==='hand'?.35:0,p=card.id===activePress&&card.zone==='hand'?1:0;
    if(h!==level.hTarget){level.hFrom=level.hover;level.hTarget=h;level.hStart=now;}
    if(p!==level.pTarget){level.pFrom=level.press;level.pTarget=p;level.pStart=now;}
-   level.hover=respectReducedMotion&&reduced?h:interactionLevel(level.hFrom,h,(now-level.hStart)/1000);
-   level.press=respectReducedMotion&&reduced?p:interactionLevel(level.pFrom,p,(now-level.pStart)/1000);
+   level.hover=respectReducedMotion&&reduced?h:interactionLevel(level.hFrom,h,(now-level.hStart)/1000*activeRate);
+   level.press=respectReducedMotion&&reduced?p:interactionLevel(level.pFrom,p,(now-level.pStart)/1000*activeRate);
    interactionActive ||= level.hover!==h||level.press!==p;levels.set(card.id,level);
    return interactionPose(card,level.hover,level.press);
   });
   frame={...base,cards};
   const idle=!major&&!interactionActive;
-  const signature=`${major}:${review?.plan.kind??motionName}`;
+  const signature=`${major}:${review?.plan.kind??motionName}:${review?.plan.duration??motionSeconds}`;
   if(signature!==lastMotion){lastMotion=signature;onMotion(major,review?.plan.kind??motionName,review?.plan.duration??motionSeconds);}
   if(!major&&base.revision!==lastSettled){lastSettled=base.revision;onSettled(base.revision);}
   onFrame(frame,idle);invalidate();return interactionActive;
@@ -50,12 +52,13 @@
    if(next===previous&&nextViewer===previousViewer)return;
    const hydrate=nextViewer!==previousViewer||(previous.revision===0&&next.revision>1)||next.revision<previous.revision;
    if(next.revision===previous.revision&&!hydrate){previous=next;return;}
-   plan=hydrate||respectReducedMotion&&reduced?undefined:planMotion(previous,next,nextViewer,frame,origins);
+   canonical=hydrate||respectReducedMotion&&reduced?undefined:planMotion(previous,next,nextViewer,frame,origins);plan=canonical?retimePlan(canonical,activeRate):undefined;
    if(!plan){base=buildFrame(next,nextViewer,frame,origins);major=false;}
    previous=next;previousViewer=nextViewer;start=performance.now();lastSettled=-1;motionName=plan?.kind??'ready';motionSeconds=plan?.duration??0;
-   interactionActive=publish(start);
+   interactionActive=publish(start);if(plan)tableAudio.plan(plan);
   });
  });
+ $effect(()=>{const rate=animationRate;untrack(()=>{const now=performance.now();if(plan&&canonical){start=retimedStart(start,now,activeRate,rate);plan=retimePlan(canonical,rate);motionSeconds=plan.duration;tableAudio.plan(plan,(now-start)/1000,false);}activeRate=rate;interactionActive=publish(now);});});
  $effect(()=>{hovered;pressed;automaticCard;untrack(()=>{interactionActive=publish(performance.now());});});
  let lastTick=performance.now(),interactionActive=false;
  useTask(()=>{const now=performance.now(),dt=Math.min(.1,(now-lastTick)/1000);lastTick=now;if(plan||interactionActive){interactionActive=publish(now,dt);}}, {autoInvalidate:false});

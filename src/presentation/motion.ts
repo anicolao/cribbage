@@ -8,7 +8,7 @@ export const MOTION={join:.8,deal:1.05,dealInterval:.085,discard:1.05,cut:1.05,p
 export type MotionKind='ready'|'join'|'deal'|'discard'|'undo'|'cut'|'play'|'go'|'count'|'crib'|'next-hand'|'win';
 type Segment={from:Pose;to:Pose;start:number;duration:number;lift:number};
 type Track<T>={item:T;segments:Segment[];remove?:boolean;appear?:number};
-export type Plan={from:Frame;target:Frame;kind:MotionKind;duration:number;cards:Track<CardVisual>[];plates:Track<PlateVisual>[];pegs:Track<PegVisual>[];counts:Track<CountVisual>[];awards:Track<AwardVisual>[]};
+export type Plan={from:Frame;target:Frame;kind:MotionKind;duration:number;rate?:number;cards:Track<CardVisual>[];plates:Track<PlateVisual>[];pegs:Track<PegVisual>[];counts:Track<CountVisual>[];awards:Track<AwardVisual>[]};
 const smooth=(p:number)=>p<.5?4*p*p*p:1-(-2*p+2)**3/2;
 const clamp=(p:number)=>Math.max(0,Math.min(1,p));
 const clonePose=(p:Pose):Pose=>({...p,position:[...p.position]});
@@ -120,7 +120,7 @@ function sampleTrack<T extends Pose>(track:Track<T>,time:number):T|undefined{
 export function sampleMotion(plan:Plan,time:number):Frame{
  if(time>=plan.duration)return plan.target;
  const sample=<T extends Pose>(tracks:Track<T>[])=>tracks.map(t=>sampleTrack(t,time)).filter((t):t is T=>!!t);
- const status=time<.12?{...plan.from.status,opacity:1-time/.12}:{...plan.target.status,opacity:Math.min(1,(time-.12)/.18)};
+ const statusTime=time*(plan.rate??1),status=statusTime<.12?{...plan.from.status,opacity:1-statusTime/.12}:{...plan.target.status,opacity:Math.min(1,(statusTime-.12)/.18)};
  const frame:Frame={status,revision:plan.target.revision,cards:sample(plan.cards),plates:sample(plan.plates),pegs:sample(plan.pegs),counts:sample(plan.counts),awards:sample(plan.awards)};
  // Update engraved scores when their peg lands, not when it starts flying.
  frame.plates=frame.plates.map(p=>{const old=plan.from.plates.find(o=>o.id===p.id);const peg=plan.pegs.find(t=>t.item.owner===p.id&&t.segments.length);const end=peg?.segments.at(-1);return old&&end&&time<end.start+end.duration?{...p,score:old.score}:p;});

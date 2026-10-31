@@ -1,3 +1,4 @@
+import {retimePlan} from './timing';
 import pairedAces from './fixtures/paired-aces.json' with {type:'json'};
 import {nextPegOrigins} from './replay';
 import {initialState,apply,needsDiscard,cribComplete,legalCards,discardActor,isCribCount,type State,type Intent} from '../game/engine';
@@ -72,27 +73,30 @@ function catalogue(){
  return examples;
 }
 export const animationExamples=catalogue();
-export type Timeline={plans:{plan:Plan;before:State;state:State;intent:Intent;start:number;hold:number}[];duration:number;example:Example;viewer:string};
-export function buildTimeline(example:Example,viewer:string):Timeline{
+export type Timeline={plans:{plan:Plan;before:State;state:State;intent:Intent;start:number;hold:number}[];duration:number;example:Example;viewer:string;autoMs:number|null;animationRate:number};
+export function buildTimeline(example:Example,viewer:string,options:{autoMs?:number|null;animationRate?:number}={}):Timeline{
+ const autoMs=options.autoMs===undefined?CHOICE_WINDOW_MS:options.autoMs,rate=options.animationRate??1;
  let previous=buildFrame(example.steps[0].before,viewer,undefined,example.steps[0].pegOrigins),duration=0,fullAt=cribComplete(example.steps[0].before)?0:-1;
  const plans=example.steps.map(step=>{
   const automatic=automaticIntent(step.before),scheduled=automatic?.type===step.intent.type&&(automatic.type!=='play'||step.intent.type==='play'&&automatic.card===step.intent.card);
-  let hold=step.delay??(scheduled?(step.before.players[step.before.turn].bot?BOT_DELAY_MS:CHOICE_WINDOW_MS)/1000:0);
+  let hold=step.delay??(scheduled?(step.before.players[step.before.turn].bot?BOT_DELAY_MS:autoMs??CHOICE_WINDOW_MS)/1000:0);
+  if(step.delay===CHOICE_WINDOW_MS/1000&&scheduled)hold=(autoMs??CHOICE_WINDOW_MS)/1000;
   if(step.intent.type==='accept-crib')hold=Math.max(hold,fullAt+CHOICE_WINDOW_MS/1000-duration);
-  const start=duration+hold,plan=planMotion(step.before,step.after,viewer,previous);previous=plan.target;
+  const start=duration+hold,plan=retimePlan(planMotion(step.before,step.after,viewer,previous),rate);previous=plan.target;
   if(cribComplete(step.after)&&!cribComplete(step.before))fullAt=start;
   if(!cribComplete(step.after))fullAt=-1;
-  duration=start+Math.max(plan.duration,example.interaction?1.8:0)+.15;
+  duration=start+Math.max(plan.duration,example.interaction?1.8/rate:0)+.15;
   return {plan,before:step.before,state:step.after,intent:step.intent,start,hold};
  });
- return {plans,viewer,duration:example.id==='ready'?0:duration,example};
+ return {plans,viewer,duration:example.id==='ready'?0:duration,example,autoMs,animationRate:rate};
 }
 export function timelineAt(timeline:Timeline,time:number){
  const future=timeline.plans.find(p=>p.start>time&&p.start-p.hold<=time);
  const entry=future??timeline.plans.findLast(p=>p.start<=time)??timeline.plans[0];
  const local=Math.max(0,time-entry.start),state=future?entry.before:entry.state;
  const hand=entry.plan.target.cards.find(c=>c.zone==='hand'&&c.owner===timeline.viewer);
- const interaction=timeline.example.interaction?{card:hand?.id??'',hover:local<1.25?interactionLevel(0,1,local-.25):interactionLevel(1,0,local-1.25),press:timeline.example.interaction==='press'?(local<.95?interactionLevel(0,1,local-.6):interactionLevel(1,0,local-.95)):0}:undefined;
+ const gesture=local*timeline.animationRate;
+ const interaction=timeline.example.interaction?{card:hand?.id??'',hover:gesture<1.25?interactionLevel(0,1,gesture-.25):interactionLevel(1,0,gesture-1.25),press:timeline.example.interaction==='press'?(gesture<.95?interactionLevel(0,1,gesture-.6):interactionLevel(1,0,gesture-.95)):0}:undefined;
  const windows:Windows={discards:state.pendingDiscards};
  if(cribComplete(state)){
   const filled=timeline.plans.findLast(p=>p.start<=time&&cribComplete(p.state)&&!cribComplete(p.before));
@@ -101,7 +105,7 @@ export function timelineAt(timeline:Timeline,time:number){
  const automatic=automaticIntent(state);
  if(automatic){
   const passing=timeline.plans.find(p=>p.before.revision===state.revision&&p.intent.type===automatic.type&&(automatic.type!=='play'||p.intent.type==='play'&&p.intent.card===automatic.card));
-  if(passing&&time>=passing.start-passing.hold){const pending={seat:state.turn,revision:state.revision,deadline:passing.start*1000};if(automatic.type==='go')windows.go=pending;else windows.turn={...pending,intent:automatic};}
+  if(passing&&time>=passing.start-passing.hold){const duration=state.players[state.turn].bot?BOT_DELAY_MS:timeline.autoMs,pending={seat:state.turn,revision:state.revision,deadline:duration===null?Infinity:passing.start*1000,duration};if(automatic.type==='go')windows.go=pending;else windows.turn={...pending,intent:automatic};}
  }
  return {...entry,state,time:local,interaction,action:countdownAction(state,timeline.viewer,windows,time*1000)};
 }
