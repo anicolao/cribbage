@@ -98,11 +98,19 @@ Viewpoint: **Lab**
 
 - [x] Shared full-quality renderer; paused legal transition, native canvas, no SVG interaction overlay
 
+## Cut automatically
+
+Viewpoint: **Lab**
+
+![Cut automatically](./screenshots/012-motion-auto-cut-lab-linux.png)
+
+- [x] Shared full-quality renderer; paused legal transition, native canvas, no SVG interaction overlay
+
 ## Cut and turn the starter
 
 Viewpoint: **Lab**
 
-![Cut and turn the starter](./screenshots/012-motion-cut-lab-linux.png)
+![Cut and turn the starter](./screenshots/013-motion-cut-lab-linux.png)
 
 - [x] Shared full-quality renderer; paused legal transition, native canvas, no SVG interaction overlay
 
@@ -110,7 +118,7 @@ Viewpoint: **Lab**
 
 Viewpoint: **Lab**
 
-![Rowan plays a card](./screenshots/013-motion-play-rowan-lab-linux.png)
+![Rowan plays a card](./screenshots/014-motion-play-rowan-lab-linux.png)
 
 - [x] Shared full-quality renderer; paused legal transition, native canvas, no SVG interaction overlay
 
@@ -118,7 +126,7 @@ Viewpoint: **Lab**
 
 Viewpoint: **Lab**
 
-![Jules plays a card](./screenshots/014-motion-play-jules-lab-linux.png)
+![Jules plays a card](./screenshots/015-motion-play-jules-lab-linux.png)
 
 - [x] Shared full-quality renderer; paused legal transition, native canvas, no SVG interaction overlay
 
@@ -126,7 +134,7 @@ Viewpoint: **Lab**
 
 Viewpoint: **Lab**
 
-![Ada plays a card](./screenshots/015-motion-play-ada-lab-linux.png)
+![Ada plays a card](./screenshots/016-motion-play-ada-lab-linux.png)
 
 - [x] Shared full-quality renderer; paused legal transition, native canvas, no SVG interaction overlay
 
@@ -134,7 +142,7 @@ Viewpoint: **Lab**
 
 Viewpoint: **Lab**
 
-![You play a card](./screenshots/016-motion-play-you-lab-linux.png)
+![You play a card](./screenshots/017-motion-play-you-lab-linux.png)
 
 - [x] Shared full-quality renderer; paused legal transition, native canvas, no SVG interaction overlay
 
@@ -142,7 +150,15 @@ Viewpoint: **Lab**
 
 Viewpoint: **Lab**
 
-![Score and leapfrog a peg](./screenshots/017-motion-peg-lab-linux.png)
+![Score and leapfrog a peg](./screenshots/018-motion-peg-lab-linux.png)
+
+- [x] Shared full-quality renderer; paused legal transition, native canvas, no SVG interaction overlay
+
+## Only one card fits
+
+Viewpoint: **Lab**
+
+![Only one card fits](./screenshots/019-motion-forced-fit-lab-linux.png)
 
 - [x] Shared full-quality renderer; paused legal transition, native canvas, no SVG interaction overlay
 
@@ -150,7 +166,15 @@ Viewpoint: **Lab**
 
 Viewpoint: **Lab**
 
-![Go · play automatically after three seconds](./screenshots/018-motion-go-lab-linux.png)
+![Go · play automatically after three seconds](./screenshots/020-motion-go-lab-linux.png)
+
+- [x] Shared full-quality renderer; paused legal transition, native canvas, no SVG interaction overlay
+
+## Last card plays itself
+
+Viewpoint: **Lab**
+
+![Last card plays itself](./screenshots/021-motion-last-card-lab-linux.png)
 
 - [x] Shared full-quality renderer; paused legal transition, native canvas, no SVG interaction overlay
 
@@ -158,7 +182,15 @@ Viewpoint: **Lab**
 
 Viewpoint: **Lab**
 
-![Finish pegging and begin counting](./screenshots/019-motion-count-start-lab-linux.png)
+![Finish pegging and begin counting](./screenshots/022-motion-count-start-lab-linux.png)
+
+- [x] Shared full-quality renderer; paused legal transition, native canvas, no SVG interaction overlay
+
+## Peg automatically
+
+Viewpoint: **Lab**
+
+![Peg automatically](./screenshots/023-motion-auto-count-lab-linux.png)
 
 - [x] Shared full-quality renderer; paused legal transition, native canvas, no SVG interaction overlay
 
@@ -166,7 +198,7 @@ Viewpoint: **Lab**
 
 Viewpoint: **Lab**
 
-![Count Rowan’s hand](./screenshots/020-motion-count-rowan-lab-linux.png)
+![Count Rowan’s hand](./screenshots/024-motion-count-rowan-lab-linux.png)
 
 - [x] Shared full-quality renderer; paused legal transition, native canvas, no SVG interaction overlay
 
@@ -174,7 +206,7 @@ Viewpoint: **Lab**
 
 Viewpoint: **Lab**
 
-![Count Jules’s hand](./screenshots/021-motion-count-jules-lab-linux.png)
+![Count Jules’s hand](./screenshots/025-motion-count-jules-lab-linux.png)
 
 - [x] Shared full-quality renderer; paused legal transition, native canvas, no SVG interaction overlay
 
@@ -182,7 +214,7 @@ Viewpoint: **Lab**
 
 Viewpoint: **Lab**
 
-![Count Ada’s hand](./screenshots/022-motion-count-ada-lab-linux.png)
+![Count Ada’s hand](./screenshots/026-motion-count-ada-lab-linux.png)
 
 - [x] Shared full-quality renderer; paused legal transition, native canvas, no SVG interaction overlay
 
@@ -190,7 +222,7 @@ Viewpoint: **Lab**
 
 Viewpoint: **Lab**
 
-![Count You’s hand](./screenshots/023-motion-count-you-lab-linux.png)
+![Count You’s hand](./screenshots/027-motion-count-you-lab-linux.png)
 
 - [x] Shared full-quality renderer; paused legal transition, native canvas, no SVG interaction overlay
 
@@ -198,7 +230,7 @@ Viewpoint: **Lab**
 
 Viewpoint: **Lab**
 
-![Reveal and count the crib](./screenshots/024-motion-crib-lab-linux.png)
+![Reveal and count the crib](./screenshots/028-motion-crib-lab-linux.png)
 
 - [x] Shared full-quality renderer; paused legal transition, native canvas, no SVG interaction overlay
 
@@ -206,7 +238,15 @@ Viewpoint: **Lab**
 
 Viewpoint: **Lab**
 
-![Finish the crib](./screenshots/025-motion-crib-close-lab-linux.png)
+![Finish the crib](./screenshots/029-motion-crib-close-lab-linux.png)
+
+- [x] Shared full-quality renderer; paused legal transition, native canvas, no SVG interaction overlay
+
+## Deal the next hand automatically
+
+Viewpoint: **Lab**
+
+![Deal the next hand automatically](./screenshots/030-motion-auto-deal-lab-linux.png)
 
 - [x] Shared full-quality renderer; paused legal transition, native canvas, no SVG interaction overlay
 
@@ -214,7 +254,7 @@ Viewpoint: **Lab**
 
 Viewpoint: **Lab**
 
-![Collect, shuffle and deal again](./screenshots/026-motion-next-hand-lab-linux.png)
+![Collect, shuffle and deal again](./screenshots/031-motion-next-hand-lab-linux.png)
 
 - [x] Shared full-quality renderer; paused legal transition, native canvas, no SVG interaction overlay
 
@@ -222,7 +262,7 @@ Viewpoint: **Lab**
 
 Viewpoint: **Lab**
 
-![Winning peg and nameplate](./screenshots/027-motion-win-lab-linux.png)
+![Winning peg and nameplate](./screenshots/032-motion-win-lab-linux.png)
 
 - [x] Shared full-quality renderer; paused legal transition, native canvas, no SVG interaction overlay
 
@@ -230,7 +270,7 @@ Viewpoint: **Lab**
 
 Viewpoint: **Lab**
 
-![Two players · six cards each](./screenshots/028-motion-deal-2-lab-linux.png)
+![Two players · six cards each](./screenshots/033-motion-deal-2-lab-linux.png)
 
 - [x] Shared full-quality renderer; paused legal transition, native canvas, no SVG interaction overlay
 
@@ -238,7 +278,7 @@ Viewpoint: **Lab**
 
 Viewpoint: **Lab**
 
-![Undo the first of two crib cards](./screenshots/029-motion-undo-first-lab-linux.png)
+![Undo the first of two crib cards](./screenshots/034-motion-undo-first-lab-linux.png)
 
 - [x] Shared full-quality renderer; paused legal transition, native canvas, no SVG interaction overlay
 
@@ -246,7 +286,7 @@ Viewpoint: **Lab**
 
 Viewpoint: **Lab**
 
-![Two players · first crib card](./screenshots/030-motion-two-discard-1-lab-linux.png)
+![Two players · first crib card](./screenshots/035-motion-two-discard-1-lab-linux.png)
 
 - [x] Shared full-quality renderer; paused legal transition, native canvas, no SVG interaction overlay
 
@@ -254,7 +294,7 @@ Viewpoint: **Lab**
 
 Viewpoint: **Lab**
 
-![Two players · second crib card](./screenshots/031-motion-two-discard-2-lab-linux.png)
+![Two players · second crib card](./screenshots/036-motion-two-discard-2-lab-linux.png)
 
 - [x] Shared full-quality renderer; paused legal transition, native canvas, no SVG interaction overlay
 
@@ -262,7 +302,7 @@ Viewpoint: **Lab**
 
 Viewpoint: **Lab**
 
-![Undo while the crib is ready](./screenshots/032-motion-undo-ready-lab-linux.png)
+![Undo while the crib is ready](./screenshots/037-motion-undo-ready-lab-linux.png)
 
 - [x] Shared full-quality renderer; paused legal transition, native canvas, no SVG interaction overlay
 
@@ -270,7 +310,7 @@ Viewpoint: **Lab**
 
 Viewpoint: **Lab**
 
-![Two players · reveal the crib](./screenshots/033-motion-crib-2-lab-linux.png)
+![Two players · reveal the crib](./screenshots/038-motion-crib-2-lab-linux.png)
 
 - [x] Shared full-quality renderer; paused legal transition, native canvas, no SVG interaction overlay
 
@@ -278,7 +318,7 @@ Viewpoint: **Lab**
 
 Viewpoint: **Lab**
 
-![Three players · a card for the crib](./screenshots/034-motion-deal-3-lab-linux.png)
+![Three players · a card for the crib](./screenshots/039-motion-deal-3-lab-linux.png)
 
 - [x] Shared full-quality renderer; paused legal transition, native canvas, no SVG interaction overlay
 
@@ -286,7 +326,7 @@ Viewpoint: **Lab**
 
 Viewpoint: **Lab**
 
-![Three players · reveal the crib](./screenshots/035-motion-crib-3-lab-linux.png)
+![Three players · reveal the crib](./screenshots/040-motion-crib-3-lab-linux.png)
 
 - [x] Shared full-quality renderer; paused legal transition, native canvas, no SVG interaction overlay
 
@@ -294,7 +334,7 @@ Viewpoint: **Lab**
 
 Viewpoint: **Lab**
 
-![Pair of aces](./screenshots/036-motion-pair-lab-linux.png)
+![Pair of aces](./screenshots/041-motion-pair-lab-linux.png)
 
 - [x] Shared full-quality renderer; paused legal transition, native canvas, no SVG interaction overlay
 
@@ -302,6 +342,6 @@ Viewpoint: **Lab**
 
 Viewpoint: **Lab**
 
-![Pair and last card · peg three together](./screenshots/037-motion-pair-last-lab-linux.png)
+![Pair and last card · peg three together](./screenshots/042-motion-pair-last-lab-linux.png)
 
 - [x] Shared full-quality renderer; paused legal transition, native canvas, no SVG interaction overlay
