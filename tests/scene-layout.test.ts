@@ -2,6 +2,10 @@ import { expect, test } from 'bun:test';
 import { CARD_DEPTH, STACK_STEP, BOARD_WIDTH, BOARD_DEPTH, seats } from '../src/table';
 import { cardPose, playedCard, CARD_WIDTH, CARD_HEIGHT, BOARD_ROTATION, DECK_LAYERS, DECK_POSITION, STARTER_POSITION, CRIB_POSITION, displayedScore, PEGGING_DURATION } from '../src/sceneLayout';
 
+import {animationExamples} from '../src/presentation/catalog';
+import {buildFrame} from '../src/presentation/frame';
+import {countOwner,isCribCount} from '../src/game/engine';
+import {handScore} from '../src/game/cards';
 import {heldPose,publicPose} from '../src/game/layout';
 
 type Point=[number,number];
@@ -114,6 +118,24 @@ test('live pegging stacks clear the remaining hand as its fan recentres',()=>{
   for(let index=0;index<held;index++){
    const hand=heldPose(index,held);
    expect(overlaps(rectangle(played.position[0],played.position[2],CARD_WIDTH,CARD_HEIGHT,played.rotation),rectangle(hand.position[0],hand.position[2],CARD_WIDTH,CARD_HEIGHT,hand.rotation))).toBe(false);
+  }
+ }
+});
+
+
+test('counting points belong to the revealed hand or crib and clear the cards, nameplates and board from every perspective',()=>{
+ for(const e of animationExamples.filter(e=>e.id.startsWith('whole-hand')))for(const step of e.steps){
+  const state=step.after;
+  for(const viewer of state.players.map(p=>p.id)){
+   const f=buildFrame(state,viewer);
+   if(state.phase!=='count'&&state.phase!=='between'){expect(f.counts).toEqual([]);continue;}
+   const crib=state.phase==='between'||isCribCount(state),owner=crib?state.dealer:countOwner(state),cards=crib?state.crib:state.kept[owner],label=f.counts[0];
+   expect(f.counts).toHaveLength(1);expect(label.owner).toBe(state.players[owner].id);expect(label.points).toBe(handScore(cards,state.cut!,crib));expect(label.cards).toEqual(cards.map(c=>`${state.round}:${c}`));
+   expect(f.plates.find(p=>p.id===label.owner)!.score).toBe(state.players[owner].score);
+   const ink=rectangle(label.position[0],label.position[2],1.35,.65,0);
+   expect(overlaps(ink,rectangle(0,0,BOARD_WIDTH,BOARD_DEPTH,BOARD_ROTATION))).toBe(false);
+   for(const c of f.cards)expect(overlaps(ink,rectangle(c.position[0],c.position[2],CARD_WIDTH,CARD_HEIGHT,c.rotation))).toBe(false);
+   for(const plate of f.plates)expect(overlaps(ink,rectangle(plate.position[0],plate.position[2],plate.id==='crib-label'?2.8:3.9,plate.id==='crib-label'?.62:.8,0))).toBe(false);
   }
  }
 });

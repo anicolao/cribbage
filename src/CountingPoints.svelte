@@ -2,8 +2,8 @@
  import {T} from '@threlte/core';
  import {CanvasTexture,SRGBColorSpace,type Texture} from 'three';
  import type {Position} from './table';
- let {score,position,opacity=1}:{score:number;position:Position;opacity?:number}=$props();
- const text=$derived(String(score));
+ let {points,position,opacity=1}:{points:number;position:Position;opacity?:number}=$props();
+ const text=$derived(points?`+${points}`:'0');
  let ink=$state.raw<Texture>();
  $effect(()=>{
   const canvas=document.createElement('canvas');canvas.width=256;canvas.height=128;

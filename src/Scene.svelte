@@ -12,7 +12,7 @@
  import Piece from './Piece.svelte';
  import Board from './Board.svelte';
  import Nameplate from './Nameplate.svelte';
- import FeltScore from './FeltScore.svelte';
+ import CountingPoints from './CountingPoints.svelte';
  import { wood, felt, paper, cardTextures, updateCardMargins, tableStitch } from './textures';
  import {BOARD_ROTATION} from './sceneLayout';
  import { roundedShape, faceGeometry, slabGeometry } from './geometry';
@@ -58,8 +58,8 @@
    onhover={active=>cardHover(card.id,active)} onpress={active=>onPress(active?card.id:null)} onactivate={()=>onCard(card.card)}/>
  {/each}
  {#each frame.plates as plate (plate.id)}
-  {#if plate.scorePosition&&plate.score!==undefined}<FeltScore score={plate.score} position={plate.scorePosition} opacity={plate.scale}/>{/if}
-  <Nameplate name={plate.name} pegColor={plate.color} position={plate.position} scale={plate.scale} glow={plate.glow} width={plate.id==='crib-label'?2.8:3.9} height={plate.id==='crib-label'?.62:.8} wood={materials?.walnut} fallback={darkWood}/>
+  <Nameplate name={plate.name} score={plate.score} pegColor={plate.color} position={plate.position} scale={plate.scale} glow={plate.glow} width={plate.id==='crib-label'?2.8:3.9} height={plate.id==='crib-label'?.62:.8} wood={materials?.walnut} fallback={darkWood}/>
  {/each}
+{#each frame.counts as count (count.id)}<CountingPoints points={count.points} position={count.position} opacity={count.scale}/>{/each}
 {/if}
 </T.Group>
