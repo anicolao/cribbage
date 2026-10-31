@@ -90,11 +90,11 @@ Viewpoint: **Lab**
 
 - [x] Shared full-quality renderer; paused legal transition, native canvas, no SVG interaction overlay
 
-## Crib ready · five seconds to undo
+## Crib ready · three seconds to undo
 
 Viewpoint: **Lab**
 
-![Crib ready · five seconds to undo](./screenshots/011-motion-crib-ready-lab-darwin.png)
+![Crib ready · three seconds to undo](./screenshots/011-motion-crib-ready-lab-darwin.png)
 
 - [x] Shared full-quality renderer; paused legal transition, native canvas, no SVG interaction overlay
 
@@ -146,11 +146,11 @@ Viewpoint: **Lab**
 
 - [x] Shared full-quality renderer; paused legal transition, native canvas, no SVG interaction overlay
 
-## Go · play automatically after five seconds
+## Go · play automatically after three seconds
 
 Viewpoint: **Lab**
 
-![Go · play automatically after five seconds](./screenshots/018-motion-go-lab-darwin.png)
+![Go · play automatically after three seconds](./screenshots/018-motion-go-lab-darwin.png)
 
 - [x] Shared full-quality renderer; paused legal transition, native canvas, no SVG interaction overlay
 
