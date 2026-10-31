@@ -52,7 +52,7 @@
  async function copy(){try{await navigator.clipboard.writeText(invitation);}catch{error='Select the invitation to share it.';}}
 </script>
 <svelte:head><title>Cribbage</title><meta name="description" content="Pull up a chair. A shared wooden cribbage table for four."/></svelte:head>
-<main data-e2e-layout data-phase={game.phase} data-revision={game.revision} data-round={game.round} aria-label="Cribbage table">
+<main data-e2e-layout data-ready={ready} data-phase={game.phase} data-revision={game.revision} data-round={game.round} aria-label="Cribbage table">
  <div class="table-scene" aria-hidden="true"><Canvas shadows={PCFShadowMap} dpr={1} renderMode="on-demand"><Scene game={game} {viewer} time={0} scenario="game" light={.7} fov={45} resetKey={0} preset="table" faceMargin={2.5} backMargin={2.5} lightX={11} lightY={17} lightZ={8} onCameraChange={()=>{}} onTargets={value=>targets=value} onReady={()=>ready=true}/></Canvas></div>
  {#if !gathering&&own}
   <svg class="card-controls" viewBox="0 0 100 100" preserveAspectRatio="none" aria-label="Your cards">
