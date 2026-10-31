@@ -3,7 +3,7 @@ import {initializeTestEnvironment,assertFails,type RulesTestEnvironment} from '@
 import {readFileSync} from 'node:fs';
 import {doc,getDoc,getDocs,collection,writeBatch,deleteDoc,setDoc,type Firestore} from 'firebase/firestore';
 import {appendFirestore,watchFirestore,tableRef} from '../../src/game/firestore';
-import {initialState,apply,replay,VERSION,needsDiscard,type Event,type Intent} from '../../src/game/engine';
+import {initialState,apply,replay,VERSION,needsDiscard,discardActor,type Event,type Intent} from '../../src/game/engine';
 import {botIntent} from '../../src/game/bot';
 let env:RulesTestEnvironment;
 beforeAll(async()=>{
@@ -32,7 +32,7 @@ test('four Firebase clients gather, play and count one hand; observers replay ev
   await expect(appendFirestore(clients[0],'pr3','FIRE1','p0',{id:'stale',actor:'p0',expectedRevision:3,intent:{type:'begin',seed:'x'}})).rejects.toThrow('table changed');
   await act(0,{type:'begin',seed:'firebase-full-hand'});
   for(let i=0;i<4;i++)await act(i,botIntent(state,i)!);
-  await act(state.turn,{type:'cut'});
+  await act(0,{type:'accept-crib'});await act(state.turn,{type:'cut'});
   let turns=0;while(state.phase==='pegging'&&turns++<40)await act(state.turn,botIntent(state,state.turn)!);
   expect(state.phase).toBe('count');expect(state.plays.length).toBe(16);
   for(let i=0;i<5;i++)await act(state.turn,{type:'count'});
@@ -100,7 +100,7 @@ for(const count of [2,3])test(`${count} Firebase players start early, complete a
  await act(0,{type:'begin',seed:`firebase-${count}-players`});
  expect(state.crib).toHaveLength(count===3?1:0);
  let actions=0;
- while(state.phase!=='between'&&actions++<60){const seat=state.phase==='discard'?state.players.findIndex((_,i)=>needsDiscard(state,i)):state.turn;await act(seat,botIntent(state,seat)!);}
+ while(state.phase!=='between'&&actions++<60){const seat=state.phase==='discard'?discardActor(state):state.turn;await act(seat,botIntent(state,seat)!);}
  expect(state.phase).toBe('between');expect(state.plays).toHaveLength(count*4);expect(state.crib).toHaveLength(4);
  const dealer=state.dealer;await act(state.turn,{type:'deal'});expect(state.dealer).toBe((dealer+1)%count);expect(state.round).toBe(1);
 },60_000);
@@ -142,4 +142,16 @@ test('v1 hosts can still start with four, but neither client nor rules can start
    batch.set(root,{owner:'p0',members:['p0','p1'],bots:[],revision:3});batch.set(doc(root,'events','3'),{version:1,id:'too-early',sequence:3,actor:'p0',intent});batch.set(doc(root,'commands','too-early'),{sequence:3});await assertFails(batch.commit());
   }
  }
+});
+
+test('two Firebase players undo partial and complete crib contributions; acceptance is atomic and rejects late undo',async()=>{
+ const clients=[db('undo-host'),db('undo-friend')],ids=['undo-host','undo-friend'];let state=initialState(),events:Event[]=[];
+ async function act(seat:number,intent:Intent){await appendFirestore(clients[seat],'grace','UNDO1',ids[seat],{id:`undo-${state.revision+1}`,actor:ids[seat],expectedRevision:state.revision,intent},events);state=apply(state,ids[seat],intent);events=(await getDocs(collection(tableRef(clients[0],'grace','UNDO1'),'events'))).docs.map(row=>row.data() as Event).sort((a,b)=>a.sequence-b.sequence);expect(replay(events)).toEqual(state);}
+ await act(0,{type:'create',name:'Alex'});await act(1,{type:'join',name:'Rowan'});await act(0,{type:'begin',seed:'firebase-undo'});
+ const original=[...state.hands[0]],card=original[2];await act(0,{type:'discard',card});
+ await expect(appendFirestore(clients[1],'grace','UNDO1',ids[1],{id:'other-undo',actor:ids[1],expectedRevision:state.revision,intent:{type:'undo-discard',card}},events)).rejects.toThrow();
+ await act(0,{type:'undo-discard',card});expect(state.hands[0]).toEqual(original);
+ while(state.hands.some(h=>h.length>4)){const seat=discardActor(state);await act(seat,botIntent(state,seat)!);}
+ const returned=state.discards[1].at(-1)!;await act(1,{type:'undo-discard',card:returned});expect(state.crib).toHaveLength(3);await act(1,{type:'discard',card:returned});await act(0,{type:'accept-crib'});expect(state.phase).toBe('cut');
+ await expect(appendFirestore(clients[1],'grace','UNDO1',ids[1],{id:'late-undo',actor:ids[1],expectedRevision:state.revision,intent:{type:'undo-discard',card:returned}},events)).rejects.toThrow();
 });

@@ -4,7 +4,7 @@ import {DECK_POSITION,STARTER_POSITION} from '../sceneLayout';
 import {type Position} from '../table';
 import {buildFrame,pose,rotate,type Frame,type Pose,type CardVisual,type PlateVisual,type PegVisual} from './frame';
 export const MOTION={join:.8,deal:1.05,dealInterval:.085,discard:1.05,cut:1.05,play:.8,spread:.8,peg:.95,collect:.9,hover:.16,turn:.38};
-export type MotionKind='ready'|'join'|'deal'|'discard'|'cut'|'play'|'go'|'count'|'crib'|'next-hand'|'win';
+export type MotionKind='ready'|'join'|'deal'|'discard'|'undo'|'cut'|'play'|'go'|'count'|'crib'|'next-hand'|'win';
 type Segment={from:Pose;to:Pose;start:number;duration:number;lift:number};
 type Track<T>={item:T;segments:Segment[];remove?:boolean;appear?:number};
 export type Plan={from:Frame;target:Frame;kind:MotionKind;duration:number;cards:Track<CardVisual>[];plates:Track<PlateVisual>[];pegs:Track<PegVisual>[]};
@@ -21,6 +21,7 @@ function kindOf(before:State,after:State):MotionKind{
  if(after.winner!==null&&before.winner===null)return 'win';
  if(after.phase==='discard'&&(before.phase!=='discard'||after.round!==before.round||after.seed!==before.seed))return before.phase==='gathering'?'deal':'next-hand';
  if(after.discards.flat().length>before.discards.flat().length)return 'discard';
+ if(after.discards.flat().length<before.discards.flat().length)return 'undo';
  if(after.cut&&!before.cut)return 'cut';
  if(after.plays.length>before.plays.length)return 'play';
  if(after.phase==='count'||before.phase==='count')return isCribCount(after)?'crib':'count';
@@ -48,6 +49,7 @@ export function planMotion(before:State,after:State,viewer:string,from=buildFram
    else if(card.zone==='cut'){segments.push(segment(deckPose,card,0,MOTION.cut,1.1));}
    else segments.push(segment({...card,position:[card.position[0],card.position[1]+.8,card.position[2]],scale:0},card,0,.5));
   }else if(old.zone==='hand'&&card.zone==='crib')segments.push(segment(old,card,0,MOTION.discard,2));
+  else if(old.zone==='crib'&&card.zone==='hand')segments.push(segment(old,card,0,MOTION.discard,2));
   else if(old.zone==='hand'&&card.zone==='played'){
    if(enteredCounting){
     const seat=tablePlayers(after,viewer).find(s=>s.id===card.owner)!,local=publicPose(card.order,seat.lane),p=rotate(local.position,seat.rotation);

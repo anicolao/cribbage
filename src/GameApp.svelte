@@ -1,5 +1,5 @@
 <script lang="ts">
- import {onMount} from 'svelte';
+ import {onMount,untrack} from 'svelte';
  import TableView from './TableView.svelte';
  import {initialState,replay,legalCards,countOwner,needsDiscard,isCribCount,cribCards,type State,type Event,type Intent} from './game/engine';
  import {repository,playerIdentity} from './game/repository';
@@ -7,7 +7,11 @@
  import {cardName,handScore} from './game/cards';
  import {tablePlayers} from './game/layout';
  import {statusFor} from './presentation/frame';
+ import {TableClock,countdownAction,automaticChoice,type Windows} from './game/countdowns';
  let game=$state<State>(initialState()),viewer=$state(''),room=$state(''),name=$state(''),busy=$state(false),error=$state(''),ready=$state(false),animating=$state(false),renderedRevision=$state(-1),connected=$state(false),copied=$state(false);
+ let now=$state(Date.now()),windows=$state.raw<Windows>({discards:[]});
+ let clock:TableClock|undefined,clockKey='';const autoAttempts=new Map<string,number>();
+ const choiceAction=$derived(countdownAction(game,viewer,windows,now,busy||!connected||!ready));
  let repo:ReturnType<typeof repository>|undefined;
  const seat=$derived(game.players.findIndex(p=>p.id===viewer));
  const own=$derived(seat>=0?game.players[seat]:undefined);
@@ -21,16 +25,26 @@
    const code=new URLSearchParams(location.search).get('table');if(code&&/^[A-Z0-9]{5,8}$/.test(code))room=code;
   }catch{error='Couldn’t reach the table. Try again.';}
  }
- onMount(()=>{void initialize();});
+ onMount(()=>{void initialize();const ticker=setInterval(()=>now=Date.now(),100);return()=>clearInterval(ticker);});
+ $effect(()=>{
+  const state=game,key=`cribbage:choice-windows:${import.meta.env.BASE_URL}:${room}:${viewer}`,stamp=now,goReady=ready&&!animating&&renderedRevision===game.revision;
+  if(!room||!viewer||!connected)return;
+  untrack(()=>{if(key!==clockKey){clockKey=key;clock=new TableClock(localStorage,key);}windows=clock!.observe(state,stamp,goReady);});
+ });
+ $effect(()=>{
+  const state=game,active=windows,stamp=now,id=viewer;
+  if(!connected||busy||!ready||error||gathering||game.phase==='finished')return;
+  untrack(()=>{const choice=automaticChoice(state,id,active,stamp);if(!choice)return;const last=autoAttempts.get(choice.key)??-Infinity;if(performance.now()-last<300)return;autoAttempts.set(choice.key,performance.now());void act(choice.intent,choice.actor,true);});
+ });
  $effect(()=>{
   if(!room||!viewer)return;
   connected=false;
   repo=repository(room,(events:Event[])=>{game=replay(events);connected=true;error='';},message=>{connected=false;error=message;});
   return()=>repo?.close();
  });
- async function act(intent:Intent,actor=viewer){
-  if(busy||animating||!repo)return;busy=true;error='';
-  try{await repo.append(actor,intent);}catch(e){error=(e as Error).message;}finally{busy=false;}
+ async function act(intent:Intent,actor=viewer,automatic=false){
+  if(busy||animating&&!automatic&&intent.type!=='undo-discard'||!repo)return;busy=true;error='';
+  try{await repo.append(actor,intent);}catch(e){const message=(e as Error).message;if(!automatic||!['The table changed. Try again.','That contribution is no longer waiting.','The crib is not ready.','You can still play.','Finish your last action first.'].includes(message))error=message;}finally{busy=false;}
  }
  async function join(){
   if(!name.trim())return;
@@ -46,15 +60,16 @@
   if(viewer!==game.host||busy||animating||!ready||renderedRevision!==game.revision||error||!connected||gathering||game.phase==='finished')return;
   const index=game.phase==='discard'?game.players.findIndex((p,i)=>p.bot&&needsDiscard(game,i)):game.turn;
   if(index<0||!game.players[index]?.bot)return;
-  const intent=botIntent(game,index);if(!intent)return;
+  const intent=botIntent(game,index);if(!intent||intent.type==='go'||intent.type==='accept-crib')return;
   const timer=setTimeout(()=>void act(intent,game.players[index].id),700);return()=>clearTimeout(timer);
  });
+ function chooseAction(){if(choiceAction?.kind==='undo'&&choiceAction.card)void act({type:'undo-discard',card:choiceAction.card});else if(choiceAction?.kind==='go')void act({type:'go'});}
  function play(card:string){void act({type:game.phase==='discard'?'discard':'play',card});}
  async function copy(){try{await navigator.clipboard.writeText(invitation);copied=true;}catch{error='Select the invitation to share it.';}}
 </script>
-<svelte:head><title>Cribbage</title><meta name="description" content="Pull up a chair. A shared wooden cribbage table for four."/></svelte:head>
+<svelte:head><title>Cribbage</title><meta name="description" content="Pull up a chair. A shared wooden cribbage table for two, three or four."/></svelte:head>
 <main data-e2e-layout data-ready={ready} data-phase={game.phase} data-revision={game.revision} data-round={game.round} aria-label="Cribbage table">
- <div class="table-scene"><TableView {game} {viewer} onReady={()=>ready=true} onMotion={moving=>animating=moving} onSettled={revision=>renderedRevision=revision} onCard={play}/></div>
+ <div class="table-scene"><TableView {game} {viewer} action={choiceAction} onAction={chooseAction} onReady={()=>ready=true} onMotion={moving=>animating=moving} onSettled={revision=>renderedRevision=revision} onCard={play}/></div>
  {#if gathering}
   <section class="gather" aria-label="Gathering" data-e2e-fit>
    <h1>Cribbage</h1>
@@ -79,7 +94,7 @@
   <div class="sr-only"><p class="prompt" role="status" data-status={ready&&connected&&!busy&&!animating&&renderedRevision===game.revision?'synced':'waiting'}>{prompt}</p>{#if game.message&&game.message!==prompt&&game.phase!=='discard'&&game.phase!=='count'}<p class="last-play">{game.message}</p>{/if}</div>
   <div class="turn-action" class:arriving={animating} data-e2e-fit>
    {#if isTurn&&game.phase==='cut'}<button class="brass" onclick={()=>act({type:'cut'})} disabled={busy||animating}>Cut</button>
-   {:else if isTurn&&game.phase==='pegging'&&legalCards(game,seat).length===0}<button class="brass" onclick={()=>act({type:'go'})} disabled={busy||animating}>Go</button>
+
    {:else if isTurn&&game.phase==='count'}<button class="brass" onclick={()=>act({type:'count'})} disabled={busy||animating}>Peg {countPoints}</button>
    {:else if isTurn&&game.phase==='between'}<button class="brass" onclick={()=>act({type:'deal'})} disabled={busy||animating}>Deal</button>
    {:else if game.phase==='finished'&&viewer===game.host}<button class="brass" onclick={()=>act({type:'begin',seed:crypto.randomUUID()})} disabled={busy||animating}>Play again</button>{/if}

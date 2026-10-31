@@ -1,12 +1,12 @@
 import {test,expect} from 'bun:test';
 import {createHash} from 'node:crypto';
 import legacy from './fixtures/v1-hand.json';
-import {apply,initialState,replay,VERSION,needsDiscard,isCribCount,countOwner,type State,type Intent,type Event} from '../src/game/engine';
+import {apply,initialState,replay,VERSION,needsDiscard,discardActor,isCribCount,countOwner,type State,type Intent,type Event} from '../src/game/engine';
 import {botIntent} from '../src/game/bot';
 import {deck,handScore} from '../src/game/cards';
 import {shuffle} from '../src/game/random';
 import {tablePlayers} from '../src/game/layout';
-function gather(count:number,version:1|2=VERSION){let s=apply(initialState(version),'p0',{type:'create',name:'Alex'});for(let i=1;i<count;i++)s=apply(s,`p${i}`,{type:'join',name:`Friend ${i}`});return s;}
+function gather(count:number,version:1|2|3=VERSION){let s=apply(initialState(version),'p0',{type:'create',name:'Alex'});for(let i=1;i<count;i++)s=apply(s,`p${i}`,{type:'join',name:`Friend ${i}`});return s;}
 const begin=(count:number,seed='small-table')=>apply(gather(count),'p0',{type:'begin',seed});
 
 test('only the host may choose to begin with two, three or four seated players',()=>{
@@ -27,14 +27,14 @@ test('two players receive six cards each, alternate dealing, and discard two ind
  s=apply(s,'p0',{type:'discard',card:s.hands[0][0]});expect(s.kept[0]).toHaveLength(4);expect(needsDiscard(s,0)).toBe(false);
  expect(()=>apply(s,'p0',{type:'discard',card:s.hands[0][0]})).toThrow();
  for(let i=0;i<2;i++)s=apply(s,'p1',{type:'discard',card:s.hands[1][0]});
- expect(s.phase).toBe('cut');expect(s.crib).toHaveLength(4);expect(s.turn).toBe((s.dealer+1)%2);
+ s=apply(s,'p0',{type:'accept-crib'});expect(s.phase).toBe('cut');expect(s.crib).toHaveLength(4);expect(s.turn).toBe((s.dealer+1)%2);
  s=apply(s,`p${s.turn}`,{type:'cut'});expect(s.cut).toBe(shuffled[12]);
 });
 test('three players receive five each and a concealed sixteenth card is dealt directly to the crib',()=>{
  let s=begin(3);const shuffled=shuffle(deck,`${s.seed}:deal:0`),automatic=shuffled[15];
  expect(s.hands.slice(0,3).map(h=>h.length)).toEqual([5,5,5]);expect(s.crib).toEqual([automatic]);expect(s.stock[0]).toBe(shuffled[16]);
  for(let i=0;i<3;i++)s=apply(s,`p${i}`,{type:'discard',card:s.hands[i][0]});
- expect(s.phase).toBe('cut');expect(s.crib[0]).toBe(automatic);expect(s.crib).toHaveLength(4);
+ s=apply(s,'p0',{type:'accept-crib'});expect(s.phase).toBe('cut');expect(s.crib[0]).toBe(automatic);expect(s.crib).toHaveLength(4);
  expect(new Set([...s.kept.flat(),...s.crib,...s.stock]).size).toBe(52);
  s=apply(s,`p${s.turn}`,{type:'cut'});expect(s.cut).toBe(shuffled[16]);
 });
@@ -44,7 +44,7 @@ for(const count of [2,3])for(let seed=0;seed<4;seed++)test(`${count}-player seed
  act('p0',{type:'create',name:'Alex'});for(let i=1;i<count;i++)act(`p${i}`,{type:'join',name:`Friend ${i}`});act('p0',{type:'begin',seed:`${count}-match-${seed}`});
  let steps=0,counts:number[]=[],round=s.round;
  while(s.phase!=='finished'&&steps++<2500){
-  const seat=s.phase==='discard'?s.players.findIndex((_,i)=>needsDiscard(s,i)):s.turn,intent=botIntent(s,seat)!;expect(intent).not.toBeNull();const before=s;
+  const seat=s.phase==='discard'?discardActor(s):s.turn,intent=botIntent(s,seat)!;expect(intent).not.toBeNull();const before=s;
   if(s.phase==='count'){expect(s.hands.flat()).toEqual([]);expect(s.plays).toHaveLength(count*4);expect(seat).toBe(countOwner(s));counts.push(seat);}
   act(`p${seat}`,intent);
   if(intent.type==='deal'){
@@ -69,7 +69,7 @@ test('two-player opponents sit opposite; all perspectives preserve clockwise ord
 test('every original v1 action replays to its frozen original outcome; mixed versions are rejected',()=>{
  let s=initialState(1);const events=legacy.events as Event[];
  for(const [i,e] of events.entries()){
-  s=apply(s,e.actor,e.intent);const {protocol,...original}=s;const normalized={...original,discards:s.discards.map(cards=>cards[0]??null)};
+  s=apply(s,e.actor,e.intent);const {protocol,pendingDiscards,...original}=s;const normalized={...original,discards:s.discards.map(cards=>cards[0]??null)};
   expect(createHash('sha256').update(JSON.stringify(normalized)).digest('hex')).toBe(legacy.hashes[i]);
  }
  expect(replay(events)).toEqual(s);

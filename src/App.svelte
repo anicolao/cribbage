@@ -60,7 +60,7 @@
  <div class="preview-stage" class:ipad={preview==='ipad'} bind:this={previewStage} style:--preview-scale={previewScale}>
  {#if preview==='ipad'}<div class="preview-caption">iPad landscape · 1180 × 820 points · 2360 × 1640 pixels · Light {Number(light).toFixed(1)} · Shared game renderer</div>{/if}
  <main aria-label="Cribbage table preview" data-ready={ready}>
-  <div class="viewport"><TableView onReady={()=>ready=true} game={current.state} {viewer} review={{plan:current.plan,time:current.time,interaction:current.interaction}} renderWidth={preview==='ipad'?2360:undefined} respectReducedMotion={false} {light} {fov} {resetKey} {preset} {faceMargin} {backMargin} {lightX} {lightY} {lightZ} onCameraChange={info=>cameraInfo=info}/></div>
+  <div class="viewport"><TableView onReady={()=>ready=true} game={current.state} action={current.action} {viewer} review={{plan:current.plan,time:current.time,interaction:current.interaction}} renderWidth={preview==='ipad'?2360:undefined} respectReducedMotion={false} {light} {fov} {resetKey} {preset} {faceMargin} {backMargin} {lightX} {lightY} {lightZ} onCameraChange={info=>cameraInfo=info}/></div>
 
  </main>
  </div>

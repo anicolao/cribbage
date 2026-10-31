@@ -1,5 +1,5 @@
 import {test,expect} from 'bun:test';
-import {apply,initialState,replay,parseIntent,VERSION,needsDiscard,type Event,type Intent,type State} from '../src/game/engine';
+import {apply,initialState,replay,parseIntent,VERSION,needsDiscard,discardActor,type Event,type Intent,type State} from '../src/game/engine';
 import {deck,handScore,playScore} from '../src/game/cards';
 import {botIntent} from '../src/game/bot';
 import {shuffle} from '../src/game/random';
@@ -40,7 +40,7 @@ for(let seed=0;seed<8;seed++)test(`complete bot match ${seed} replays exactly, c
   act('p0',{type:'create',name:'Alex'});for(let i=1;i<4;i++)act(`p${i}`,{type:'join',name:`Friend ${i}`});act('p0',{type:'begin',seed:`match-${seed}`});
   let steps=0;
   while(state.phase!=='finished'&&steps++<2500){
-   const seat=state.phase==='discard'?state.players.findIndex((_,i)=>needsDiscard(state,i)):state.turn;
+   const seat=state.phase==='discard'?discardActor(state):state.turn;
    const intent=botIntent(state,seat);expect(intent).not.toBeNull();
    const previous:State=state;act(state.players[seat].id,intent!);
    if(intent!.type==='deal')expect(state.dealer).toBe((previous.dealer+1)%4);
