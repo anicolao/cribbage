@@ -1,0 +1,20 @@
+# Cribbage
+
+Use Bun for package management and scripts. Work on `codex/` branches and use pull requests. Preserve the reviewed animation lab at `/dev/animations`; the playable table is `/`.
+
+## Game model
+
+- Clients are trusted. The ordered, versioned intent log is the source of truth.
+- Record choices, never computed hands, shuffles, scores, running totals, turns or winners. Outcomes belong in deterministic replay.
+- Preserve the versioned PRNG and per-round seed derivation; change the protocol version before changing replay semantics.
+- Every player has an individual track. Seating and play proceed clockwise. Only the viewer's held cards are revealed in either graphics or the accessible DOM.
+- Companion decisions use their own hand and public play and submit ordinary player intents.
+- Product UI speaks to players. Prefer the cards and table to explanatory words or dialogs; keep lab and implementation controls outside the playable table.
+
+## Verification
+
+Run `bun run check`, `bun run test:unit`, `bun run build`, and `bun run test:e2e` as appropriate. The E2E story uses `TestStepHelper` to examine the DOM and capture the actor and every seated observer after each action.
+
+Keep captures at 1180×820, scale 1. Compare every decoded RGBA byte. Do not weaken pixel tolerance, mask game content, remove graphics, or enable retries to get green results. Wait for actual assets and paint before interacting and capturing.
+
+Baseline generation is explicit: `bun run test:e2e:update`. Review generated images, then verify in a separate ordinary run. Preserve the pinned Linux ARM64/Playwright container for CI comparisons. CI generation dispatches only produce review artifacts; verification never updates references.
