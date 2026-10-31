@@ -4,7 +4,7 @@ import type {State} from './engine';
 export function tablePlayers(game:State,viewer:string){
  const own=Math.max(0,game.players.findIndex(p=>p.id===viewer));
  return game.players.map((player,index)=>{
-  const lane=(index-own+4)%4,place=seats[lane];
+  const lane=(own-index+4)%4,place=seats[lane];
   return {...player,index,lane,x:place.x,z:place.z,rotation:place.rotation,color:seats[index].color,cards:game.hands[index]};
  });
 }

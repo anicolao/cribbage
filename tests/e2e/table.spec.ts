@@ -24,7 +24,7 @@ test('four friends gather, peg a complete hand, count every hand and crib, and r
    const area=page.locator(`[data-player="${p.id}"]`);
    await expect(area).toHaveAttribute('data-score',String(p.score));
    await expect(area).toHaveAttribute('data-held',String(expected.hands[i].length));
-   await expect(area).toHaveAttribute('data-lane',String((i-viewer+4)%4));
+   await expect(area).toHaveAttribute('data-lane',String((viewer-i+4)%4));
    await expect(area.getByRole('list',{name:'Held cards',exact:true}).getByRole('listitem')).toHaveText(expected.hands[i].map(c=>i===viewer?cardName(c):'Face down'));
    await expect(area.getByRole('list',{name:'Played cards',exact:true}).getByRole('listitem')).toHaveText(expected.plays.filter(play=>play.seat===i).map(play=>cardName(play.card)));
   }
