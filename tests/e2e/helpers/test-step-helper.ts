@@ -41,7 +41,6 @@ export class TestStepHelper{
  }
  finish(){
   // Baseline generation is explicit and must be followed by a separate comparison run.
-  if(this.info.config.updateSnapshots==='none')return;
   const folder=dirname(this.info.file);mkdirSync(folder,{recursive:true});
   writeFileSync(join(folder,`STORY-${process.platform}.md`),`# Four friends at the cribbage table\n\nEvery user action is followed by the actor's view and all seated observers. All captures are 1180×820 at 1×; verification allows zero different pixels.\n\n${this.steps.join('\n\n')}\n`);
  }
