@@ -17,6 +17,12 @@ export class TestStepHelper{
    if(settled)await expect(page.locator('[data-table-view]')).toHaveAttribute('data-motion-idle','true');
    for(const verification of verifications)await test.step(verification.spec,verification.check);
    await page.evaluate(async()=>{await document.fonts.ready;await new Promise<void>(resolve=>requestAnimationFrame(()=>requestAnimationFrame(()=>resolve())));});
+   // DOM checks can await a new countdown, which starts the forced-card lift.
+   // Wait for that cue too, then paint its settled pose before capturing.
+   if(settled){
+    await expect(page.locator('[data-table-view]')).toHaveAttribute('data-motion-idle','true');
+    await page.evaluate(()=>new Promise<void>(resolve=>requestAnimationFrame(()=>requestAnimationFrame(()=>resolve()))));
+   }
    const overflow=await page.evaluate(()=>{
     const failures:string[]=[];
     if(document.documentElement.scrollWidth>innerWidth||document.documentElement.scrollHeight>innerHeight)failures.push('Document scrolls');
