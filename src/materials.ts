@@ -4,7 +4,7 @@ export type MaterialLibrary = { maple: SurfaceMaps; walnut: SurfaceMaps; cloth: 
 export async function loadMaterials(): Promise<MaterialLibrary> {
  const loader=new TextureLoader();
  async function map(name:string,kind:string,repeat:[number,number]=[1,1],rotation=0){
-  const t=await loader.loadAsync(`/materials/${name}-${kind}.jpg`);t.anisotropy=16;
+  const t=await loader.loadAsync(`${import.meta.env.BASE_URL}materials/${name}-${kind}.jpg`);t.anisotropy=16;
   if(kind==='color')t.colorSpace=SRGBColorSpace;
   t.wrapS=t.wrapT=RepeatWrapping;t.repeat.set(...repeat);t.center.set(.5,.5);t.rotation=rotation;
   return t;

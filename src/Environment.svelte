@@ -9,7 +9,7 @@
   let disposed=false,target:WebGLRenderTarget|undefined;
   const previous=scene.environment,previousIntensity=scene.environmentIntensity,previousBackground=scene.background;
   scene.background=new Color('#0e1715');invalidate();
-  void new HDRLoader().loadAsync('/materials/studio.hdr').then(hdr=>{
+  void new HDRLoader().loadAsync(import.meta.env.BASE_URL+'materials/studio.hdr').then(hdr=>{
    if(disposed){hdr.dispose();return;}
    const generator=new PMREMGenerator(renderer);target=generator.fromEquirectangular(hdr);hdr.dispose();generator.dispose();
    scene.environment=target.texture;scene.environmentIntensity=.22;invalidate();onReady();

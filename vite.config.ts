@@ -1,3 +1,3 @@
 import { defineConfig } from 'vite';
 import { svelte } from '@sveltejs/vite-plugin-svelte';
-export default defineConfig({ plugins: [svelte()], server: { proxy: { "/api": "http://127.0.0.1:5198" } } });
+export default defineConfig({ base:process.env.PUBLIC_BASE_PATH??'/', plugins: [svelte()], server: { proxy: { "/api": "http://127.0.0.1:5198" } } });

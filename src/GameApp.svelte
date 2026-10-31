@@ -4,7 +4,7 @@
  import {PCFShadowMap} from 'three';
  import Scene from './Scene.svelte';
  import {initialState,replay,legalCards,countOwner,type State,type Event,type Intent} from './game/engine';
- import {repository} from './game/repository';
+ import {repository,playerIdentity} from './game/repository';
  import {botIntent} from './game/bot';
  import {cardName,handScore} from './game/cards';
  import {tablePlayers,type HitTarget} from './game/layout';
@@ -14,15 +14,17 @@
  const own=$derived(seat>=0?game.players[seat]:undefined);
  const gathering=$derived(game.phase==='gathering');
  const isTurn=$derived(seat>=0&&game.turn===seat);
- const invitation=$derived(typeof location==='undefined'?'':`${location.origin}/?table=${room}`);
+ const invitation=$derived(typeof location==='undefined'?'':`${location.origin}${import.meta.env.BASE_URL}?table=${room}`);
  const countPoints=$derived(game.phase==='count'&&game.cut?handScore(game.countIndex===4?game.crib:game.kept[countOwner(game)],game.cut,game.countIndex===4):0);
  const prompt=$derived(gathering?(own?'': 'Take a seat'):game.phase==='discard'?(seat>=0&&game.discards[seat]===null?'Choose one for the crib':'Waiting for the crib'):game.phase==='cut'?`${game.players[game.turn]?.name} to cut`:game.phase==='pegging'?`${game.total} · ${isTurn?'Your turn':game.players[game.turn]?.name+' to play'}`:game.phase==='count'?`${game.players[game.turn]?.name}${game.countIndex===4?'’s crib':'’s hand'} · ${countPoints} points`:game.phase==='between'?game.message:game.message);
- onMount(()=>{
-  viewer=localStorage.getItem('cribbage:player')??crypto.randomUUID();localStorage.setItem('cribbage:player',viewer);name=localStorage.getItem('cribbage:name')??'';
-  const code=new URLSearchParams(location.search).get('table');if(code&&/^[A-Z0-9]{5,8}$/.test(code))room=code;
- });
+ async function initialize(){
+  try{viewer=await playerIdentity();error='';name=localStorage.getItem('cribbage:name')??'';
+   const code=new URLSearchParams(location.search).get('table');if(code&&/^[A-Z0-9]{5,8}$/.test(code))room=code;
+  }catch{error='Couldn’t reach the table. Try again.';}
+ }
+ onMount(()=>{void initialize();});
  $effect(()=>{
-  if(!room)return;
+  if(!room||!viewer)return;
   connected=false;
   repo=repository(room,(events:Event[])=>{game=replay(events);connected=true;error='';},message=>{connected=false;error=message;});
   return()=>repo?.close();
@@ -67,7 +69,7 @@
    {#if !own&&game.players.length<4}
     <form onsubmit={event=>{event.preventDefault();void enter();}}>
      <label for="your-name" class="sr-only">Your name</label><input id="your-name" placeholder="Your name" bind:value={name} maxlength="24" autocomplete="nickname" disabled={busy}/>
-     <button class="brass" type="submit" disabled={busy||!name.trim()}>Take a seat</button>
+     <button class="brass" type="submit" disabled={busy||!name.trim()||!viewer||!!room&&!connected}>Take a seat</button>
     </form>
    {:else if !own}<p>This table is full.</p>{/if}
    {#if own}
@@ -90,7 +92,7 @@
   </div>
  {/if}
  {#if gathering}<span role="status" class="sr-only" data-status={ready&&connected&&!busy?'synced':'waiting'}>{prompt}</span>{/if}
- {#if error}<div class="error" role="alert">{error} <button onclick={async()=>{busy=true;try{await repo?.retry();error='';}catch(e){error=(e as Error).message;}finally{busy=false;}}}>Try again</button></div>{/if}
+ {#if error}<div class="error" role="alert">{error} <button onclick={async()=>{busy=true;try{if(!viewer){await initialize();}else{await repo?.retry();error='';}}catch(e){error=(e as Error).message;}finally{busy=false;}}}>Try again</button></div>{/if}
  <section class="sr-only" aria-label="Table details">
   <p data-testid="running-count">{game.total}</p><p data-testid="dealer">{game.players[game.dealer]?.name??''}</p>
   <p data-testid="turn">{game.players[game.turn]?.name??''}</p><p data-testid="crib-size">{game.discards.filter(Boolean).length}</p>

@@ -85,7 +85,7 @@ export function nameplateTexture(name:string,score?:number){
  return texture(c);
 }
 async function cardBack(){
- const source=new Image();source.src='/cards/card-back-classic-v1.png';await source.decode();
+ const source=new Image();source.src=import.meta.env.BASE_URL+'cards/card-back-classic-v1.png';await source.decode();
  return paddedCard(source,CARD_BACK_INSET,'back');
 }
 // Face and back artwork share identical canvases and update independently.
@@ -108,7 +108,7 @@ export function updateCardMargins(cards:Record<string,Texture>,faceMargin:number
 }
 export async function cardTextures(ids=[...new Set([...seats.flatMap(s=>s.cards),starter,...cribCards])]):Promise<Record<string,Texture>>{
  const entries=await Promise.all(ids.map(async id=>{
-  const response=await fetch('/cards/'+id+'.svg');if(!response.ok)throw new Error(`Card artwork could not load: ${id}`);
+  const response=await fetch(import.meta.env.BASE_URL+'cards/'+id+'.svg');if(!response.ok)throw new Error(`Card artwork could not load: ${id}`);
   const document=new DOMParser().parseFromString(await response.text(),'image/svg+xml');
   // The source outline describes a physical card. Our solid already supplies
   // that edge; retaining it would print a second card outline inside the margin.
