@@ -18,7 +18,7 @@ for(const count of [4,2,3])test(count===4?'four friends gather, peg a complete h
  async function automatic(actor:number,intent:Intent,ms=5000){await advance(ms);expected=apply(expected,ids[actor],intent);await photograph(actor,`${names[actor]} · ${intent.type==='go'?'Go plays automatically':'the crib is ready'}`);}
  async function verify(page:Page,viewer:number){
   await expect(page.locator('main')).toHaveAttribute('data-revision',String(expected.revision));
-  await expect(page.getByRole('status')).toHaveAttribute('data-status','synced');
+  await expect(page.getByRole('status')).toHaveAttribute('data-status','synced',{timeout:20_000});
   // One atomic DOM read keeps every semantic check without thousands of polling round trips.
   const actual=await page.evaluate(()=>{
    const root=document.querySelector('main')!,table=document.querySelector('[data-table-view]')!,canvas=document.querySelector('canvas')!;

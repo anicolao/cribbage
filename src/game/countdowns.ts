@@ -31,8 +31,8 @@ export function countdownAction(state:State,viewer:string,windows:Windows,now:nu
 }
 export function automaticChoice(state:State,viewer:string,windows:Windows,now:number):{key:string;actor:string;intent:Intent}|undefined{
  const seat=state.players.findIndex(p=>p.id===viewer),host=viewer===state.host;
- if(windows.crib&&seat>=0&&now>=windows.crib.deadline+(host?0:HOST_FALLBACK_MS))return {key:`crib:${windows.crib.revision}`,actor:viewer,intent:{type:'accept-crib'}};
- const go=windows.go;if(!go)return;
+ if(windows.crib&&windows.crib.revision===state.revision&&cribComplete(state)&&seat>=0&&now>=windows.crib.deadline+(host?0:HOST_FALLBACK_MS))return {key:`crib:${windows.crib.revision}`,actor:viewer,intent:{type:'accept-crib'}};
+ const go=windows.go;if(!go||state.phase!=='pegging'||go.revision!==state.revision||go.seat!==state.turn||legalCards(state,state.turn).length)return;
  const player=state.players[go.seat],owns=go.seat===seat;
  if(now>=go.deadline&&(owns||host&&player.bot))return {key:`go:${go.revision}`,actor:player.id,intent:{type:'go'}};
  if(host&&state.protocol===3&&now>=go.deadline+HOST_FALLBACK_MS)return {key:`go:${go.revision}`,actor:viewer,intent:{type:'auto-go',player:player.id}};

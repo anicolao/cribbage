@@ -155,3 +155,10 @@ test('two Firebase players undo partial and complete crib contributions; accepta
  const returned=state.discards[1].at(-1)!;await act(1,{type:'undo-discard',card:returned});expect(state.crib).toHaveLength(3);await act(1,{type:'discard',card:returned});await act(0,{type:'accept-crib'});expect(state.phase).toBe('cut');
  await expect(appendFirestore(clients[1],'grace','UNDO1',ids[1],{id:'late-undo',actor:ids[1],expectedRevision:state.revision,intent:{type:'undo-discard',card:returned}},events)).rejects.toThrow();
 });
+
+test('existing v2 tables append v2 choices with immediate crib completion after the protocol upgrade',async()=>{
+ const fixture=(await import('../fixtures/v2-hands.json')).default[0],events=fixture.events as Event[],client=db('p0'),scope='legacy',room='OLDV2';
+ await env.withSecurityRulesDisabled(async context=>{const store=context.firestore() as unknown as Firestore,root=tableRef(store,scope,room),batch=writeBatch(store);batch.set(root,{owner:'p0',members:['p0','p1'],bots:[],revision:events.length});for(const e of events){batch.set(doc(root,'events',String(e.sequence)),e);batch.set(doc(root,'commands',e.id),{sequence:e.sequence});}await batch.commit();});
+ const before=replay(events),intent=botIntent(before,0)!;await appendFirestore(client,scope,room,'p0',{id:'continue-v2',actor:'p0',expectedRevision:before.revision,intent},events);
+ const saved=(await getDoc(doc(tableRef(client,scope,room),'events',String(before.revision+1)))).data() as Event;expect(saved.version).toBe(2);expect(saved.intent).toEqual(intent);expect(apply(before,'p0',intent).pendingDiscards).toEqual([]);
+});
