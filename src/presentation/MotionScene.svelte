@@ -24,7 +24,8 @@
   let interactionActive=false;
   const activeHover=hovered,activePress=pressed;
   const cards=base.cards.map(card=>{
-   if(review){const i=review.interaction;return interactionPose(card,i?.card===card.id?i.hover:0,i?.card===card.id?i.press:0);}
+   if(review?.interaction){const i=review.interaction;return interactionPose(card,i?.card===card.id?i.hover:0,i?.card===card.id?i.press:0);}
+   if(major){levels.delete(card.id);return card;}
    const level=levels.get(card.id)??{hover:0,press:0,hFrom:0,pFrom:0,hTarget:0,pTarget:0,hStart:now,pStart:now};
    const h=card.id===activeHover&&card.zone==='hand'?1:0,p=card.id===activePress&&card.zone==='hand'?1:0;
    if(h!==level.hTarget){level.hFrom=level.hover;level.hTarget=h;level.hStart=now;}
@@ -58,7 +59,8 @@
  let lastTick=performance.now(),interactionActive=false;
  useTask(()=>{const now=performance.now(),dt=Math.min(.1,(now-lastTick)/1000);lastTick=now;if(plan||interactionActive){interactionActive=publish(now,dt);}}, {autoInvalidate:false});
  function available(card:string){const seat=game.players.findIndex(p=>p.id===viewer);return !major&&seat>=0&&game.hands[seat].includes(card)&&(game.phase==='discard'&&game.discards[seat]===null||game.phase==='pegging'&&game.turn===seat&&legalCards(game,seat).includes(card));}
+ function inspectable(card:string){const seat=game.players.findIndex(p=>p.id===viewer);return !major&&seat>=0&&game.hands[seat].includes(card);}
  function hover(id:string|null){onHover(id);renderer.domElement.style.cursor=id?'pointer':'';}
 </script>
-<Scene {frame} {...settings} {onReady} onHover={hover} {onPress} onCard={card=>{if(available(card)){onHover(null);onPress(null);onCard(card);}}} canInteract={card=>available(card)}/>
+<Scene {frame} {...settings} {onReady} onHover={hover} {onPress} onCard={card=>{if(available(card)){onHover(null);onPress(null);onCard(card);}}} canInteract={card=>available(card)} canInspect={card=>inspectable(card)}/>
 <CardTelemetry {game} {viewer} {frame} blocked={major} onControls={onControls}/>

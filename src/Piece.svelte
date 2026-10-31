@@ -6,7 +6,7 @@
  import { roundedShape, slabGeometry } from './geometry';
  import { CARD_WIDTH, CARD_HEIGHT } from './sceneLayout';
  import { CARD_DEPTH } from './table';
- let {onhover=()=>{},onpress=()=>{},onactivate=()=>{},interactive=false,glow=0,scale=1,position=[0,0,0],rotation=0,map,backMap,bumpMap,flip=0,width=CARD_WIDTH,height=CARD_HEIGHT,depth=CARD_DEPTH}:{onhover?:(active:boolean)=>void;onpress?:(active:boolean)=>void;onactivate?:()=>void;interactive?:boolean;glow?:number;scale?:number;position?:[number,number,number];rotation?:number;map:Texture;backMap?:Texture;bumpMap?:Texture;flip?:number;width?:number;height?:number;depth?:number}=$props();
+ let {onhover=()=>{},onpress=()=>{},onactivate=()=>{},interactive=false,hoverable=interactive,glow=0,scale=1,position=[0,0,0],rotation=0,map,backMap,bumpMap,flip=0,width=CARD_WIDTH,height=CARD_HEIGHT,depth=CARD_DEPTH}:{onhover?:(active:boolean)=>void;onpress?:(active:boolean)=>void;onactivate?:()=>void;interactive?:boolean;hoverable?:boolean;glow?:number;scale?:number;position?:[number,number,number];rotation?:number;map:Texture;backMap?:Texture;bumpMap?:Texture;flip?:number;width?:number;height?:number;depth?:number}=$props();
  const body=untrack(()=>slabGeometry(roundedShape(width,height,Math.min(width*.065,.09)),width,height,depth));
  const materials:Material[]=[];
  onDestroy(()=>body.dispose());
@@ -14,8 +14,8 @@
 <T.Group {position} rotation.y={rotation} {scale}>
  <T.Group rotation.z={flip}>
   <T.Mesh geometry={body} material={materials} rotation.x={-Math.PI/2} castShadow receiveShadow
-   onpointerenter={(event:IntersectionEvent<PointerEvent>)=>{event.stopPropagation();if(interactive)onhover(true);}}
-   onpointerleave={()=>onhover(false)}
+   onpointerenter={(event:IntersectionEvent<PointerEvent>)=>{event.stopPropagation();if(hoverable)onhover(true);}}
+   onpointerleave={()=>{onhover(false);onpress(false);}}
    onpointerdown={(event:IntersectionEvent<PointerEvent>)=>{event.stopImmediatePropagation();event.stopPropagation();if(interactive)onpress(true);}}
    onpointerup={(event:IntersectionEvent<PointerEvent>)=>{event.stopPropagation();onpress(false);}}
    onclick={(event:IntersectionEvent<MouseEvent>)=>{event.stopPropagation();if(interactive)onactivate();}}>
