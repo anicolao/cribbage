@@ -1,4 +1,4 @@
-import pairedAces from './fixtures/paired-aces.json';
+import pairedAces from './fixtures/paired-aces.json' with {type:'json'};
 import {initialState,apply,needsDiscard,cribComplete,legalCards,discardActor,isCribCount,type State,type Intent} from '../game/engine';
 import {botIntent} from '../game/bot';
 import {planMotion,interactionLevel,type Plan} from './motion';
