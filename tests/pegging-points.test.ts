@@ -1,5 +1,5 @@
 import {test,expect} from 'bun:test';
-import fixture from '../src/presentation/fixtures/paired-aces.json';
+import fixture from '../src/presentation/fixtures/paired-aces.json' with {type:'json'};
 import {initialState,apply,replay,type Event,type Intent} from '../src/game/engine';
 import {replayTable} from '../src/presentation/replay';
 import {buildFrame} from '../src/presentation/frame';
