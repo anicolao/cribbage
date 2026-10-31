@@ -67,7 +67,7 @@
  {/each}
  {#each Array(DECK_LAYERS) as _,i}<Piece position={[DECK_POSITION[0]+i*.001,DECK_POSITION[1]+i*STACK_STEP,DECK_POSITION[2]]} map={cards.back} backMap={cards.back}/>{/each}
  {#if !game||game.cut}<Piece position={STARTER_POSITION} rotation={-.02} map={cards[game?.cut??starter]} backMap={cards.back} bumpMap={paperGrain}/>{/if}
- {#each game?game.discards.filter(Boolean):cribCards as card,i}<Piece position={[CRIB_POSITION[0]+.06*i-.09,CRIB_POSITION[1]+i*STACK_STEP,CRIB_POSITION[2]]} map={game?.countIndex===4&&game.phase==='count'?cards[card!]:cards.back} backMap={cards.back}/>{/each}
+ {#each game?game.discards.filter(Boolean):cribCards as card,i}<Piece position={[CRIB_POSITION[0]+(game?.countIndex===4&&game.phase==='count'?.15+(i-1.5)*.65:.06*i-.09),CRIB_POSITION[1]+i*STACK_STEP,CRIB_POSITION[2]]} map={game?.countIndex===4&&game.phase==='count'?cards[card!]:cards.back} backMap={cards.back}/>{/each}
  {#if !game||game.phase!=='gathering'}<Nameplate name={`${game?game.players[game.dealer]?.name??'':CRIB_OWNER.name}'s Crib`} position={[CRIB_POSITION[0],.012,CRIB_POSITION[2]+1.65]} width={2.8} height={.62} wood={materials?.walnut} fallback={darkWood}/>{/if}
 {/if}
 {#if game}<HitTargets {game} {viewer} {onTargets}/>{/if}
