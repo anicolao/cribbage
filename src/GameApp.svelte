@@ -68,7 +68,7 @@
  async function copy(){try{await navigator.clipboard.writeText(invitation);copied=true;}catch{error='Select the invitation to share it.';}}
 </script>
 <svelte:head><title>Cribbage</title><meta name="description" content="Pull up a chair. A shared wooden cribbage table for two, three or four."/></svelte:head>
-<main data-e2e-layout data-ready={ready} data-phase={game.phase} data-revision={game.revision} data-round={game.round} aria-label="Cribbage table">
+<main data-e2e-layout data-busy={busy} data-connected={connected} data-animating={animating} data-settled-revision={renderedRevision} data-ready={ready} data-phase={game.phase} data-revision={game.revision} data-round={game.round} aria-label="Cribbage table">
  <div class="table-scene"><TableView {game} {viewer} action={choiceAction} onAction={chooseAction} onReady={()=>ready=true} onMotion={moving=>animating=moving} onSettled={revision=>renderedRevision=revision} onCard={play}/></div>
  {#if gathering}
   <section class="gather" aria-label="Gathering" data-e2e-fit>

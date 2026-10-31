@@ -32,7 +32,7 @@ test('Go begins after animation settles, can be tapped immediately, auto-plays o
  expect(countdownAction(s,'p1',windows,1000)?.remaining).toBe(5);expect(automaticChoice(s,'p1',windows,5999)).toBeUndefined();expect(automaticChoice(s,'p1',windows,6000)?.intent).toEqual({type:'go'});
  expect(automaticChoice(s,'p0',windows,6000)).toBeUndefined();const fallback=automaticChoice(s,'p0',windows,7000)!;expect(fallback.actor).toBe('p0');expect(fallback.intent).toEqual({type:'auto-go',player:'p1'});
  expect(()=>apply(s,'p1',fallback.intent)).toThrow();expect(apply(s,'p0',fallback.intent)).toEqual(apply(s,'p1',{type:'go'}));
- const after=apply(s,'p1',{type:'go'});expect(clock.observe(after,7000,false).go).toBeUndefined();
+ const after=apply(s,'p1',{type:'go'});expect(automaticChoice(after,'p1',windows,7000)).toBeUndefined();expect(clock.observe(after,7000,false).go).toBeUndefined();
  s.total=0;expect(()=>apply(s,'p0',fallback.intent)).toThrow();
 });
 test('new actions reject computed deadlines and outcomes',()=>{for(const intent of [{type:'accept-crib',deadline:5000},{type:'go',auto:true},{type:'undo-discard',card:'ace_of_clubs',score:2},{type:'auto-go',player:'p1',total:0}])expect(()=>parseIntent(intent)).toThrow();});
