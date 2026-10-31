@@ -10,7 +10,8 @@ export async function appendFirestore(db:Firestore,scope:string,room:string,uid:
   const meta=snapshot.exists()?snapshot.data() as {owner:string;members:string[];bots:string[];revision:number}:undefined;
   if(ack.exists()){
    const saved=(await transaction.get(doc(root,'events',String(ack.data().sequence)))).data() as Event;
-   if(saved.actor!==pending.actor||JSON.stringify(saved.intent)!==JSON.stringify(intent))throw new Error('That action has already been used.');
+   const stored=parseIntent(saved.intent),keys=Object.keys(intent);
+   if(saved.actor!==pending.actor||keys.length!==Object.keys(stored).length||keys.some(key=>(stored as unknown as Record<string,unknown>)[key] !== (intent as unknown as Record<string,unknown>)[key]))throw new Error('That action has already been used.');
    return;
   }
   const revision=meta?.revision??0;
