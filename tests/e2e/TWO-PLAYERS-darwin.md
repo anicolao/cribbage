@@ -330,11 +330,27 @@ Viewpoint: **Rowan**
 
 - [x] Exact phase, revision, round, count, crib size, clockwise seats, scores, private hands, public plays and legal native-card controls
 
+## Manual timing leaves the only playable card in your hand · actor
+
+Viewpoint: **Rowan**
+
+![Manual timing leaves the only playable card in your hand · actor](./screenshots/041-2p-action-21-rowan-darwin.png)
+
+- [x] Exact phase, revision, round, count, crib size, clockwise seats, scores, private hands, public plays and legal native-card controls
+
+## Manual timing leaves the only playable card in your hand · observer
+
+Viewpoint: **Alex**
+
+![Manual timing leaves the only playable card in your hand · observer](./screenshots/042-2p-action-21-alex-darwin.png)
+
+- [x] Exact phase, revision, round, count, crib size, clockwise seats, scores, private hands, public plays and legal native-card controls
+
 ## The only playable card will play in one second after returning to the table · actor
 
 Viewpoint: **Rowan**
 
-![The only playable card will play in one second after returning to the table · actor](./screenshots/041-2p-action-21-rowan-darwin.png)
+![The only playable card will play in one second after returning to the table · actor](./screenshots/043-2p-action-22-rowan-darwin.png)
 
 - [x] Exact phase, revision, round, count, crib size, clockwise seats, scores, private hands, public plays and legal native-card controls
 
@@ -342,7 +358,7 @@ Viewpoint: **Rowan**
 
 Viewpoint: **Alex**
 
-![The only playable card will play in one second after returning to the table · observer](./screenshots/042-2p-action-21-alex-darwin.png)
+![The only playable card will play in one second after returning to the table · observer](./screenshots/044-2p-action-22-alex-darwin.png)
 
 - [x] Exact phase, revision, round, count, crib size, clockwise seats, scores, private hands, public plays and legal native-card controls
 
@@ -350,7 +366,7 @@ Viewpoint: **Alex**
 
 Viewpoint: **Rowan**
 
-![Rowan · plays 9 of clubs automatically · actor](./screenshots/043-2p-action-22-rowan-darwin.png)
+![Rowan · plays 9 of clubs automatically · actor](./screenshots/045-2p-action-23-rowan-darwin.png)
 
 - [x] Exact phase, revision, round, count, crib size, clockwise seats, scores, private hands, public plays and legal native-card controls
 
@@ -358,7 +374,7 @@ Viewpoint: **Rowan**
 
 Viewpoint: **Alex**
 
-![Rowan · plays 9 of clubs automatically · observer](./screenshots/044-2p-action-22-alex-darwin.png)
+![Rowan · plays 9 of clubs automatically · observer](./screenshots/046-2p-action-23-alex-darwin.png)
 
 - [x] Exact phase, revision, round, count, crib size, clockwise seats, scores, private hands, public plays and legal native-card controls
 
@@ -366,7 +382,7 @@ Viewpoint: **Alex**
 
 Viewpoint: **Alex**
 
-![Alex plays King of hearts · actor](./screenshots/045-2p-action-23-alex-darwin.png)
+![Alex plays King of hearts · actor](./screenshots/047-2p-action-24-alex-darwin.png)
 
 - [x] Exact phase, revision, round, count, crib size, clockwise seats, scores, private hands, public plays and legal native-card controls
 
@@ -374,7 +390,7 @@ Viewpoint: **Alex**
 
 Viewpoint: **Rowan**
 
-![Alex plays King of hearts · observer](./screenshots/046-2p-action-23-rowan-darwin.png)
+![Alex plays King of hearts · observer](./screenshots/048-2p-action-24-rowan-darwin.png)
 
 - [x] Exact phase, revision, round, count, crib size, clockwise seats, scores, private hands, public plays and legal native-card controls
 
@@ -382,7 +398,7 @@ Viewpoint: **Rowan**
 
 Viewpoint: **Rowan**
 
-![Rowan · plays Jack of hearts automatically · actor](./screenshots/047-2p-action-24-rowan-darwin.png)
+![Rowan · plays Jack of hearts automatically · actor](./screenshots/049-2p-action-25-rowan-darwin.png)
 
 - [x] Exact phase, revision, round, count, crib size, clockwise seats, scores, private hands, public plays and legal native-card controls
 
@@ -390,7 +406,7 @@ Viewpoint: **Rowan**
 
 Viewpoint: **Alex**
 
-![Rowan · plays Jack of hearts automatically · observer](./screenshots/048-2p-action-24-alex-darwin.png)
+![Rowan · plays Jack of hearts automatically · observer](./screenshots/050-2p-action-25-alex-darwin.png)
 
 - [x] Exact phase, revision, round, count, crib size, clockwise seats, scores, private hands, public plays and legal native-card controls
 
@@ -398,7 +414,7 @@ Viewpoint: **Alex**
 
 Viewpoint: **Alex**
 
-![Alex plays Queen of clubs · actor](./screenshots/049-2p-action-25-alex-darwin.png)
+![Alex plays Queen of clubs · actor](./screenshots/051-2p-action-26-alex-darwin.png)
 
 - [x] Exact phase, revision, round, count, crib size, clockwise seats, scores, private hands, public plays and legal native-card controls
 
@@ -406,7 +422,7 @@ Viewpoint: **Alex**
 
 Viewpoint: **Rowan**
 
-![Alex plays Queen of clubs · observer](./screenshots/050-2p-action-25-rowan-darwin.png)
+![Alex plays Queen of clubs · observer](./screenshots/052-2p-action-26-rowan-darwin.png)
 
 - [x] Exact phase, revision, round, count, crib size, clockwise seats, scores, private hands, public plays and legal native-card controls
 
@@ -414,7 +430,7 @@ Viewpoint: **Rowan**
 
 Viewpoint: **Alex**
 
-![Alex · go automatically · actor](./screenshots/051-2p-action-26-alex-darwin.png)
+![Alex · go automatically · actor](./screenshots/053-2p-action-27-alex-darwin.png)
 
 - [x] Exact phase, revision, round, count, crib size, clockwise seats, scores, private hands, public plays and legal native-card controls
 
@@ -422,7 +438,7 @@ Viewpoint: **Alex**
 
 Viewpoint: **Rowan**
 
-![Alex · go automatically · observer](./screenshots/052-2p-action-26-rowan-darwin.png)
+![Alex · go automatically · observer](./screenshots/054-2p-action-27-rowan-darwin.png)
 
 - [x] Exact phase, revision, round, count, crib size, clockwise seats, scores, private hands, public plays and legal native-card controls
 
@@ -430,7 +446,7 @@ Viewpoint: **Rowan**
 
 Viewpoint: **Alex**
 
-![Alex · plays King of spades automatically · actor](./screenshots/053-2p-action-27-alex-darwin.png)
+![Alex · plays King of spades automatically · actor](./screenshots/055-2p-action-28-alex-darwin.png)
 
 - [x] Exact phase, revision, round, count, crib size, clockwise seats, scores, private hands, public plays and legal native-card controls
 
@@ -438,7 +454,7 @@ Viewpoint: **Alex**
 
 Viewpoint: **Rowan**
 
-![Alex · plays King of spades automatically · observer](./screenshots/054-2p-action-27-rowan-darwin.png)
+![Alex · plays King of spades automatically · observer](./screenshots/056-2p-action-28-rowan-darwin.png)
 
 - [x] Exact phase, revision, round, count, crib size, clockwise seats, scores, private hands, public plays and legal native-card controls
 
@@ -446,7 +462,7 @@ Viewpoint: **Rowan**
 
 Viewpoint: **Rowan**
 
-![Rowan · pegs automatically · actor](./screenshots/055-2p-action-28-rowan-darwin.png)
+![Rowan · pegs automatically · actor](./screenshots/057-2p-action-29-rowan-darwin.png)
 
 - [x] Exact phase, revision, round, count, crib size, clockwise seats, scores, private hands, public plays and legal native-card controls
 
@@ -454,23 +470,7 @@ Viewpoint: **Rowan**
 
 Viewpoint: **Alex**
 
-![Rowan · pegs automatically · observer](./screenshots/056-2p-action-28-alex-darwin.png)
-
-- [x] Exact phase, revision, round, count, crib size, clockwise seats, scores, private hands, public plays and legal native-card controls
-
-## Alex · pegs automatically · actor
-
-Viewpoint: **Alex**
-
-![Alex · pegs automatically · actor](./screenshots/057-2p-action-29-alex-darwin.png)
-
-- [x] Exact phase, revision, round, count, crib size, clockwise seats, scores, private hands, public plays and legal native-card controls
-
-## Alex · pegs automatically · observer
-
-Viewpoint: **Rowan**
-
-![Alex · pegs automatically · observer](./screenshots/058-2p-action-29-rowan-darwin.png)
+![Rowan · pegs automatically · observer](./screenshots/058-2p-action-29-alex-darwin.png)
 
 - [x] Exact phase, revision, round, count, crib size, clockwise seats, scores, private hands, public plays and legal native-card controls
 
@@ -490,11 +490,27 @@ Viewpoint: **Rowan**
 
 - [x] Exact phase, revision, round, count, crib size, clockwise seats, scores, private hands, public plays and legal native-card controls
 
+## Alex · pegs automatically · actor
+
+Viewpoint: **Alex**
+
+![Alex · pegs automatically · actor](./screenshots/061-2p-action-31-alex-darwin.png)
+
+- [x] Exact phase, revision, round, count, crib size, clockwise seats, scores, private hands, public plays and legal native-card controls
+
+## Alex · pegs automatically · observer
+
+Viewpoint: **Rowan**
+
+![Alex · pegs automatically · observer](./screenshots/062-2p-action-31-rowan-darwin.png)
+
+- [x] Exact phase, revision, round, count, crib size, clockwise seats, scores, private hands, public plays and legal native-card controls
+
 ## Alex · deal automatically · actor
 
 Viewpoint: **Alex**
 
-![Alex · deal automatically · actor](./screenshots/061-2p-action-31-alex-darwin.png)
+![Alex · deal automatically · actor](./screenshots/063-2p-action-32-alex-darwin.png)
 
 - [x] Exact phase, revision, round, count, crib size, clockwise seats, scores, private hands, public plays and legal native-card controls
 
@@ -502,7 +518,7 @@ Viewpoint: **Alex**
 
 Viewpoint: **Rowan**
 
-![Alex · deal automatically · observer](./screenshots/062-2p-action-31-rowan-darwin.png)
+![Alex · deal automatically · observer](./screenshots/064-2p-action-32-rowan-darwin.png)
 
 - [x] Exact phase, revision, round, count, crib size, clockwise seats, scores, private hands, public plays and legal native-card controls
 
@@ -510,7 +526,7 @@ Viewpoint: **Rowan**
 
 Viewpoint: **Rowan**
 
-![Rowan returns to the same seat and hand · actor](./screenshots/063-2p-action-32-rowan-darwin.png)
+![Rowan returns to the same seat and hand · actor](./screenshots/065-2p-action-33-rowan-darwin.png)
 
 - [x] Exact phase, revision, round, count, crib size, clockwise seats, scores, private hands, public plays and legal native-card controls
 
@@ -518,6 +534,6 @@ Viewpoint: **Rowan**
 
 Viewpoint: **Alex**
 
-![Rowan returns to the same seat and hand · observer](./screenshots/064-2p-action-32-alex-darwin.png)
+![Rowan returns to the same seat and hand · observer](./screenshots/066-2p-action-33-alex-darwin.png)
 
 - [x] Exact phase, revision, round, count, crib size, clockwise seats, scores, private hands, public plays and legal native-card controls

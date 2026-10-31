@@ -1,6 +1,6 @@
 # Shared animation review
 
-Each transition is paused at 0.50 seconds for review. All captures are 1180×820 at 1×; verification allows zero different pixels.
+Transitions are paused for review, including the points labels at 1.20 seconds. All captures are 1180×820 at 1×; verification allows zero different pixels.
 
 ## Hover / keyboard focus
 
