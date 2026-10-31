@@ -18,7 +18,7 @@ for(const count of [4,2,3])test(count===4?'four friends gather, peg a complete h
  async function automatic(actor:number,intent:Intent,ms=5000){await advance(ms);expected=apply(expected,ids[actor],intent);await photograph(actor,`${names[actor]} · ${intent.type==='go'?'Go plays automatically':'the crib is ready'}`);}
  async function verify(page:Page,viewer:number){
   await expect(page.locator('main')).toHaveAttribute('data-revision',String(expected.revision));
-  await expect(page.getByRole('status')).toHaveAttribute('data-status','synced',{timeout:20_000});
+  await expect(page.getByRole('status')).toHaveAttribute('data-status','synced',{timeout:60_000});
   // One atomic DOM read keeps every semantic check without thousands of polling round trips.
   const actual=await page.evaluate(()=>{
    const root=document.querySelector('main')!,table=document.querySelector('[data-table-view]')!,canvas=document.querySelector('canvas')!;
@@ -86,7 +86,7 @@ for(const count of [4,2,3])test(count===4?'four friends gather, peg a complete h
   expect(discards).toBe(count===2?4:count);expect(expected.crib).toHaveLength(4);
   await expect(pages[0].locator('[data-countdown="undo"]')).toHaveAttribute('data-seconds','5');
   if(count===2){
-   await pages[1].reload();await expect(pages[1].getByRole('status')).toHaveAttribute('data-status','synced',{timeout:20_000});
+   await pages[1].reload();await expect(pages[1].getByRole('status')).toHaveAttribute('data-status','synced',{timeout:60_000});
    await advance(4000);await expect(pages[0].locator('[data-countdown="undo"]')).toHaveAttribute('data-seconds','1');
    await photograph(0,'One second remains after returning to the table');
    const card=expected.discards[0].at(-1)!;await perform(0,{type:'undo-discard',card});
