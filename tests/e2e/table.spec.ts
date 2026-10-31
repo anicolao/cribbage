@@ -11,7 +11,7 @@ for(const count of [4,2,3])test(count===4?'four friends gather, peg a complete h
  const pages=await Promise.all(contexts.map(c=>c.newPage())),errors:string[]=[],ids=names.map((_,i)=>count===4?`player-${i}`:`small-${count}-player-${i}`);
  for(const page of pages){page.on('pageerror',e=>errors.push(e.message));page.on('console',message=>{if(message.type()==='error')errors.push(message.text());});}
  // Predictable invitation entropy and shuffle choices are inputs, never injected game state.
- for(let i=0;i<count;i++)await contexts[i].addInitScript(({id})=>{let n=0;Object.defineProperty(crypto,'randomUUID',{value:()=>n++===0?id:`${id}-choice-${n}`});},{id:ids[i]});
+ for(let i=0;i<count;i++)await contexts[i].addInitScript(({id})=>{let n=Number(sessionStorage.getItem('choice-counter')??0);Object.defineProperty(crypto,'randomUUID',{value:()=>{sessionStorage.setItem('choice-counter',String(n+1));return n++===0?id:`${id}-choice-${n}`;}});},{id:ids[i]});
  let wall=Date.UTC(2026,9,31,12);for(const page of pages)await page.clock.setFixedTime(wall);
  let expected=initialState(),room='',action=0;
  async function advance(ms:number){wall+=ms;for(const page of pages)await page.clock.setFixedTime(wall);}
