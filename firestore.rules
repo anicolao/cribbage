@@ -33,13 +33,13 @@ service cloud.firestore {
      ? e.actor==request.auth.uid && !(e.actor in old.members) && next.members==old.members.concat([e.actor]) && next.bots==old.bots
      : e.intent.type=='invite-bot'
       ? request.auth.uid==old.owner && e.actor==request.auth.uid && !(e.intent.id in old.members) && next.members==old.members.concat([e.intent.id]) && next.bots==old.bots.concat([e.intent.id])
-      : e.intent.type!='create' && (e.intent.type!='begin' || (e.actor==old.owner && old.members.size()==4)) && controls(old,e.actor) && request.auth.uid in old.members && next.members==old.members && next.bots==old.bots;
+      : e.intent.type!='create' && (e.intent.type!='begin' || (e.actor==old.owner && old.members.size()>=(e.version==1?4:2) && old.members.size()<=4)) && controls(old,e.actor) && request.auth.uid in old.members && next.members==old.members && next.bots==old.bots;
    }
    match /events/{sequence} {
     allow read: if signedIn();
     allow create: if signedIn()
      && request.resource.data.keys().hasOnly(['version','id','sequence','actor','intent'])
-     && request.resource.data.version==1 && request.resource.data.id is string && request.resource.data.id.matches('[A-Za-z0-9_-]{1,128}')
+     && request.resource.data.version in [1,2] && request.resource.data.id is string && request.resource.data.id.matches('[A-Za-z0-9_-]{1,128}')
      && request.resource.data.actor is string && request.resource.data.sequence is int
      && intent(request.resource.data.intent)
      && sequence==string(request.resource.data.sequence)
@@ -47,6 +47,7 @@ service cloud.firestore {
      && controls(getAfter(table(scope,room)).data,request.resource.data.actor)
      && request.auth.uid in getAfter(table(scope,room)).data.members
      && (!exists(table(scope,room)) || getAfter(table(scope,room)).data.revision==get(table(scope,room)).data.revision+1)
+     && (!exists(table(scope,room)) || request.resource.data.version==get(event(scope,room,get(table(scope,room)).data.revision)).data.version)
      && getAfter(/databases/$(database)/documents/previews/$(scope)/tables/$(room)/commands/$(request.resource.data.id)).data.sequence==request.resource.data.sequence;
    }
    match /commands/{id} {

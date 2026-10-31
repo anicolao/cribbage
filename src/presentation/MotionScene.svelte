@@ -3,7 +3,7 @@
  import {interactivity} from '@threlte/extras';
  import {onMount,untrack} from 'svelte';
  import type {State} from '../game/engine';
- import {legalCards} from '../game/engine';
+ import {legalCards,needsDiscard} from '../game/engine';
  import {buildFrame,type Frame} from './frame';
  import {MOTION,planMotion,sampleMotion,interactionPose,interactionLevel,type Plan} from './motion';
  import Scene from '../Scene.svelte';
@@ -58,7 +58,7 @@
  $effect(()=>{hovered;pressed;untrack(()=>{interactionActive=publish(performance.now());});});
  let lastTick=performance.now(),interactionActive=false;
  useTask(()=>{const now=performance.now(),dt=Math.min(.1,(now-lastTick)/1000);lastTick=now;if(plan||interactionActive){interactionActive=publish(now,dt);}}, {autoInvalidate:false});
- function available(card:string){const seat=game.players.findIndex(p=>p.id===viewer);return !major&&seat>=0&&game.hands[seat].includes(card)&&(game.phase==='discard'&&game.discards[seat]===null||game.phase==='pegging'&&game.turn===seat&&legalCards(game,seat).includes(card));}
+ function available(card:string){const seat=game.players.findIndex(p=>p.id===viewer);return !major&&seat>=0&&game.hands[seat].includes(card)&&(needsDiscard(game,seat)||game.phase==='pegging'&&game.turn===seat&&legalCards(game,seat).includes(card));}
  function inspectable(card:string){const seat=game.players.findIndex(p=>p.id===viewer);return !major&&seat>=0&&game.hands[seat].includes(card);}
  function hover(id:string|null){onHover(id);renderer.domElement.style.cursor=id?'pointer':'';}
 </script>

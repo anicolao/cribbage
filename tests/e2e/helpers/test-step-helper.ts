@@ -44,6 +44,7 @@ export class TestStepHelper{
  finish(){
   // Baseline generation is explicit and must be followed by a separate comparison run.
   const folder=dirname(this.info.file);mkdirSync(folder,{recursive:true});
-  writeFileSync(join(folder,`${this.story}-${process.platform}.md`),`# Four friends at the cribbage table\n\nEvery user action is followed by the actor's view and all seated observers. All captures are 1180×820 at 1×; verification allows zero different pixels.\n\n${this.steps.join('\n\n')}\n`);
+  const title=this.story==='ANIMATIONS'?'Shared animation review':this.story==='TWO-PLAYERS'?'Two friends at the cribbage table':this.story==='THREE-PLAYERS'?'Three friends at the cribbage table':'Four friends at the cribbage table';
+  writeFileSync(join(folder,`${this.story}-${process.platform}.md`),`# ${title}\n\n${this.story==='ANIMATIONS'?'Each transition is paused at 0.50 seconds for review.':"Every user action is followed by the actor's view and all seated observers."} All captures are 1180×820 at 1×; verification allows zero different pixels.\n\n${this.steps.join('\n\n')}\n`);
  }
 }
