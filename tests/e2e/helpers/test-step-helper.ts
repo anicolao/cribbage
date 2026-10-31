@@ -1,6 +1,7 @@
 import {test,expect,type Page,type TestInfo} from '@playwright/test';
-import {writeFileSync,mkdirSync} from 'node:fs';
+import {writeFileSync,mkdirSync,readFileSync,existsSync} from 'node:fs';
 import {dirname,join} from 'node:path';
+import {identicalPixels} from './exact-pixels';
 type Verification={spec:string;check:()=>Promise<unknown>};
 /** One ordered, illustrated narrative across actor and observer perspectives. */
 export class TestStepHelper{
@@ -24,7 +25,17 @@ export class TestStepHelper{
     return failures;
    });expect(overflow).toEqual([]);
    const name=`${String(this.steps.length).padStart(3,'0')}-${id}-${player.toLowerCase()}.png`;
-   await expect(page).toHaveScreenshot(name,{timeout:10_000,maxDiffPixels:0,threshold:0});
+   const baseline=this.info.snapshotPath(name),capture=await page.screenshot({animations:'disabled',caret:'hide',scale:'css'});
+   if(this.info.config.updateSnapshots!=='none'){
+    mkdirSync(dirname(baseline),{recursive:true});writeFileSync(baseline,capture);
+   }else{
+    const same=existsSync(baseline)&&await identicalPixels(capture,readFileSync(baseline));
+    if(!same){
+     await this.info.attach(`${id}-${player}-actual`,{body:capture,contentType:'image/png'});
+     expect(capture).toMatchSnapshot(name,{maxDiffPixels:0,threshold:0});
+     expect(same,'Every decoded RGBA byte must match the reviewed reference').toBe(true);
+    }
+   }
    this.steps.push(`## ${description}\n\nViewpoint: **${player}**\n\n![${description}](./screenshots/${name.replace('.png',`-${process.platform}.png`)})\n\n${verifications.map(v=>`- [x] ${v.spec}`).join('\n')}`);
   });
  }
