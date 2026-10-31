@@ -30,9 +30,9 @@ function catalogue(){
   if(intent.type==='play')add(`play-${ids[seat]}`,seat?`${name} plays a card`:'You play a card','The actual card leaves its fan, turns if concealed, and lands to the right and above the previous play.',s);
   if(intent.type==='go'&&s.after.phase==='pegging')add('go','Go · play automatically after five seconds','Tap Go immediately, or let the five-second countdown play it for you.',{...s,delay:5});
   if(s.after.players.some((p,i)=>p.score!==s.before.players[i].score))add('peg','Score and leapfrog a peg','The rear physical peg lifts and lands in the new hole; the nameplate score changes when it lands.',s);
-  if(s.before.phase!=='count'&&s.after.phase==='count')add('count-start','Finish pegging and begin counting','The last card lands in the pegging stack before the first hand spreads for counting.',s);
-  if(intent.type==='count')add(isCribCount(s.before)?'crib-close':`count-${ids[seat]}`,isCribCount(s.before)?'Finish the crib':`Count ${name}’s hand`,'The scoring peg moves while the counted hand closes and the next hand spreads.',s);
-  if(s.after.phase==='count'&&isCribCount(s.after))add('crib','Reveal and count the crib','Every crib card turns face up and spreads beside the board.',s);
+  if(s.before.phase!=='count'&&s.after.phase==='count')add('count-start','Finish pegging and begin counting','The last card lands before the first hand spreads. Its points appear beside the revealed cards; cumulative totals stay in the nameplates.',s);
+  if(intent.type==='count')add(isCribCount(s.before)?'crib-close':`count-${ids[seat]}`,isCribCount(s.before)?'Finish the crib':`Count ${name}’s hand`,'The counted hand’s points remain beside its cards through the peg flight, then fade as the next hand spreads and shows its own points.',s);
+  if(s.after.phase==='count'&&isCribCount(s.after))add('crib','Reveal and count the crib','Every crib card turns face up and spreads beside the board, with its points beside the crib.',s);
   if(intent.type==='deal')add('next-hand','Collect, shuffle and deal again','Played cards and crib return to the deck, the deck cuts together, and the new hand is dealt clockwise.',s);
   if(s.after.phase==='finished')add('win','Winning peg and nameplate','The winning peg lands at 121 and the winner’s nameplate lifts in celebration.',s);
  }

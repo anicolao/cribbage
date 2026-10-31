@@ -65,3 +65,21 @@ test('live card flights clear the solid board from every player perspective',()=
   }
  }
 });
+
+
+test('hand points fade in after the revealed cards land, persist through their scoring peg, then yield to the next hand',()=>{
+ const example=animationExamples.find(e=>e.id==='whole-hand')!;
+ for(const step of example.steps.filter(s=>s.after.phase==='count')){
+  const plan=planMotion(step.before,step.after,'you'),label=plan.target.counts[0],track=plan.counts.find(t=>t.item.id===label.id)!;
+  if(track.segments.length){
+   const landed=Math.max(0,...plan.cards.filter(c=>label.cards.includes(c.item.id)).flatMap(c=>c.segments.map(s=>s.start+s.duration)));
+   expect(track.segments[0].start).toBeGreaterThanOrEqual(landed);
+   expect(sampleMotion(plan,Math.max(0,landed-.01)).counts.find(c=>c.id===label.id)?.scale??0).toBe(0);
+  }
+  if(step.before.phase==='count'){
+   const old=plan.from.counts[0],pegEnd=Math.max(0,...plan.pegs.flatMap(p=>p.segments.map(s=>s.start+s.duration)));
+   if(pegEnd)expect(sampleMotion(plan,pegEnd-.01).counts.find(c=>c.id===old.id)?.scale).toBe(1);
+   expect(sampleMotion(plan,plan.duration).counts).toEqual(plan.target.counts);
+  }
+ }
+});

@@ -24,7 +24,7 @@ Version 3 adds `undo-discard(card)`, `accept-crib`, and host-only `auto-go(playe
 
 Go remains an ordinary player intent, available immediately and submitted automatically after five seconds with no legal card. The host handles companion Go and can submit `auto-go(player)` for an unresponsive human after a further second, without impersonating that player. Revision checks and replay validate that Go is still legal. The countdown starts after the preceding card animation settles. Deadlines live in namespaced local storage and survive reload; they are presentation scheduling, never logged computed values. The deterministic engine validates the actions without consulting clocks. This follows the trusted-client model.
 
-Scores are printed directly on the felt near each player's hand and update when the scoring peg lands. The lab uses the same score meshes, undo flights and countdown component, with legal-intent scenes for partial undo, full-crib undo, acceptance, and automatic Go.
+Cumulative scores stay engraved in the nameplates and update when the scoring peg lands. During counting, the current hand or crib’s points appear beside the revealed cards, fade in after they spread, and remain through the scoring peg’s flight. The lab uses the same counting annotations, undo flights and countdown component, with legal-intent scenes for partial undo, full-crib undo, acceptance, and automatic Go.
 
 The seed is the host's shuffle input. The PRNG is Pantheon's version-1 FNV-1a/xorshift32 and Fisher–Yates shuffle, copied under GPLv3. Each hand uses a separate `${seed}:deal:${round}` stream, and `${seed}:dealer` selects the initial dealer. Replay never uses wall clocks or ambient randomness. The source log alone recreates the entire game.
 

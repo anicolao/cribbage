@@ -2,12 +2,12 @@ import {handSize,isCribCount,type State} from '../game/engine';
 import {publicPose,tablePlayers} from '../game/layout';
 import {DECK_POSITION,STARTER_POSITION} from '../sceneLayout';
 import {type Position} from '../table';
-import {buildFrame,pose,rotate,type Frame,type Pose,type CardVisual,type PlateVisual,type PegVisual} from './frame';
+import {buildFrame,pose,rotate,type Frame,type Pose,type CardVisual,type PlateVisual,type PegVisual,type CountVisual} from './frame';
 export const MOTION={join:.8,deal:1.05,dealInterval:.085,discard:1.05,cut:1.05,play:.8,spread:.8,peg:.95,collect:.9,hover:.16,turn:.38};
 export type MotionKind='ready'|'join'|'deal'|'discard'|'undo'|'cut'|'play'|'go'|'count'|'crib'|'next-hand'|'win';
 type Segment={from:Pose;to:Pose;start:number;duration:number;lift:number};
 type Track<T>={item:T;segments:Segment[];remove?:boolean;appear?:number};
-export type Plan={from:Frame;target:Frame;kind:MotionKind;duration:number;cards:Track<CardVisual>[];plates:Track<PlateVisual>[];pegs:Track<PegVisual>[]};
+export type Plan={from:Frame;target:Frame;kind:MotionKind;duration:number;cards:Track<CardVisual>[];plates:Track<PlateVisual>[];pegs:Track<PegVisual>[];counts:Track<CountVisual>[]};
 const smooth=(p:number)=>p<.5?4*p*p*p:1-(-2*p+2)**3/2;
 const clamp=(p:number)=>Math.max(0,Math.min(1,p));
 const clonePose=(p:Pose):Pose=>({...p,position:[...p.position]});
@@ -29,7 +29,7 @@ function kindOf(before:State,after:State):MotionKind{
 }
 export function planMotion(before:State,after:State,viewer:string,from=buildFrame(before,viewer)):Plan{
  const target=buildFrame(after,viewer,from),kind=kindOf(before,after),collect=kind==='next-hand',deal=kind==='deal'||collect;
- const plan:Plan={from,target,kind,duration:kind==='ready'?0:MOTION.turn,cards:[],plates:[],pegs:[]};
+ const plan:Plan={from,target,kind,duration:kind==='ready'?0:MOTION.turn,cards:[],plates:[],pegs:[],counts:[]};
  const deckPose=pose([STARTER_POSITION[0],STARTER_POSITION[1]+.014,STARTER_POSITION[2]],0,Math.PI);
  const count=after.players.length,dealt=count*handSize(after)+(count===3?1:0);
  const collectionEnd=collect?1.5:0;
@@ -83,6 +83,18 @@ export function planMotion(before:State,after:State,viewer:string,from=buildFram
   else if(different(old,peg))segments.push(segment(old,peg,kind==='play'?MOTION.play*.65:kind==='cut'?.6:0,MOTION.peg,.9));
   plan.pegs.push({item:peg,segments});
  }
+ for(const label of target.counts){
+  const old=from.counts.find(c=>c.id===label.id),segments:Segment[]=[];
+  if(!old){
+   const landed=Math.max(0,...plan.cards.filter(c=>label.cards.includes(c.item.id)).flatMap(c=>c.segments.map(s=>s.start+s.duration)));
+   segments.push(segment({...label,scale:0},label,landed,.3));
+  }
+  plan.counts.push({item:label,segments});
+ }
+ for(const old of from.counts.filter(c=>!target.counts.some(t=>t.id===c.id))){
+  const landed=Math.max(0,...plan.pegs.flatMap(p=>p.segments.map(s=>s.start+s.duration)));
+  plan.counts.push({item:{...old,awarded:before.phase==='count'},segments:[segment(old,{...old,scale:0},landed,.3)],remove:true});
+ }
  if(collect)plan.duration=Math.max(plan.duration,dealStart+(dealt-1)*MOTION.dealInterval+MOTION.deal);
  return plan;
 }
@@ -97,7 +109,7 @@ export function sampleMotion(plan:Plan,time:number):Frame{
  if(time>=plan.duration)return plan.target;
  const sample=<T extends Pose>(tracks:Track<T>[])=>tracks.map(t=>sampleTrack(t,time)).filter((t):t is T=>!!t);
  const status=time<.12?{...plan.from.status,opacity:1-time/.12}:{...plan.target.status,opacity:Math.min(1,(time-.12)/.18)};
- const frame:Frame={status,revision:plan.target.revision,cards:sample(plan.cards),plates:sample(plan.plates),pegs:sample(plan.pegs)};
+ const frame:Frame={status,revision:plan.target.revision,cards:sample(plan.cards),plates:sample(plan.plates),pegs:sample(plan.pegs),counts:sample(plan.counts)};
  // Update engraved scores when their peg lands, not when it starts flying.
  frame.plates=frame.plates.map(p=>{const old=plan.from.plates.find(o=>o.id===p.id);const peg=plan.pegs.find(t=>t.item.owner===p.id&&t.segments.length);const end=peg?.segments.at(-1);return old&&end&&time<end.start+end.duration?{...p,score:old.score}:p;});
  return frame;

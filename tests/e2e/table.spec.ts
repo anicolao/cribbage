@@ -1,9 +1,9 @@
 import {test,expect,type Page} from '@playwright/test';
 import {TestStepHelper} from './helpers/test-step-helper';
-import {replay,apply,initialState,needsDiscard,cribComplete,cribCards,legalCards,type Intent,type Event} from '../../src/game/engine';
+import {replay,apply,initialState,needsDiscard,cribComplete,cribCards,legalCards,countOwner,isCribCount,type Intent,type Event} from '../../src/game/engine';
 import {botIntent} from '../../src/game/bot';
 import {animationExamples} from '../../src/presentation/catalog';
-import {cardName} from '../../src/game/cards';
+import {cardName,handScore} from '../../src/game/cards';
 
 for(const count of [4,2,3])test(count===4?'four friends gather, peg a complete hand, count every hand and crib, and return to their seats':`${count} friends start early, peg and count a complete hand, and deal again`,async({browser},info)=>{
  const helper=new TestStepHelper(info,count===4?'STORY':count===2?'TWO-PLAYERS':'THREE-PLAYERS'),names=['Alex','Rowan','Jules','Ada'].slice(0,count);
@@ -23,7 +23,7 @@ for(const count of [4,2,3])test(count===4?'four friends gather, peg a complete h
   const actual=await page.evaluate(()=>{
    const root=document.querySelector('main')!,table=document.querySelector('[data-table-view]')!,canvas=document.querySelector('canvas')!;
    const text=(selector:string)=>document.querySelector(selector)?.textContent??null;
-   return {phase:root.getAttribute('data-phase'),round:root.getAttribute('data-round'),total:text('[data-testid="running-count"]'),crib:text('[data-testid="crib-size"]'),starter:text('[data-testid="starter"]'),prompt:text('[role="status"]'),scores:JSON.parse(table.getAttribute('data-render-scores')??'[]'),quality:table.getAttribute('data-render-quality'),buffer:[canvas.width,canvas.height],svg:document.querySelectorAll('svg').length,alerts:document.querySelectorAll('[role="alert"]').length,
+   return {phase:root.getAttribute('data-phase'),round:root.getAttribute('data-round'),total:text('[data-testid="running-count"]'),crib:text('[data-testid="crib-size"]'),starter:text('[data-testid="starter"]'),prompt:text('[role="status"]'),counts:JSON.parse(table.getAttribute('data-render-counts')??'[]'),scores:JSON.parse(table.getAttribute('data-render-scores')??'[]'),quality:table.getAttribute('data-render-quality'),buffer:[canvas.width,canvas.height],svg:document.querySelectorAll('svg').length,alerts:document.querySelectorAll('[role="alert"]').length,
     players:Array.from(document.querySelectorAll('[data-player]')).map(area=>({id:area.getAttribute('data-player'),score:area.getAttribute('data-score'),held:area.getAttribute('data-held'),lane:area.getAttribute('data-lane'),cards:Array.from(area.querySelectorAll('[aria-label="Held cards"] li')).map(li=>li.textContent),plays:Array.from(area.querySelectorAll('[aria-label="Played cards"] li')).map(li=>li.textContent)})),
     controls:Array.from(document.querySelectorAll('button[data-card]')).map(card=>({card:card.getAttribute('data-card'),disabled:card.getAttribute('aria-disabled'),label:card.getAttribute('aria-label'),x:Number(card.getAttribute('data-hit-x')),y:Number(card.getAttribute('data-hit-y'))}))};
   });
@@ -37,6 +37,11 @@ for(const count of [4,2,3])test(count===4?'four friends gather, peg a complete h
   }
   if(expected.phase==='discard')expect(actual.prompt).toBe(needsDiscard(expected,viewer)?expected.hands[viewer].length===6?'Choose two for the crib':expected.discards[viewer].length?'Choose one more for the crib':'Choose one for the crib':'Waiting for the crib');
   expect(actual.scores).toEqual(expected.players.map(p=>({id:p.id,score:p.score})));
+  if(expected.phase==='count'||expected.phase==='between'){
+   const crib=expected.phase==='between'||isCribCount(expected),owner=crib?expected.dealer:countOwner(expected),cards=crib?expected.crib:expected.kept[owner];
+   expect(actual.counts).toEqual([{id:`${expected.round}:count:${crib?expected.players.length:expected.countIndex}`,owner:ids[owner],points:handScore(cards,expected.cut!,crib),kind:crib?'crib':'hand',cards:cards.map(c=>`${expected.round}:${c}`),awarded:expected.phase==='between',opacity:1}]);
+   if(expected.phase==='count')expect(actual.prompt).toBe(`${names[owner]}’s ${crib?'crib':'hand'}`);
+  }else expect(actual.counts).toEqual([]);
   await expect(page.getByRole('button',{name:'Undo crib contribution',exact:true})).toHaveCount(expected.pendingDiscards.some(p=>p.seat===viewer)?1:0);
   await expect(page.getByRole('button',{name:/Confirm/})).toHaveCount(0);
   expect(actual.quality).toBe('shared-lab');expect(actual.buffer).toEqual([1180,820]);expect(actual.svg).toBe(0);expect(actual.alerts).toBe(0);expect(errors).toEqual([]);
