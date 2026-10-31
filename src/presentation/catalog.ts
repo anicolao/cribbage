@@ -1,3 +1,4 @@
+import pairedAces from './fixtures/paired-aces.json';
 import {initialState,apply,needsDiscard,cribComplete,legalCards,discardActor,isCribCount,type State,type Intent} from '../game/engine';
 import {botIntent} from '../game/bot';
 import {planMotion,interactionLevel,type Plan} from './motion';
@@ -57,6 +58,11 @@ function catalogue(){
   }
   actSmall(ids[small.turn],{type:'deal'});
   examples.push({id:`whole-hand-${count}`,name:`${count===2?'Two':'Three'} players · complete hand`,hint:'A complete legal hand, including gathering, discards, pegging, counting and the next deal.',steps,viewer:'you'});
+ }
+ let paired=initialState();
+ for(const [index,event] of pairedAces.entries()){
+  const before=paired,intent=event.intent as Intent;paired=apply(before,event.actor,intent);
+  if(index===50||index===74)add(index===50?'pair':'pair-last',index===50?'Pair of aces':'Pair and last card · peg three together','Points appear beside the scoring cards. The combined award moves one peg; the other stays put.',{before,after:paired,actor:event.actor,intent});
  }
  return examples;
 }

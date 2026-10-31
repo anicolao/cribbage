@@ -1,14 +1,16 @@
 <script lang="ts">
  import {onMount,untrack} from 'svelte';
  import TableView from './TableView.svelte';
- import {initialState,replay,legalCards,countOwner,needsDiscard,isCribCount,cribCards,type State,type Event,type Intent} from './game/engine';
+ import {initialState,legalCards,countOwner,needsDiscard,isCribCount,cribCards,type State,type Event,type Intent} from './game/engine';
  import {repository,playerIdentity} from './game/repository';
  import {botIntent} from './game/bot';
  import {cardName,handScore} from './game/cards';
  import {tablePlayers} from './game/layout';
+ import {replayTable} from './presentation/replay';
  import {statusFor} from './presentation/frame';
  import {BOT_DELAY_MS,TableClock,countdownAction,automaticChoice,type Windows} from './game/countdowns';
  let game=$state<State>(initialState()),viewer=$state(''),room=$state(''),name=$state(''),busy=$state(false),error=$state(''),ready=$state(false),animating=$state(false),renderedRevision=$state(-1),connected=$state(false),copied=$state(false);
+ let pegOrigins=$state<Record<string,number>>({});
  let now=$state(Date.now()),windows=$state.raw<Windows>({discards:[]});
  let clock:TableClock|undefined,clockKey='';const autoAttempts=new Map<string,number>();
  const choiceAction=$derived(countdownAction(game,viewer,windows,now,busy||!connected||!ready));
@@ -19,7 +21,8 @@
  const isTurn=$derived(seat>=0&&game.turn===seat);
  const invitation=$derived(typeof location==='undefined'?'':`${location.origin}${import.meta.env.BASE_URL}?table=${room}`);
  const countPoints=$derived(game.phase==='count'&&game.cut?handScore(isCribCount(game)?game.crib:game.kept[countOwner(game)],game.cut,isCribCount(game)):0);
- const prompt=$derived(gathering?(own?'':'Take a seat'):statusFor(game,viewer).primary);
+ const tableStatus=$derived(statusFor(game,viewer,pegOrigins));
+ const prompt=$derived(gathering?(own?'':'Take a seat'):tableStatus.primary);
  async function initialize(){
   try{viewer=await playerIdentity();error='';name=localStorage.getItem('cribbage:name')??'';
    const code=new URLSearchParams(location.search).get('table');if(code&&/^[A-Z0-9]{5,8}$/.test(code))room=code;
@@ -39,7 +42,7 @@
  $effect(()=>{
   if(!room||!viewer)return;
   connected=false;
-  repo=repository(room,(events:Event[])=>{game=replay(events);connected=true;error='';},message=>{connected=false;error=message;});
+  repo=repository(room,(events:Event[])=>{({game,pegOrigins}=replayTable(events));connected=true;error='';},message=>{connected=false;error=message;});
   return()=>repo?.close();
  });
  async function act(intent:Intent,actor=viewer,automatic=false){
@@ -69,7 +72,7 @@
 </script>
 <svelte:head><title>Cribbage</title><meta name="description" content="Pull up a chair. A shared wooden cribbage table for two, three or four."/></svelte:head>
 <main data-e2e-layout data-busy={busy} data-connected={connected} data-animating={animating} data-settled-revision={renderedRevision} data-ready={ready} data-phase={game.phase} data-revision={game.revision} data-round={game.round} aria-label="Cribbage table">
- <div class="table-scene"><TableView {game} {viewer} action={choiceAction} onAction={chooseAction} onReady={()=>ready=true} onMotion={moving=>animating=moving} onSettled={revision=>renderedRevision=revision} onCard={play}/></div>
+ <div class="table-scene"><TableView {game} {viewer} {pegOrigins} action={choiceAction} onAction={chooseAction} onReady={()=>ready=true} onMotion={moving=>animating=moving} onSettled={revision=>renderedRevision=revision} onCard={play}/></div>
  {#if gathering}
   <section class="gather" aria-label="Gathering" data-e2e-fit>
    <h1>Cribbage</h1>
@@ -91,7 +94,7 @@
    {/if}
   </section>
  {:else}
-  <div class="sr-only"><p class="prompt" role="status" data-status={ready&&connected&&!busy&&!animating&&renderedRevision===game.revision?'synced':'waiting'}>{prompt}</p>{#if game.message&&game.message!==prompt&&game.phase!=='discard'&&game.phase!=='count'}<p class="last-play">{game.message}</p>{/if}</div>
+  <div class="sr-only"><p class="prompt" role="status" data-status={ready&&connected&&!busy&&!animating&&renderedRevision===game.revision?'synced':'waiting'}>{prompt}</p>{#if tableStatus.secondary}<p class="last-play">{tableStatus.secondary}</p>{/if}</div>
   <div class="turn-action" class:arriving={animating} data-e2e-fit>
    {#if isTurn&&game.phase==='cut'}<button class="brass" onclick={()=>act({type:'cut'})} disabled={busy||animating}>Cut</button>
 

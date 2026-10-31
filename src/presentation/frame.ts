@@ -8,19 +8,22 @@ export type CardVisual=Pose&{id:string;card:string;owner:string;zone:'deck'|'han
 export type PlateVisual=Pose&{id:string;name:string;score?:number;color?:string};
 export type PegVisual=Pose&{id:string;owner:string;color:string;score:number};
 export type CountVisual=Pose&{id:string;owner:string;points:number;kind:'hand'|'crib';cards:string[];awarded:boolean};
+export type AwardVisual=Pose&{id:string;owner:string;points:number;label:string;cards:string[]};
 export type Status={primary:string;secondary:string;opacity:number};
-export function statusFor(game:State,viewer:string):Status{
+export function statusFor(game:State,viewer:string,pegOrigins?:Record<string,number>):Status{
  const own=game.players.findIndex(p=>p.id===viewer),name=game.players[game.turn]?.name??'';
  const primary=game.phase==='gathering'?'':game.phase==='discard'?(own>=0&&needsDiscard(game,own)?(game.hands[own].length===6?'Choose two for the crib':game.discards[own].length?'Choose one more for the crib':'Choose one for the crib'):'Waiting for the crib'):game.phase==='cut'?`${name} to cut`:game.phase==='pegging'?`${game.total} · ${own===game.turn?'Your turn':name+' to play'}`:game.phase==='count'?`${name}${isCribCount(game)?'’s crib':'’s hand'}`:game.phase==='between'?`${name} to deal`:game.message;
- return {primary,secondary:game.message&&game.message!==primary&&!['discard','count','between'].includes(game.phase)?game.message:'',opacity:1};
+ let secondary=game.message&&game.message!==primary&&!['discard','count','between'].includes(game.phase)?game.message:'';
+ if(game.message.includes(' · Last card · ')){const p=game.players[game.last],origin=pegOrigins?.[p?.id];if(p&&origin!==undefined&&p.score-origin>1)secondary=`${p.name} · ${p.score-origin} points`;}
+ return {primary,secondary,opacity:1};
 }
-export type Frame={status:Status;revision:number;cards:CardVisual[];plates:PlateVisual[];pegs:PegVisual[];counts:CountVisual[]};
+export type Frame={status:Status;revision:number;cards:CardVisual[];plates:PlateVisual[];pegs:PegVisual[];counts:CountVisual[];awards:AwardVisual[]};
 export const pose=(position:Position,rotation=0,flip=0):Pose=>({position,rotation,flip,scale:1,glow:0});
 export function rotate(position:Position,angle:number):Position{return [Math.cos(angle)*position[0]+Math.sin(angle)*position[2],position[1],-Math.sin(angle)*position[0]+Math.cos(angle)*position[2]];}
 export function cardId(game:State,card:string){return `${game.round}:${card}`;}
 export function pegPosition(score:number,lane:number):Position{const p=trackPoint(score,lane);return rotate([p[0],.467,p[1]],BOARD_ROTATION);}
-export function buildFrame(game:State,viewer:string,prior?:Frame):Frame{
- const frame:Frame={status:statusFor(game,viewer),revision:game.revision,cards:[],plates:[],pegs:[],counts:[]};
+export function buildFrame(game:State,viewer:string,prior?:Frame,pegOrigins?:Record<string,number>):Frame{
+ const frame:Frame={status:statusFor(game,viewer,pegOrigins),revision:game.revision,cards:[],plates:[],pegs:[],counts:[],awards:[]};
  for(let i=0;i<DECK_LAYERS;i++)frame.cards.push({...pose([DECK_POSITION[0]+i*.001,DECK_POSITION[1]+i*STACK_STEP,DECK_POSITION[2]]),id:`deck-${i}`,card:'back',owner:'',zone:'deck',order:i});
  for(const seat of tablePlayers(game,viewer)){
   const place=(position:Position)=>{const p=rotate(position,seat.rotation);return [seat.x+p[0],p[1],seat.z+p[2]] as Position;};
@@ -29,10 +32,12 @@ export function buildFrame(game:State,viewer:string,prior?:Frame):Frame{
   const counting=game.phase==='count'&&!isCribCount(game)&&game.turn===seat.index;
   frame.plates.push({...pose([seat.x,.012,seat.z+(seat.lane>=2?-1:1)*(counting?.95:1.7)]),id:seat.id,name:seat.name,score:seat.score,color:seat.color});
   const previous=prior?.pegs.filter(p=>p.owner===seat.id);
+  const oldFront=previous?.toSorted((a,b)=>b.score-a.score)[0];
+  const origin=pegOrigins?.[seat.id]??(oldFront&&seat.score>=oldFront.score?(seat.score===oldFront.score?Math.min(...previous!.map(p=>p.score)):oldFront.score):seat.previous);
   // The rear physical peg leapfrogs the front; peg identity never swaps at a score update.
-  const front=previous?.find(p=>p.score===seat.score)??previous?.find(p=>p.score!==seat.previous);
+  const front=previous?.find(p=>p.score===seat.score)??previous?.find(p=>p.score!==origin);
   const frontId=front?.id??`${seat.id}:a`;
-  for(const [id,score] of [[frontId,seat.score],[frontId.endsWith(':a')?`${seat.id}:b`:`${seat.id}:a`,seat.previous]] as const){frame.pegs.push({...pose(pegPosition(score,seat.index)),id,owner:seat.id,color:seat.color,score});}
+  for(const [id,score] of [[frontId,seat.score],[frontId.endsWith(':a')?`${seat.id}:b`:`${seat.id}:a`,origin]] as const){frame.pegs.push({...pose(pegPosition(score,seat.index)),id,owner:seat.id,color:seat.color,score});}
  }
  const crib=cribCards(game),current=crib.map(card=>cardId(game,card));
  const order=[...(prior?.cards.filter(c=>c.zone==='crib'&&current.includes(c.id)).sort((a,b)=>a.order-b.order).map(c=>c.id)??[]),...current.filter(id=>!prior?.cards.some(c=>c.zone==='crib'&&c.id===id))];

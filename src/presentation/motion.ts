@@ -1,13 +1,14 @@
+import {peggingAwards} from './awards';
 import {handSize,isCribCount,type State} from '../game/engine';
 import {publicPose,tablePlayers} from '../game/layout';
 import {DECK_POSITION,STARTER_POSITION} from '../sceneLayout';
 import {type Position} from '../table';
-import {buildFrame,pose,rotate,type Frame,type Pose,type CardVisual,type PlateVisual,type PegVisual,type CountVisual} from './frame';
+import {buildFrame,pose,rotate,type Frame,type Pose,type CardVisual,type PlateVisual,type PegVisual,type CountVisual,type AwardVisual} from './frame';
 export const MOTION={join:.8,deal:1.05,dealInterval:.085,discard:1.05,cut:1.05,play:.8,spread:.8,peg:.95,collect:.9,hover:.16,turn:.38};
 export type MotionKind='ready'|'join'|'deal'|'discard'|'undo'|'cut'|'play'|'go'|'count'|'crib'|'next-hand'|'win';
 type Segment={from:Pose;to:Pose;start:number;duration:number;lift:number};
 type Track<T>={item:T;segments:Segment[];remove?:boolean;appear?:number};
-export type Plan={from:Frame;target:Frame;kind:MotionKind;duration:number;cards:Track<CardVisual>[];plates:Track<PlateVisual>[];pegs:Track<PegVisual>[];counts:Track<CountVisual>[]};
+export type Plan={from:Frame;target:Frame;kind:MotionKind;duration:number;cards:Track<CardVisual>[];plates:Track<PlateVisual>[];pegs:Track<PegVisual>[];counts:Track<CountVisual>[];awards:Track<AwardVisual>[]};
 const smooth=(p:number)=>p<.5?4*p*p*p:1-(-2*p+2)**3/2;
 const clamp=(p:number)=>Math.max(0,Math.min(1,p));
 const clonePose=(p:Pose):Pose=>({...p,position:[...p.position]});
@@ -27,9 +28,14 @@ function kindOf(before:State,after:State):MotionKind{
  if(after.phase==='count'||before.phase==='count')return isCribCount(after)?'crib':'count';
  if(after.revision!==before.revision)return 'go';return 'ready';
 }
-export function planMotion(before:State,after:State,viewer:string,from=buildFrame(before,viewer)):Plan{
- const target=buildFrame(after,viewer,from),kind=kindOf(before,after),collect=kind==='next-hand',deal=kind==='deal'||collect;
- const plan:Plan={from,target,kind,duration:kind==='ready'?0:MOTION.turn,cards:[],plates:[],pegs:[],counts:[]};
+export function planMotion(before:State,after:State,viewer:string,from=buildFrame(before,viewer),pegOrigins?:Record<string,number>):Plan{
+ const origins=pegOrigins??Object.fromEntries(after.players.map((p,i)=>{
+  const old=before.players[i];
+  if(!old||p.score<old.score||after.seed!==before.seed)return [p.id,-1];
+  return [p.id,p.score!==old.score?old.score:Math.min(...from.pegs.filter(o=>o.owner===p.id).map(o=>o.score),p.previous)];
+ }));
+ const target=buildFrame(after,viewer,from,origins),kind=kindOf(before,after),collect=kind==='next-hand',deal=kind==='deal'||collect;
+ const plan:Plan={from,target,kind,duration:kind==='ready'?0:MOTION.turn,cards:[],plates:[],pegs:[],counts:[],awards:[]};
  const deckPose=pose([STARTER_POSITION[0],STARTER_POSITION[1]+.014,STARTER_POSITION[2]],0,Math.PI);
  const count=after.players.length,dealt=count*handSize(after)+(count===3?1:0);
  const collectionEnd=collect?1.5:0;
@@ -95,6 +101,12 @@ export function planMotion(before:State,after:State,viewer:string,from=buildFram
   const landed=Math.max(0,...plan.pegs.flatMap(p=>p.segments.map(s=>s.start+s.duration)));
   plan.counts.push({item:{...old,awarded:before.phase==='count'},segments:[segment(old,{...old,scale:0},landed,.3)],remove:true});
  }
+ const awards=peggingAwards(before,after,viewer);
+ for(const [index,award] of awards.entries()){
+  const landed=Math.max(0,...plan.cards.filter(c=>award.cards.includes(c.item.id)).flatMap(c=>c.segments.map(s=>s.start+s.duration)));
+  const start=landed+index*.2,hidden={...award,scale:0};
+  plan.awards.push({item:award,segments:[segment(hidden,award,start,.15),segment(award,award,start+.15,.65),segment(award,hidden,start+.8,.25)],remove:true});
+ }
  if(collect)plan.duration=Math.max(plan.duration,dealStart+(dealt-1)*MOTION.dealInterval+MOTION.deal);
  return plan;
 }
@@ -109,7 +121,7 @@ export function sampleMotion(plan:Plan,time:number):Frame{
  if(time>=plan.duration)return plan.target;
  const sample=<T extends Pose>(tracks:Track<T>[])=>tracks.map(t=>sampleTrack(t,time)).filter((t):t is T=>!!t);
  const status=time<.12?{...plan.from.status,opacity:1-time/.12}:{...plan.target.status,opacity:Math.min(1,(time-.12)/.18)};
- const frame:Frame={status,revision:plan.target.revision,cards:sample(plan.cards),plates:sample(plan.plates),pegs:sample(plan.pegs),counts:sample(plan.counts)};
+ const frame:Frame={status,revision:plan.target.revision,cards:sample(plan.cards),plates:sample(plan.plates),pegs:sample(plan.pegs),counts:sample(plan.counts),awards:sample(plan.awards)};
  // Update engraved scores when their peg lands, not when it starts flying.
  frame.plates=frame.plates.map(p=>{const old=plan.from.plates.find(o=>o.id===p.id);const peg=plan.pegs.find(t=>t.item.owner===p.id&&t.segments.length);const end=peg?.segments.at(-1);return old&&end&&time<end.start+end.duration?{...p,score:old.score}:p;});
  return frame;
