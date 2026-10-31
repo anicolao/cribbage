@@ -2,6 +2,8 @@ import { expect, test } from 'bun:test';
 import { CARD_DEPTH, STACK_STEP, BOARD_WIDTH, BOARD_DEPTH, seats } from '../src/table';
 import { cardPose, playedCard, CARD_WIDTH, CARD_HEIGHT, BOARD_ROTATION, DECK_LAYERS, DECK_POSITION, STARTER_POSITION, CRIB_POSITION, displayedScore, PEGGING_DURATION } from '../src/sceneLayout';
 
+import {heldPose,publicPose} from '../src/game/layout';
+
 type Point=[number,number];
 function rectangle(x:number,z:number,width:number,height:number,angle:number):Point[]{
  return [[-1,-1],[1,-1],[1,1],[-1,1]].map(([xx,zz])=>{
@@ -103,4 +105,15 @@ test('the cut/deck is left of the board and the crib is right, without overlap',
 test('the player-area score updates when the scoring peg lands',()=>{
  expect(displayedScore(0,'peg',1.6)).toBe(42);expect(displayedScore(0,'peg',1.8)).toBe(54);
  for(let lane=1;lane<4;lane++)expect(displayedScore(lane,'peg',1.8)).toBe(seats[lane].score);
+});
+
+
+test('live pegging stacks clear the remaining hand as its fan recentres',()=>{
+ for(let lane=0;lane<4;lane++)for(let held=1;held<=3;held++)for(let order=0;order<4-held;order++){
+  const played=publicPose(order,lane);
+  for(let index=0;index<held;index++){
+   const hand=heldPose(index,held);
+   expect(overlaps(rectangle(played.position[0],played.position[2],CARD_WIDTH,CARD_HEIGHT,played.rotation),rectangle(hand.position[0],hand.position[2],CARD_WIDTH,CARD_HEIGHT,hand.rotation))).toBe(false);
+  }
+ }
 });
