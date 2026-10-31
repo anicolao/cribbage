@@ -68,3 +68,5 @@ The playable implementation lives at `/`; the original lab remains at `/dev/anim
 `bun run build && bun run start` serves the built table and event relay at http://127.0.0.1:5198/. Set `HOST`/`PORT` for another interface and port. Tables persist in `.data/cribbage.sqlite`; keep that file to keep your games. Share a reachable server URL when playing from other devices. No cloud account or credentials are needed. The relay is a trusted-client prototype, not an adversarial competitive service.
 
 The [game rules and intent protocol](docs/GAME.md) explain this table's four-player individual scoring. The [end-to-end guide](docs/E2E.md) describes the zero-tolerance, four-perspective illustrated story. CI checks types, all unit/relay/render tests, the production build and the screenshot story. The repository is GPL-3.0-only; the asset-specific public-domain and CC0 attributions above remain in place.
+
+The complete illustrated acceptance story is available for [Linux](tests/e2e/STORY-linux.md) and [macOS](tests/e2e/STORY-darwin.md): 40 actions, each followed by the actor's view and every seated observer, for 154 captures per platform.
