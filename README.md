@@ -1,13 +1,13 @@
 # Cribbage game room
 
-A local Svelte 5 / Threlte 8 / Three.js game-table and animation prototype, initially inspired by `cribmock.png`.
+A shared Svelte 5 / Threlte 8 / Three.js cribbage table with four individual scoring tracks, seeded shuffles, intent replay, and optional heuristic companions. GPL-3.0-only. The original visual lab, inspired by `cribmock.png`, remains available.
 
 ```sh
 bun install
 bun run dev
 ```
 
-Open http://127.0.0.1:5197/ (also available at `/dev/animations`).
+Open http://127.0.0.1:5197/ to play, or `/dev/animations` for the original animation lab.
 
 ## The table
 
@@ -15,7 +15,7 @@ Four players have individual scoring tracks: You (turquoise, bottom left), Rowan
 
 The board has **four separate continuous paperclip tracks**: in its local coordinates, start at the lower left, travel up the left outer leg, around the large inverted U, down the right leg, around the second and final turn, then up the centre to a single shared 121 hole. The board is placed lengthwise across the table at a gentle angle. Each track has 120 scoring holes (24 numbered groups of five) and two starting holes. There is one shared finish hole, for 489 drilled holes total. The leg/turn counts are 35 + 10 + 35 + 5 + 35 = 120. An unlabelled line crosses hole 90 on the central leg just after the second turn. There is no third turn and no wrap back to the start. Board holes, peg positions, and the inlay texture share the coordinates in `src/table.ts`. The slimmer maple face has drilled holes with dark recessed interiors and a rounded walnut base. Scanned maple/walnut albedo, normal, and roughness maps provide the surface detail; a local HDR studio environment supplies reflections. Green baize uses fine scanned fabric normals and fibre sheen. Eight pegs track four individual scores; the peg demo leapfrogs your rear peg ahead of the front peg.
 
-The [ACC rules](https://www.cribbage.org/NewSite/rules/rulebook_2025.pdf) document the 121-point goal, 30-point streets, and scoring. This prototype uses the requested four individual tracks, rather than partnership scoring; the prepared scenarios are not a complete four-player rules engine.
+The [ACC rules](https://www.cribbage.org/NewSite/rules/rulebook_2025.pdf) document the 121-point goal, 30-point streets, and scoring. This game uses the requested four individual tracks rather than partnership scoring; the complete variant and intent protocol are described in [docs/GAME.md](docs/GAME.md).
 
 ## iPad landscape preview
 
@@ -31,7 +31,7 @@ Drag the preview to orbit, scroll to zoom, and right-drag to pan (touch: one fin
 
 ```sh
 bun run check
-bun test tests
+bun run test:unit
 bun run build
 ```
 
@@ -55,7 +55,7 @@ Camera clipping follows distance to the orbit target, preserving depth precision
 - `src/textures.ts`: board markings over scanned maple, felt albedo, paper grain, labels, and card backs.
 - `src/materials.ts` / `src/Environment.svelte`: local PBR maps and HDR environment lighting.
 
-The lab borrows replay / speed / reset conventions from Pantheon and Istanbul and the shared Threlte scene approach from Gotfive. There is no backend or complete game engine. Prepared scenarios do not enforce turn order or implement multiplayer privacy.
+The lab borrows replay / speed / reset conventions from Pantheon and Istanbul and the shared Threlte scene approach from Gotfive. The lab retains its prepared scenarios. The playable table uses the deterministic rules engine and persistent relay described below.
 
 Faces retain the classic artwork with an adjustable white margin (default 2.5%). The independent **Face margin** and **Back margin** sliders in the Cards section range from 0–10% in quarter-percent steps and repaint cached textures live (both default to 2.5%; back margin adds to the generated artwork’s existing border); the SVG physical-card outline is removed before rendering onto the solid card. Backs use the generated classic red engraved rider-style design in `public/cards/card-back-classic-v1.png`, rendered into the same 768 × 1116 texture dimensions as the faces. Both use the same 1.38 × 2 card geometry. The built-in image generation prompt is preserved in `artifacts/card-back-classic-v1.prompt.txt`.
 
