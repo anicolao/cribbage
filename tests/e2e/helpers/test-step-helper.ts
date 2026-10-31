@@ -10,7 +10,7 @@ export class TestStepHelper{
  async step(id:string,page:Page,player:string,description:string,verifications:Verification[],settled=true){
   await test.step(`${player}: ${description}`,async()=>{
    await page.bringToFront();
-   if(settled)try{await expect(page.locator('[role=status]')).toHaveAttribute('data-status','synced',{timeout:20_000});}catch(error){
+   if(settled)try{await expect(page.locator('[role=status]')).toHaveAttribute('data-status','synced',{timeout:60_000});}catch(error){
     await this.info.attach('table-readiness',{body:JSON.stringify(await page.evaluate(()=>({main:document.querySelector('main')?.outerHTML.slice(0,1000),table:document.querySelector('[data-table-view]')?.outerHTML.slice(0,1000),status:document.querySelector('[role=status]')?.outerHTML,visibility:document.visibilityState}))),contentType:'application/json'});throw error;
    }
    await page.mouse.move(0,0);

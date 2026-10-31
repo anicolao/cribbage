@@ -24,7 +24,7 @@ The host’s visible **Copy invite link** button is clicked in the two-player st
 
 Semantic checks read a complete DOM snapshot after the expected revision has settled, preserving all privacy, legality and layout assertions while avoiding thousands of polling requests. CI runs the three independent games and lab story in separate pinned-container jobs. This parallelizes execution without changing rendering, screenshot sizes, comparison tolerance or coverage. Generation artifacts contain only their own story’s references; download and review each artifact before the ordinary comparison run.
 
-UI actions allow 20 seconds for full-quality software-rendered browser work on CI. This changes only the deadline: retries remain zero and every decoded screenshot pixel must still match.
+UI actions and scene readiness allow 60 seconds for full-quality software-rendered browser work on CI. The full-quality software renderer can complete a frame after the former 20-second deadline; failure diagnostics record readiness attributes. This changes only the deadline: retries remain zero and every decoded screenshot pixel must still match.
 
 The two-player story leaves the first contribution in the crib for six seconds, verifies untimed Undo, returns it to the fan, and contributes again. Once the whole crib is full, it reloads an observer, checks one second remains, undoes a card, verifies the timer disappears for both perspectives, fills the crib again and checks a fresh five seconds. Every game captures automatic crib acceptance and a mandatory Go at five and one seconds followed by automatic play. Printed scene scores must exactly match the semantic player scores after peg landing.
 
