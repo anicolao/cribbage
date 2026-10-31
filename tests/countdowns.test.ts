@@ -1,9 +1,9 @@
 import {test,expect} from 'bun:test';
 import {createHash} from 'node:crypto';
 import legacy from './fixtures/v2-hands.json';
-import {apply,initialState,replay,cribComplete,discardActor,parseIntent,type State,type Event} from '../src/game/engine';
+import {apply,initialState,replay,cribComplete,discardActor,parseIntent,legalCards,type State,type Event} from '../src/game/engine';
 import {botIntent} from '../src/game/bot';
-import {TableClock,countdownAction,automaticChoice,type ClockStorage} from '../src/game/countdowns';
+import {TableClock,countdownAction,automaticChoice,automaticIntent,intentForAction,type ClockStorage} from '../src/game/countdowns';
 import {animationExamples,buildTimeline,timelineAt} from '../src/presentation/catalog';
 function table(n=2){let s=apply(initialState(),'p0',{type:'create',name:'Alex'});for(let i=1;i<n;i++)s=apply(s,`p${i}`,{type:'join',name:`Friend ${i}`});return apply(s,'p0',{type:'begin',seed:'undo-review'});}
 function full(s:State){while(!cribComplete(s)){const seat=discardActor(s);s=apply(s,`p${seat}`,botIntent(s,seat)!);}return s;}
@@ -55,4 +55,54 @@ test('companion Go waits 600ms after animation settles, with no human countdown 
  expect(automaticChoice(s,'p0',windows,1599)).toBeUndefined();
  const choice=automaticChoice(s,'p0',windows,1600)!;expect(choice.actor).toBe('p1');expect(choice.intent).toEqual({type:'go'});
  const after=apply(s,choice.actor,choice.intent);expect(automaticChoice(after,'p0',windows,1600)).toBeUndefined();
+});
+
+for(const n of [2,3,4])test(`${n} players: cut, hand/crib counting and next deal are immediate options and auto-submit once after three settled seconds`,()=>{
+ const story=animationExamples.find(e=>e.id===(n===4?'whole-hand':`whole-hand-${n}`))!;
+ for(const type of ['cut','count','deal'] as const)for(const step of story.steps.filter(s=>s.intent.type===type)){
+  const state=step.before,store=storage(),clock=new TableClock(store,'automatic'),actor=state.players[state.turn].id;
+  expect(clock.observe(state,0,false).turn).toBeUndefined();
+  const windows=clock.observe(state,1000,true);expect(windows.turn?.deadline).toBe(4000);
+  const action=countdownAction(state,actor,windows,1000)!;expect(action.kind).toBe(type);expect(action.remaining).toBe(3);expect(action.disabled).toBe(false);
+  expect(intentForAction(action)).toEqual(step.intent);expect(apply(state,actor,intentForAction(action)!)).toEqual(step.after);
+  expect(new TableClock(store,'automatic').observe(state,3000,false).turn?.deadline).toBe(4000);
+  expect(countdownAction(state,actor,windows,3000)?.remaining).toBe(1);
+  expect(automaticChoice(state,actor,windows,3999)).toBeUndefined();expect(automaticChoice(state,actor,windows,4000)?.intent).toEqual(step.intent);
+  const other=state.players.find(p=>p.id!==actor)!;expect(automaticChoice(state,other.id,windows,10000)).toBeUndefined();
+  expect(automaticChoice(step.after,actor,windows,4000)).toBeUndefined();expect(clock.observe(step.after,4000,false).turn).toBeUndefined();
+ }
+});
+for(const id of ['forced-fit','last-card'])test(`${id}: only the single legal card can auto-play, and a manual play clears the stored countdown`,()=>{
+ const step=animationExamples.find(e=>e.id===id)!.steps[0],state=step.before,actor=state.players[state.turn].id;
+ const cards=legalCards(state,state.turn);expect(cards).toHaveLength(1);if(id==='forced-fit')expect(state.hands[state.turn].length).toBeGreaterThan(1);else expect(state.hands[state.turn]).toHaveLength(1);
+ const store=storage(),clock=new TableClock(store,'forced');expect(clock.observe(state,0,false).turn).toBeUndefined();
+ const windows=clock.observe(state,1000,true),action=countdownAction(state,actor,windows,1000)!;
+ expect(action.kind).toBe('play');expect(action.card).toBe(cards[0]);expect(action.remaining).toBe(3);expect(intentForAction(action)).toEqual({type:'play',card:cards[0]});
+ expect(new TableClock(store,'forced').observe(state,3000,true).turn?.deadline).toBe(4000);
+ expect(automaticChoice(state,actor,windows,3999)).toBeUndefined();const choice=automaticChoice(state,actor,windows,4000)!;expect(choice.intent).toEqual({type:'play',card:cards[0]});
+ const after=apply(state,actor,intentForAction(action)!);expect(after).toEqual(step.after);expect(automaticChoice(after,actor,windows,5000)).toBeUndefined();clock.observe(after,5000,false);expect(store.getItem('forced')).toBe('{}');
+});
+test('starting/restarting a match and choosing among multiple legal cards never become automatic',()=>{
+ const story=animationExamples.find(e=>e.id==='whole-hand')!,begin=story.steps.find(s=>s.intent.type==='begin')!,choice=story.steps.find(s=>s.before.phase==='pegging'&&legalCards(s.before,s.before.turn).length>1)!;
+ for(const state of [begin.before,choice.before,animationExamples.find(e=>e.id==='win')!.steps[0].after]){
+  expect(automaticIntent(state)).toBeUndefined();const clock=new TableClock(storage(),'choice');const windows=clock.observe(state,0,true);expect(windows.turn).toBeUndefined();expect(windows.go).toBeUndefined();expect(automaticChoice(state,state.host,windows,999999)).toBeUndefined();
+ }
+});
+test('all companion progress, including forced cards, keeps the 600ms delay and host-controlled ordinary intent',()=>{
+ let state=apply(initialState(),'host',{type:'create',name:'You'});state=apply(state,'host',{type:'invite-bot',id:'bot-rowan',name:'Rowan'});state=apply(state,'host',{type:'begin',seed:'automatic-companion-review'});
+ const seen=new Set<string>();let safety=0;
+ while(seen.size<5&&state.phase!=='finished'&&safety++<1500){
+  const auto=automaticIntent(state);
+  if(auto&&state.players[state.turn].bot){
+   const clock=new TableClock(storage(),'companion'),windows=clock.observe(state,1000,true);expect((windows.go??windows.turn)?.deadline).toBe(1600);
+   expect(automaticChoice(state,state.host,windows,1599)).toBeUndefined();const choice=automaticChoice(state,state.host,windows,1600)!;expect(choice.actor).toBe('bot-rowan');expect(choice.intent).toEqual(auto);seen.add(auto.type);
+  }
+  const seat=state.phase==='discard'?discardActor(state):state.turn;state=apply(state,state.players[seat].id,botIntent(state,seat)!);
+ }
+ expect([...seen].sort()).toEqual(['count','cut','deal','go','play']);
+});
+test('lab exposes all automatic progress and both kinds of forced card through the shared countdown',()=>{
+ for(const [id,kind] of [['auto-cut','cut'],['auto-count','count'],['auto-deal','deal'],['forced-fit','play'],['last-card','play']] as const){
+  const e=animationExamples.find(e=>e.id===id)!;expect(e).toBeDefined();const timeline=buildTimeline(e,e.viewer),pending=timelineAt(timeline,.5);expect(pending.action?.kind).toBe(kind);expect(pending.action?.remaining).toBe(3);expect(timelineAt(timeline,2.5).action?.remaining).toBe(1);expect(timelineAt(timeline,3.01).state.revision).toBe(e.steps[0].after.revision);
+ }
 });

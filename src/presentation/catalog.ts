@@ -3,7 +3,7 @@ import {nextPegOrigins} from './replay';
 import {initialState,apply,needsDiscard,cribComplete,legalCards,discardActor,isCribCount,type State,type Intent} from '../game/engine';
 import {botIntent} from '../game/bot';
 import {planMotion,interactionLevel,type Plan} from './motion';
-import {CHOICE_WINDOW_MS,BOT_DELAY_MS,countdownAction,type Windows} from '../game/countdowns';
+import {CHOICE_WINDOW_MS,BOT_DELAY_MS,automaticIntent,countdownAction,type Windows} from '../game/countdowns';
 import {buildFrame} from './frame';
 export type Step={before:State;after:State;intent:Intent;actor:string;pegOrigins?:Record<string,number>;delay?:number};
 export type Example={id:string;name:string;hint:string;steps:Step[];viewer:string;interaction?:'hover'|'press'};
@@ -12,7 +12,7 @@ function catalogue(){
  let state=initialState(),origins:Record<string,number>={};
  const ids=['you','rowan','jules','ada'],names=['You','Rowan','Jules','Ada'];
  function add(id:string,name:string,hint:string,step:Step,interaction?:Example['interaction']){
-  if(seen.has(id))return;seen.add(id);examples.push({id,name,hint,steps:[step],viewer:step.actor,interaction});
+  if(seen.has(id))return;seen.add(id);examples.push({id,name,hint,steps:[{...step,delay:step.delay??0}],viewer:step.actor,interaction});
  }
  function act(actor:string,intent:Intent){const before=state,pegOrigins=origins;state=apply(state,actor,intent);origins=nextPegOrigins(origins,before,state,intent);return {before,after:state,actor,intent,pegOrigins};}
  ids.forEach((id,i)=>{const s=act(id,{type:i?'join':'create',name:names[i]});add(`join-${id}`,i?`${names[i]} takes a seat`:'You take a seat','The actual player-entry transition: nameplate and pegs arrive at the table.',s);round.push(s);});
@@ -26,9 +26,13 @@ function catalogue(){
   if(intent.type==='discard')add(`discard-${ids[seat]}`,seat?`${name} chooses the crib`:'You choose the crib','The card flips face down, flies clear of the board and lands on top of the crib. The remaining fan settles.',s);
   if(intent.type==='accept-crib')add('crib-ready','Crib ready · three seconds to undo','Every player can undo a contribution while this countdown runs. The starter waits until it ends.',{...s,delay:CHOICE_WINDOW_MS/1000});
   if(intent.type==='cut'){
+   add('auto-cut','Cut automatically','Cut now, or let the three-second countdown turn the starter.',{...s,delay:CHOICE_WINDOW_MS/1000});
    add('cut','Cut and turn the starter','The starter rises, turns and settles on top of the deck.',s);
    if(!seen.has('ready')){examples.unshift({id:'ready',name:'Ready table',hint:'The same table, materials, lighting and native-resolution renderer used by the real game.',steps:[{...s,before:s.after,pegOrigins:origins}],viewer:'you'});seen.add('ready');}
   }
+  if(intent.type==='play'&&legalCards(s.before,seat).length===1)add(s.before.hands[seat].length===1?'last-card':'forced-fit',s.before.hands[seat].length===1?'Last card plays itself':'Only one card fits','The only playable card lifts slightly. Tap it now, or let it play after three seconds.',{...s,delay:CHOICE_WINDOW_MS/1000});
+  if(intent.type==='count')add('auto-count','Peg automatically','The points stay beside the revealed cards. Peg now, or let the three-second countdown continue.',{...s,delay:CHOICE_WINDOW_MS/1000});
+  if(intent.type==='deal')add('auto-deal','Deal the next hand automatically','Deal now, or let the three-second countdown collect and deal the next hand.',{...s,delay:CHOICE_WINDOW_MS/1000});
   if(intent.type==='play')add(`play-${ids[seat]}`,seat?`${name} plays a card`:'You play a card','The actual card leaves its fan, turns if concealed, and lands to the right and above the previous play.',s);
   if(intent.type==='go'&&s.after.phase==='pegging')add('go','Go · play automatically after three seconds','Tap Go immediately, or let the three-second countdown play it for you.',{...s,delay:CHOICE_WINDOW_MS/1000});
   if(s.after.players.some((p,i)=>p.score!==s.before.players[i].score))add('peg','Score and leapfrog a peg','The rear physical peg lifts and lands in the new hole; the nameplate score changes when it lands.',s);
@@ -68,17 +72,18 @@ function catalogue(){
  return examples;
 }
 export const animationExamples=catalogue();
-export type Timeline={plans:{plan:Plan;before:State;state:State;start:number;hold:number}[];duration:number;example:Example;viewer:string};
+export type Timeline={plans:{plan:Plan;before:State;state:State;intent:Intent;start:number;hold:number}[];duration:number;example:Example;viewer:string};
 export function buildTimeline(example:Example,viewer:string):Timeline{
  let previous=buildFrame(example.steps[0].before,viewer,undefined,example.steps[0].pegOrigins),duration=0,fullAt=cribComplete(example.steps[0].before)?0:-1;
  const plans=example.steps.map(step=>{
-  let hold=step.delay??(step.intent.type==='go'?(step.before.players[step.before.turn].bot?BOT_DELAY_MS:CHOICE_WINDOW_MS)/1000:0);
+  const automatic=automaticIntent(step.before),scheduled=automatic?.type===step.intent.type&&(automatic.type!=='play'||step.intent.type==='play'&&automatic.card===step.intent.card);
+  let hold=step.delay??(scheduled?(step.before.players[step.before.turn].bot?BOT_DELAY_MS:CHOICE_WINDOW_MS)/1000:0);
   if(step.intent.type==='accept-crib')hold=Math.max(hold,fullAt+CHOICE_WINDOW_MS/1000-duration);
   const start=duration+hold,plan=planMotion(step.before,step.after,viewer,previous);previous=plan.target;
   if(cribComplete(step.after)&&!cribComplete(step.before))fullAt=start;
   if(!cribComplete(step.after))fullAt=-1;
   duration=start+Math.max(plan.duration,example.interaction?1.8:0)+.15;
-  return {plan,before:step.before,state:step.after,start,hold};
+  return {plan,before:step.before,state:step.after,intent:step.intent,start,hold};
  });
  return {plans,viewer,duration:example.id==='ready'?0:duration,example};
 }
@@ -93,9 +98,10 @@ export function timelineAt(timeline:Timeline,time:number){
   const filled=timeline.plans.findLast(p=>p.start<=time&&cribComplete(p.state)&&!cribComplete(p.before));
   windows.crib={revision:state.revision,deadline:((filled?.start??0)+CHOICE_WINDOW_MS/1000)*1000};
  }
- if(state.phase==='pegging'&&legalCards(state,state.turn).length===0){
-  const passing=timeline.plans.find(p=>p.before.revision===state.revision&&(p.plan.kind==='go'));
-  if(passing)windows.go={seat:state.turn,revision:state.revision,deadline:passing.start*1000};
+ const automatic=automaticIntent(state);
+ if(automatic){
+  const passing=timeline.plans.find(p=>p.before.revision===state.revision&&p.intent.type===automatic.type&&(automatic.type!=='play'||p.intent.type==='play'&&p.intent.card===automatic.card));
+  if(passing&&time>=passing.start-passing.hold){const pending={seat:state.turn,revision:state.revision,deadline:passing.start*1000};if(automatic.type==='go')windows.go=pending;else windows.turn={...pending,intent:automatic};}
  }
  return {...entry,state,time:local,interaction,action:countdownAction(state,timeline.viewer,windows,time*1000)};
 }
