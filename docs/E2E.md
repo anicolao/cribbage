@@ -4,7 +4,7 @@ The single `tests/e2e/table.spec.ts` story uses four isolated browser contexts a
 
 `TestStepHelper` checks every seated player's DOM after each action, then photographs the actor followed by every seated observer. Assertions cover phase, revision, round, running count, crib size, exact public card order, own held card identities, concealed opponent cards, scores, starter, seat orientation, interactive card count, layout fit, absence of alerts and browser errors. The story includes taking all four chairs, dealing, each crib contribution, cutting, the whole pegging phase including Go, all four hand counts, the crib count, the next deal, and reconnection. It also verifies replay of the stored log.
 
-Every screenshot is 1180×820 with device scale 1. Both threshold and maxDiffPixels are zero; retries are disabled and ordinary runs never update baselines. The test's complete illustrated narrative is generated alongside explicitly updated references. A separate verification run must pass before generated images count as evidence.
+Every screenshot is 1180×820 with device scale 1. Every decoded RGBA byte must match; threshold and maxDiffPixels are also zero for diff reporting; retries are disabled and ordinary runs never update baselines. The test's complete illustrated narrative is generated alongside explicitly updated references. A separate verification run must pass before generated images count as evidence.
 
 ```sh
 bun install --frozen-lockfile
