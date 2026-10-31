@@ -128,12 +128,12 @@ export function apply(state:State,actor:string,input:Intent):State{
  }
  next.revision++;return next;
 }
-export function replay(events:readonly Event[]):State{
+export function replay(events:readonly Event[],visit?:(before:State,after:State,event:Event)=>void):State{
  const protocol=events[0]?.version??VERSION;requireChoice([1,2,3].includes(protocol),'This table needs a newer version.');
  let state=initialState(protocol);const seen=new Set<string>();
  for(const event of events){
   requireChoice(event.version===state.protocol&&event.sequence===state.revision+1&&!seen.has(event.id),'This table needs a newer version.');
-  seen.add(event.id);state=apply(state,event.actor,event.intent);
+  seen.add(event.id);const before=state;state=apply(state,event.actor,event.intent);visit?.(before,state,event);
  }
  return state;
 }

@@ -1,0 +1,502 @@
+[
+  {
+    "actor": "you",
+    "intent": {
+      "type": "create",
+      "name": "You"
+    }
+  },
+  {
+    "actor": "you",
+    "intent": {
+      "id": "bot-rowan",
+      "name": "Rowan",
+      "type": "invite-bot"
+    }
+  },
+  {
+    "actor": "you",
+    "intent": {
+      "type": "begin",
+      "seed": "cce64eb0-ccd5-4217-b67f-c21a801326fd"
+    }
+  },
+  {
+    "actor": "bot-rowan",
+    "intent": {
+      "card": "jack_of_spades",
+      "type": "discard"
+    }
+  },
+  {
+    "actor": "bot-rowan",
+    "intent": {
+      "type": "discard",
+      "card": "10_of_hearts"
+    }
+  },
+  {
+    "actor": "you",
+    "intent": {
+      "type": "discard",
+      "card": "10_of_spades"
+    }
+  },
+  {
+    "actor": "you",
+    "intent": {
+      "card": "4_of_clubs",
+      "type": "discard"
+    }
+  },
+  {
+    "actor": "you",
+    "intent": {
+      "type": "accept-crib"
+    }
+  },
+  {
+    "actor": "you",
+    "intent": {
+      "type": "cut"
+    }
+  },
+  {
+    "actor": "you",
+    "intent": {
+      "card": "9_of_hearts",
+      "type": "play"
+    }
+  },
+  {
+    "actor": "bot-rowan",
+    "intent": {
+      "type": "play",
+      "card": "2_of_hearts"
+    }
+  },
+  {
+    "actor": "you",
+    "intent": {
+      "type": "play",
+      "card": "9_of_clubs"
+    }
+  },
+  {
+    "actor": "bot-rowan",
+    "intent": {
+      "card": "3_of_clubs",
+      "type": "play"
+    }
+  },
+  {
+    "actor": "you",
+    "intent": {
+      "type": "play",
+      "card": "7_of_diamonds"
+    }
+  },
+  {
+    "actor": "bot-rowan",
+    "intent": {
+      "type": "go"
+    }
+  },
+  {
+    "actor": "you",
+    "intent": {
+      "type": "play",
+      "card": "ace_of_hearts"
+    }
+  },
+  {
+    "actor": "bot-rowan",
+    "intent": {
+      "type": "play",
+      "card": "4_of_diamonds"
+    }
+  },
+  {
+    "actor": "bot-rowan",
+    "intent": {
+      "card": "8_of_hearts",
+      "type": "play"
+    }
+  },
+  {
+    "actor": "you",
+    "intent": {
+      "type": "count"
+    }
+  },
+  {
+    "actor": "bot-rowan",
+    "intent": {
+      "type": "count"
+    }
+  },
+  {
+    "actor": "bot-rowan",
+    "intent": {
+      "type": "count"
+    }
+  },
+  {
+    "actor": "bot-rowan",
+    "intent": {
+      "type": "deal"
+    }
+  },
+  {
+    "actor": "bot-rowan",
+    "intent": {
+      "card": "king_of_diamonds",
+      "type": "discard"
+    }
+  },
+  {
+    "actor": "bot-rowan",
+    "intent": {
+      "type": "discard",
+      "card": "5_of_clubs"
+    }
+  },
+  {
+    "actor": "you",
+    "intent": {
+      "type": "discard",
+      "card": "6_of_clubs"
+    }
+  },
+  {
+    "actor": "you",
+    "intent": {
+      "type": "discard",
+      "card": "8_of_spades"
+    }
+  },
+  {
+    "actor": "you",
+    "intent": {
+      "type": "accept-crib"
+    }
+  },
+  {
+    "actor": "bot-rowan",
+    "intent": {
+      "type": "cut"
+    }
+  },
+  {
+    "actor": "bot-rowan",
+    "intent": {
+      "type": "play",
+      "card": "6_of_hearts"
+    }
+  },
+  {
+    "actor": "you",
+    "intent": {
+      "card": "king_of_clubs",
+      "type": "play"
+    }
+  },
+  {
+    "actor": "bot-rowan",
+    "intent": {
+      "card": "7_of_spades",
+      "type": "play"
+    }
+  },
+  {
+    "actor": "you",
+    "intent": {
+      "card": "5_of_diamonds",
+      "type": "play"
+    }
+  },
+  {
+    "actor": "bot-rowan",
+    "intent": {
+      "type": "go"
+    }
+  },
+  {
+    "actor": "you",
+    "intent": {
+      "type": "play",
+      "card": "2_of_clubs"
+    }
+  },
+  {
+    "actor": "you",
+    "intent": {
+      "type": "go"
+    }
+  },
+  {
+    "actor": "bot-rowan",
+    "intent": {
+      "type": "play",
+      "card": "8_of_clubs"
+    }
+  },
+  {
+    "actor": "you",
+    "intent": {
+      "card": "queen_of_clubs",
+      "type": "play"
+    }
+  },
+  {
+    "actor": "bot-rowan",
+    "intent": {
+      "card": "9_of_hearts",
+      "type": "play"
+    }
+  },
+  {
+    "actor": "bot-rowan",
+    "intent": {
+      "type": "count"
+    }
+  },
+  {
+    "actor": "you",
+    "intent": {
+      "type": "count"
+    }
+  },
+  {
+    "actor": "you",
+    "intent": {
+      "type": "count"
+    }
+  },
+  {
+    "actor": "you",
+    "intent": {
+      "type": "deal"
+    }
+  },
+  {
+    "actor": "bot-rowan",
+    "intent": {
+      "card": "2_of_clubs",
+      "type": "discard"
+    }
+  },
+  {
+    "actor": "bot-rowan",
+    "intent": {
+      "type": "discard",
+      "card": "king_of_clubs"
+    }
+  },
+  {
+    "actor": "you",
+    "intent": {
+      "card": "4_of_hearts",
+      "type": "discard"
+    }
+  },
+  {
+    "actor": "you",
+    "intent": {
+      "card": "jack_of_diamonds",
+      "type": "discard"
+    }
+  },
+  {
+    "actor": "you",
+    "intent": {
+      "type": "accept-crib"
+    }
+  },
+  {
+    "actor": "you",
+    "intent": {
+      "type": "cut"
+    }
+  },
+  {
+    "actor": "you",
+    "intent": {
+      "card": "8_of_clubs",
+      "type": "play"
+    }
+  },
+  {
+    "actor": "bot-rowan",
+    "intent": {
+      "card": "ace_of_spades",
+      "type": "play"
+    }
+  },
+  {
+    "actor": "you",
+    "intent": {
+      "card": "ace_of_clubs",
+      "type": "play"
+    }
+  },
+  {
+    "actor": "bot-rowan",
+    "intent": {
+      "type": "play",
+      "card": "10_of_clubs"
+    }
+  },
+  {
+    "actor": "you",
+    "intent": {
+      "type": "play",
+      "card": "9_of_spades"
+    }
+  },
+  {
+    "actor": "bot-rowan",
+    "intent": {
+      "type": "go"
+    }
+  },
+  {
+    "actor": "you",
+    "intent": {
+      "type": "go"
+    }
+  },
+  {
+    "actor": "bot-rowan",
+    "intent": {
+      "card": "jack_of_hearts",
+      "type": "play"
+    }
+  },
+  {
+    "actor": "you",
+    "intent": {
+      "type": "play",
+      "card": "7_of_diamonds"
+    }
+  },
+  {
+    "actor": "bot-rowan",
+    "intent": {
+      "card": "jack_of_spades",
+      "type": "play"
+    }
+  },
+  {
+    "actor": "you",
+    "intent": {
+      "type": "count"
+    }
+  },
+  {
+    "actor": "bot-rowan",
+    "intent": {
+      "type": "count"
+    }
+  },
+  {
+    "actor": "bot-rowan",
+    "intent": {
+      "type": "count"
+    }
+  },
+  {
+    "actor": "bot-rowan",
+    "intent": {
+      "type": "deal"
+    }
+  },
+  {
+    "actor": "bot-rowan",
+    "intent": {
+      "card": "7_of_clubs",
+      "type": "discard"
+    }
+  },
+  {
+    "actor": "bot-rowan",
+    "intent": {
+      "card": "king_of_hearts",
+      "type": "discard"
+    }
+  },
+  {
+    "actor": "you",
+    "intent": {
+      "card": "8_of_hearts",
+      "type": "discard"
+    }
+  },
+  {
+    "actor": "you",
+    "intent": {
+      "type": "discard",
+      "card": "9_of_hearts"
+    }
+  },
+  {
+    "actor": "you",
+    "intent": {
+      "type": "accept-crib"
+    }
+  },
+  {
+    "actor": "bot-rowan",
+    "intent": {
+      "type": "cut"
+    }
+  },
+  {
+    "actor": "bot-rowan",
+    "intent": {
+      "type": "play",
+      "card": "4_of_hearts"
+    }
+  },
+  {
+    "actor": "you",
+    "intent": {
+      "type": "play",
+      "card": "queen_of_clubs"
+    }
+  },
+  {
+    "actor": "bot-rowan",
+    "intent": {
+      "type": "play",
+      "card": "queen_of_hearts"
+    }
+  },
+  {
+    "actor": "you",
+    "intent": {
+      "type": "play",
+      "card": "2_of_hearts"
+    }
+  },
+  {
+    "actor": "bot-rowan",
+    "intent": {
+      "type": "go"
+    }
+  },
+  {
+    "actor": "you",
+    "intent": {
+      "type": "play",
+      "card": "ace_of_hearts"
+    }
+  },
+  {
+    "actor": "you",
+    "intent": {
+      "card": "ace_of_clubs",
+      "type": "play"
+    }
+  }
+]

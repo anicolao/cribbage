@@ -60,6 +60,7 @@
  {#each frame.plates as plate (plate.id)}
   <Nameplate name={plate.name} score={plate.score} pegColor={plate.color} position={plate.position} scale={plate.scale} glow={plate.glow} width={plate.id==='crib-label'?2.8:3.9} height={plate.id==='crib-label'?.62:.8} wood={materials?.walnut} fallback={darkWood}/>
  {/each}
+{#each frame.awards as award (award.id)}<CountingPoints points={award.points} position={award.position} opacity={award.scale}/>{/each}
 {#each frame.counts as count (count.id)}<CountingPoints points={count.points} position={count.position} opacity={count.scale}/>{/each}
 {/if}
 </T.Group>

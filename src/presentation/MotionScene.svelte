@@ -9,10 +9,10 @@
  import Scene from '../Scene.svelte';
  import CardTelemetry from './CardTelemetry.svelte';
  import type {CardControl} from './frame';
- let {game,viewer,review,hovered=null,pressed=null,respectReducedMotion=true,onFrame=()=>{},onMotion=()=>{},onSettled=()=>{},onHover=()=>{},onPress=()=>{},onCard=()=>{},onControls=()=>{},onReady=()=>{},settings}:{game:State;viewer:string;review?:{plan:Plan;time:number;interaction?:{card:string;hover:number;press:number}};hovered?:string|null;pressed?:string|null;respectReducedMotion?:boolean;onFrame?:(frame:Frame,idle:boolean)=>void;onMotion?:(active:boolean,kind:string,duration:number)=>void;onSettled?:(revision:number)=>void;onHover?:(id:string|null)=>void;onPress?:(id:string|null)=>void;onCard?:(card:string)=>void;onControls?:(controls:CardControl[])=>void;onReady?:()=>void;settings:{light:number;fov:number;resetKey:number;preset:string;faceMargin:number;backMargin:number;lightX:number;lightY:number;lightZ:number;onCameraChange:(info:{elevation:number;distance:number})=>void}}=$props();
+ let {game,viewer,pegOrigins,review,hovered=null,pressed=null,respectReducedMotion=true,onFrame=()=>{},onMotion=()=>{},onSettled=()=>{},onHover=()=>{},onPress=()=>{},onCard=()=>{},onControls=()=>{},onReady=()=>{},settings}:{game:State;viewer:string;pegOrigins?:Record<string,number>;review?:{plan:Plan;time:number;interaction?:{card:string;hover:number;press:number}};hovered?:string|null;pressed?:string|null;respectReducedMotion?:boolean;onFrame?:(frame:Frame,idle:boolean)=>void;onMotion?:(active:boolean,kind:string,duration:number)=>void;onSettled?:(revision:number)=>void;onHover?:(id:string|null)=>void;onPress?:(id:string|null)=>void;onCard?:(card:string)=>void;onControls?:(controls:CardControl[])=>void;onReady?:()=>void;settings:{light:number;fov:number;resetKey:number;preset:string;faceMargin:number;backMargin:number;lightX:number;lightY:number;lightZ:number;onCameraChange:(info:{elevation:number;distance:number})=>void}}=$props();
  interactivity();
  const {invalidate,renderer}=useThrelte();
- let frame=$state.raw<Frame>(untrack(()=>buildFrame(game,viewer))),base=untrack(()=>frame);
+ let frame=$state.raw<Frame>(untrack(()=>buildFrame(game,viewer,undefined,pegOrigins))),base=untrack(()=>frame);
  let previous=untrack(()=>game),previousViewer=untrack(()=>viewer),plan:Plan|undefined,start=0,reduced=false;
  let major=$state(false);
  const levels=new Map<string,{hover:number;press:number;hFrom:number;pFrom:number;hTarget:number;pTarget:number;hStart:number;pStart:number}>();
@@ -43,14 +43,14 @@
   onFrame(frame,idle);invalidate();return interactionActive;
  }
  $effect(()=>{
-  const next=game,nextViewer=viewer,controlled=review;
+  const next=game,nextViewer=viewer,controlled=review,origins=pegOrigins;
   untrack(()=>{
    if(controlled){plan=undefined;publish(performance.now());return;}
    if(next===previous&&nextViewer===previousViewer)return;
    const hydrate=nextViewer!==previousViewer||(previous.revision===0&&next.revision>1)||next.revision<previous.revision;
    if(next.revision===previous.revision&&!hydrate){previous=next;return;}
-   plan=hydrate||respectReducedMotion&&reduced?undefined:planMotion(previous,next,nextViewer,frame);
-   if(!plan){base=buildFrame(next,nextViewer,frame);major=false;}
+   plan=hydrate||respectReducedMotion&&reduced?undefined:planMotion(previous,next,nextViewer,frame,origins);
+   if(!plan){base=buildFrame(next,nextViewer,frame,origins);major=false;}
    previous=next;previousViewer=nextViewer;start=performance.now();lastSettled=-1;motionName=plan?.kind??'ready';motionSeconds=plan?.duration??0;
    interactionActive=publish(start);
   });

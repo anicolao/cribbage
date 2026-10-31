@@ -31,3 +31,5 @@ The two-player story leaves the first contribution in the crib for six seconds, 
 A browser canvas-text drawing counter verifies that card motion reuses score and nameplate textures while their text is unchanged. This observes rendering work without changing game state, graphics or clocks.
 
 Native-card targeting reads each projected coordinate pair atomically and waits for hover to settle before pressing. The top card uses its exposed centre; lower cards use their exposed left edges. A solid-mesh raycast regression checks four-, five- and six-card fans before hover, during hover, and while pressed.
+
+The pair and pair-plus-last-card lab scenes replay neutralized legal choices from the reported consecutive-aces incident. Their captures pause at 1.20 seconds to inspect the +2 and +1 labels. Gameplay checks inspect both physical peg scores after every action and on reconnect; transient pegging labels must be gone when the action settles.
