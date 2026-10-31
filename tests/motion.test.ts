@@ -1,4 +1,6 @@
 import {test,expect} from 'bun:test';
+import {CARD_WIDTH,CARD_HEIGHT,BOARD_ROTATION} from '../src/sceneLayout';
+import {CARD_DEPTH,BOARD_WIDTH,BOARD_DEPTH} from '../src/table';
 import {animationExamples,buildTimeline,timelineAt} from '../src/presentation/catalog';
 import {apply} from '../src/game/engine';
 import {buildFrame} from '../src/presentation/frame';
@@ -43,4 +45,23 @@ test('next hand collects old physical cards before dealing new cards; hover and 
  const card=buildFrame(t.state,'rowan').cards.find(c=>c.id===t.interaction!.card)!;
  expect(interactionPose(card,1,1).position[1]-card.position[1]).toBeCloseTo(.2);
  expect(interactionLevel(0,1,.08)).toBe(.5);
+});
+
+test('live card flights clear the solid board from every player perspective',()=>{
+ // Test the projected card rectangle and its lowest flipped edge against the
+ // actual board footprint, including collection/dealing arcs across the board.
+ const width=BOARD_WIDTH,depth=BOARD_DEPTH,angle=BOARD_ROTATION;
+ const rectangle=(x:number,z:number,w:number,h:number,r:number)=>[[-1,-1],[1,-1],[1,1],[-1,1]].map(([a,b])=>[x+Math.cos(r)*a*w/2+Math.sin(r)*b*h/2,z-Math.sin(r)*a*w/2+Math.cos(r)*b*h/2]);
+ const overlap=(a:number[][],b:number[][])=>[a,b].every(poly=>poly.every((p,i)=>{const q=poly[(i+1)%4],axis=[q[1]-p[1],p[0]-q[0]],aa=a.map(v=>v[0]*axis[0]+v[1]*axis[1]),bb=b.map(v=>v[0]*axis[0]+v[1]*axis[1]);return Math.max(...aa)>=Math.min(...bb)&&Math.max(...bb)>=Math.min(...aa);}));
+ const board=rectangle(0,0,width,depth,angle);
+ const story=animationExamples.find(e=>e.id==='whole-hand')!;
+ for(const viewer of ['you','rowan','jules','ada'])for(const {plan} of buildTimeline(story,viewer).plans){
+  for(let t=0;t<plan.duration;t+=.05)for(const card of sampleMotion(plan,t).cards){
+   if(card.scale===0||card.zone==='deck')continue;
+   const c=Math.abs(Math.cos(card.flip)),s=Math.abs(Math.sin(card.flip));
+   const low=card.position[1]-(s*CARD_WIDTH/2+c*CARD_DEPTH)*card.scale;
+   if(low>.49)continue;
+   expect(overlap(board,rectangle(card.position[0],card.position[2],(c*CARD_WIDTH+s*CARD_DEPTH)*card.scale,CARD_HEIGHT*card.scale,card.rotation)),`${plan.kind} ${viewer} ${card.id} at ${t.toFixed(2)}`).toBe(false);
+  }
+ }
 });

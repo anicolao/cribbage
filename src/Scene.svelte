@@ -15,7 +15,12 @@
  import { wood, felt, paper, cardTextures, updateCardMargins, tableStitch } from './textures';
  import {BOARD_ROTATION} from './sceneLayout';
  import { roundedShape, faceGeometry, slabGeometry } from './geometry';
- let {frame,onHover=()=>{},onPress=()=>{},onCard=()=>{},canInteract=()=>false,onReady=()=>{},light=.7,fov=45,resetKey=0,preset='table',faceMargin=2.5,backMargin=2.5,lightX=11,lightY=17,lightZ=8,onCameraChange=()=>{}}:{frame:Frame;onHover?:(id:string|null)=>void;onPress?:(id:string|null)=>void;onCard?:(card:string)=>void;canInteract?:(card:string)=>boolean;onReady?:()=>void;light:number;fov:number;resetKey:number;preset:string;faceMargin:number;backMargin:number;lightX:number;lightY:number;lightZ:number;onCameraChange:(info:{elevation:number;distance:number})=>void}=$props();
+ let {frame,onHover=()=>{},onPress=()=>{},onCard=()=>{},canInteract=()=>false,canInspect=canInteract,onReady=()=>{},light=.7,fov=45,resetKey=0,preset='table',faceMargin=2.5,backMargin=2.5,lightX=11,lightY=17,lightZ=8,onCameraChange=()=>{}}:{frame:Frame;onHover?:(id:string|null)=>void;onPress?:(id:string|null)=>void;onCard?:(card:string)=>void;canInteract?:(card:string)=>boolean;canInspect?:(card:string)=>boolean;onReady?:()=>void;light:number;fov:number;resetKey:number;preset:string;faceMargin:number;backMargin:number;lightX:number;lightY:number;lightZ:number;onCameraChange:(info:{elevation:number;distance:number})=>void}=$props();
+ let hoveredCard:string|null=null;
+ function cardHover(id:string,active:boolean){
+  if(!active&&hoveredCard!==id)return;
+  hoveredCard=active?id:null;onHover(hoveredCard);
+ }
  let materials=$state.raw<MaterialLibrary>();
  let environmentReady=$state(false);
  const darkWood=wood(),cloth=felt(),paperGrain=paper(),stitch=tableStitch();
@@ -48,8 +53,8 @@
 {#if cards.back}
  {#each frame.cards as card (card.id)}
   <Piece position={card.position} rotation={card.rotation} flip={card.flip} scale={card.scale} glow={card.glow} map={cards[card.card]} backMap={cards.back} bumpMap={paperGrain}
-   interactive={card.zone==='hand'&&!!card.owner&&canInteract(card.card)}
-   onhover={active=>onHover(active?card.id:null)} onpress={active=>onPress(active?card.id:null)} onactivate={()=>onCard(card.card)}/>
+   interactive={card.zone==='hand'&&!!card.owner&&canInteract(card.card)} hoverable={card.zone==='hand'&&canInspect(card.card)}
+   onhover={active=>cardHover(card.id,active)} onpress={active=>onPress(active?card.id:null)} onactivate={()=>onCard(card.card)}/>
  {/each}
  {#each frame.plates as plate (plate.id)}
   <Nameplate name={plate.name} score={plate.score} pegColor={plate.color} position={plate.position} scale={plate.scale} glow={plate.glow} width={plate.id==='crib-label'?2.8:3.9} height={plate.id==='crib-label'?.62:.8} wood={materials?.walnut} fallback={darkWood}/>
