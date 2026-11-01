@@ -345,3 +345,67 @@ Viewpoint: **Lab**
 ![Pair and last card · peg three together](./screenshots/042-motion-pair-last-lab-linux.png)
 
 - [x] Shared full-quality renderer; paused legal transition, native canvas, no SVG interaction overlay
+
+## ipad: ready to play
+
+Viewpoint: **Lab**
+
+![ipad: ready to play](./screenshots/043-motion-ipad-ready-lab-linux.png)
+
+- [x] The selected shared layout renders at native device resolution, with counting points beside the revealed hand
+
+## ipad: pegging finishes and counting spreads
+
+Viewpoint: **Lab**
+
+![ipad: pegging finishes and counting spreads](./screenshots/044-motion-ipad-count-start-lab-linux.png)
+
+- [x] The selected shared layout renders at native device resolution, with counting points beside the revealed hand
+
+## ipad-portrait: ready to play
+
+Viewpoint: **Lab**
+
+![ipad-portrait: ready to play](./screenshots/045-motion-ipad-portrait-ready-lab-linux.png)
+
+- [x] The selected shared layout renders at native device resolution, with counting points beside the revealed hand
+
+## ipad-portrait: pegging finishes and counting spreads
+
+Viewpoint: **Lab**
+
+![ipad-portrait: pegging finishes and counting spreads](./screenshots/046-motion-ipad-portrait-count-start-lab-linux.png)
+
+- [x] The selected shared layout renders at native device resolution, with counting points beside the revealed hand
+
+## phone-portrait: ready to play
+
+Viewpoint: **Lab**
+
+![phone-portrait: ready to play](./screenshots/047-motion-phone-portrait-ready-lab-linux.png)
+
+- [x] The selected shared layout renders at native device resolution, with counting points beside the revealed hand
+
+## phone-portrait: pegging finishes and counting spreads
+
+Viewpoint: **Lab**
+
+![phone-portrait: pegging finishes and counting spreads](./screenshots/048-motion-phone-portrait-count-start-lab-linux.png)
+
+- [x] The selected shared layout renders at native device resolution, with counting points beside the revealed hand
+
+## phone-landscape: ready to play
+
+Viewpoint: **Lab**
+
+![phone-landscape: ready to play](./screenshots/049-motion-phone-landscape-ready-lab-linux.png)
+
+- [x] The selected shared layout renders at native device resolution, with counting points beside the revealed hand
+
+## phone-landscape: pegging finishes and counting spreads
+
+Viewpoint: **Lab**
+
+![phone-landscape: pegging finishes and counting spreads](./screenshots/050-motion-phone-landscape-count-start-lab-linux.png)
+
+- [x] The selected shared layout renders at native device resolution, with counting points beside the revealed hand
