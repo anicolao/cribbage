@@ -1,4 +1,5 @@
 <script lang="ts">
+ import {canvasPointer} from './cardTap';
  import {phonePlan,phoneFrame} from './phone';
  import type {TableLayout} from './responsive';
  import {tableAudio} from '../audio/engine';
@@ -14,8 +15,12 @@
  import CardTelemetry from './CardTelemetry.svelte';
  import type {CardControl} from './frame';
  let {game,viewer,pegOrigins,review,layout='table',automaticCard,animationRate=1,hovered=null,pressed=null,respectReducedMotion=true,onFrame=()=>{},onMotion=()=>{},onSettled=()=>{},onHover=()=>{},onPress=()=>{},onCard=()=>{},onControls=()=>{},onReady=()=>{},settings}:{game:State;viewer:string;layout?:TableLayout;animationRate?:number;automaticCard?:string;pegOrigins?:Record<string,number>;review?:{plan:Plan;time:number;interaction?:{card:string;hover:number;press:number}};hovered?:string|null;pressed?:string|null;respectReducedMotion?:boolean;onFrame?:(frame:Frame,idle:boolean)=>void;onMotion?:(active:boolean,kind:string,duration:number)=>void;onSettled?:(revision:number)=>void;onHover?:(id:string|null)=>void;onPress?:(id:string|null)=>void;onCard?:(card:string)=>void;onControls?:(controls:CardControl[])=>void;onReady?:()=>void;settings:{light:number;fov:number;resetKey:number;preset:string;faceMargin:number;backMargin:number;lightX:number;lightY:number;lightZ:number;onCameraChange:(info:{elevation:number;distance:number})=>void}}=$props();
- interactivity();
- const {invalidate,renderer}=useThrelte();
+ const {invalidate,renderer,camera}=useThrelte();
+ interactivity({compute:(event,context)=>{
+  const point=canvasPointer(event,renderer.domElement.getBoundingClientRect());if(!point)return;
+  context.pointer.update(pointer=>pointer.set(point.x,point.y));
+  context.raycaster.setFromCamera(context.pointer.current,camera.current);
+ }});
  let frame=$state.raw<Frame>(untrack(()=>buildFrame(game,viewer,undefined,pegOrigins))),base=untrack(()=>frame);
  let previous=untrack(()=>game),previousViewer=untrack(()=>viewer),plan:Plan|undefined,canonical:Plan|undefined,start=0,reduced=false,activeRate=untrack(()=>animationRate);
  function arrange(p:Plan):Plan{return layout==='table'?p:phonePlan(p,game,viewer,layout==='phone-landscape'?'landscape':'portrait');}
@@ -76,5 +81,5 @@
  function inspectable(card:string){const seat=game.players.findIndex(p=>p.id===viewer);return !major&&seat>=0&&game.hands[seat].includes(card);}
  function hover(id:string|null){onHover(id);renderer.domElement.style.cursor=id?'pointer':'';}
 </script>
-<Scene {frame} {...settings} {onReady} onHover={hover} {onPress} onCard={card=>{if(available(card)){onHover(null);onPress(null);onCard(card);}}} canInteract={card=>available(card)} canInspect={card=>inspectable(card)}/>
+<Scene orbitEnabled={!!review} {frame} {...settings} {onReady} onHover={hover} {onPress} onCard={card=>{if(available(card)){onHover(null);onPress(null);onCard(card);}}} canInteract={card=>available(card)} canInspect={card=>inspectable(card)}/>
 <CardTelemetry tableRotation={layout==='table'?.055:0} {game} {viewer} {frame} blocked={major} onControls={onControls}/>

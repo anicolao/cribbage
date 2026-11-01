@@ -4,7 +4,7 @@
  import { OrthographicCamera, PerspectiveCamera, Vector3 } from 'three';
  import { cameraClipRange } from './cameraMath';
  import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
- let { fov=45, resetKey=0, preset='table', onChange=()=>{} }:{fov:number;resetKey:number;preset:string;onChange?:(info:{elevation:number;distance:number})=>void}=$props();
+ let { fov=45, resetKey=0, preset='table', interactive=true, onChange=()=>{} }:{fov:number;resetKey:number;preset:string;interactive?:boolean;onChange?:(info:{elevation:number;distance:number})=>void}=$props();
  const { size, renderer, invalidate }=useThrelte();
  const perspective=new PerspectiveCamera(45,1,.05,2000);
  const orthographic=new OrthographicCamera(-10,10,7.5,-7.5,.05,2000);
@@ -29,7 +29,8 @@
  // Changing the lens preserves the target, orbit direction, and size at the target plane.
  $effect(()=>{fov; $size.width; $size.height;untrack(()=>{const direction=previous.position.clone().sub(controls?.target??target).normalize();project(heightAtTarget(),direction);});});
  $effect(()=>{resetKey;preset;untrack(()=>{const aim=controls?.target??target;aim.set(0,0,.1);const angle=(preset==='top'||preset.endsWith('-top')?89.9:preset==='low'||preset.endsWith('-low')?25:preset.startsWith('portrait')?40:preset==='landscape'?45:53)*Math.PI/180;project(preset.startsWith('portrait')?2*(preset.startsWith('portrait-tablet')?24:19)*Math.tan((fov||45)*Math.PI/360):preset.startsWith('landscape')?2*25*Math.tan((fov||45)*Math.PI/360):Math.max(16.3,22.7/(size.current.width/Math.max(1,size.current.height))),new Vector3(0,Math.sin(angle),Math.cos(angle)));});});
- onMount(()=>{controls=new OrbitControls(untrack(()=>active),renderer.domElement);controls.target.copy(target);controls.enableDamping=true;controls.dampingFactor=.09;controls.minPolarAngle=.001;controls.maxPolarAngle=Math.PI/2-.015;controls.minDistance=2;controls.maxDistance=1000;controls.minZoom=.15;controls.maxZoom=12;controls.screenSpacePanning=true;controls.addEventListener('change',report);controls.update();return()=>{controls?.removeEventListener('change',report);controls?.dispose();};});
+ onMount(()=>{controls=new OrbitControls(untrack(()=>active),renderer.domElement);controls.target.copy(target);controls.enabled=interactive;controls.enableDamping=true;controls.dampingFactor=.09;controls.minPolarAngle=.001;controls.maxPolarAngle=Math.PI/2-.015;controls.minDistance=2;controls.maxDistance=1000;controls.minZoom=.15;controls.maxZoom=12;controls.screenSpacePanning=true;controls.addEventListener('change',report);controls.update();return()=>{controls?.removeEventListener('change',report);controls?.dispose();};});
+ $effect(()=>{if(controls)controls.enabled=interactive;});
  useTask(()=>{controls?.update();},{autoInvalidate:false});
 </script>
 <T is={active} makeDefault manual />

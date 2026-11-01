@@ -2,7 +2,7 @@ import {peggingAwards} from './awards';
 import {handSize,isCribCount,type State} from '../game/engine';
 import {publicPose,tablePlayers} from '../game/layout';
 import {DECK_POSITION,STARTER_POSITION} from '../sceneLayout';
-import {type Position} from '../table';
+import {type Position,FAN_LAYER_STEP} from '../table';
 import {buildFrame,pose,rotate,type Frame,type Pose,type CardVisual,type PlateVisual,type PegVisual,type CountVisual,type AwardVisual} from './frame';
 export const MOTION={join:.8,deal:1.05,dealInterval:.085,discard:1.05,cut:1.05,play:.8,spread:.8,peg:.95,collect:.9,hover:.16,turn:.38};
 export type MotionKind='ready'|'join'|'deal'|'discard'|'undo'|'cut'|'play'|'go'|'count'|'crib'|'next-hand'|'win';
@@ -128,7 +128,8 @@ export function sampleMotion(plan:Plan,time:number):Frame{
 }
 export function interactionPose(card:CardVisual,hover:number,pressed:number):CardVisual{
  if(card.zone!=='hand')return card;
- return {...card,position:[card.position[0],card.position[1]+.28*hover-.08*pressed,card.position[2]-.12*hover],glow:hover*.28+pressed*.15};
+ const pressDepth=Math.min(.08,FAN_LAYER_STEP*card.scale*.4)*(1-hover)+.08*hover;
+ return {...card,position:[card.position[0],card.position[1]+.28*hover-pressDepth*pressed,card.position[2]-.12*hover],glow:hover*.28+pressed*.15};
 }
 
 export function interactionLevel(from:number,to:number,seconds:number){return from+(to-from)*smooth(clamp(seconds/MOTION.hover));}

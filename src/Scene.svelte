@@ -4,6 +4,7 @@
  import { RoundedBoxGeometry } from 'three/examples/jsm/geometries/RoundedBoxGeometry.js';
  import { type Texture, type Material } from 'three';
  import Environment from './Environment.svelte';
+ import {CardTap} from './presentation/cardTap';
  import type {Frame} from './presentation/frame';
  import Peg from './Peg.svelte';
  import {deck} from './game/cards';
@@ -18,7 +19,7 @@
  import { wood, felt, paper, cardTextures, updateCardMargins, tableStitch } from './textures';
  import {BOARD_ROTATION} from './sceneLayout';
  import { roundedShape, faceGeometry, slabGeometry } from './geometry';
- let {frame,onHover=()=>{},onPress=()=>{},onCard=()=>{},canInteract=()=>false,canInspect=canInteract,onReady=()=>{},light=.7,fov=45,resetKey=0,preset='table',faceMargin=2.5,backMargin=2.5,lightX=11,lightY=17,lightZ=8,onCameraChange=()=>{}}:{frame:Frame;onHover?:(id:string|null)=>void;onPress?:(id:string|null)=>void;onCard?:(card:string)=>void;canInteract?:(card:string)=>boolean;canInspect?:(card:string)=>boolean;onReady?:()=>void;light:number;fov:number;resetKey:number;preset:string;faceMargin:number;backMargin:number;lightX:number;lightY:number;lightZ:number;onCameraChange:(info:{elevation:number;distance:number})=>void}=$props();
+ let {frame,onHover=()=>{},onPress=()=>{},onCard=()=>{},canInteract=()=>false,canInspect=canInteract,onReady=()=>{},orbitEnabled=false,light=.7,fov=45,resetKey=0,preset='table',faceMargin=2.5,backMargin=2.5,lightX=11,lightY=17,lightZ=8,onCameraChange=()=>{}}:{frame:Frame;onHover?:(id:string|null)=>void;onPress?:(id:string|null)=>void;onCard?:(card:string)=>void;canInteract?:(card:string)=>boolean;canInspect?:(card:string)=>boolean;onReady?:()=>void;orbitEnabled?:boolean;light:number;fov:number;resetKey:number;preset:string;faceMargin:number;backMargin:number;lightX:number;lightY:number;lightZ:number;onCameraChange:(info:{elevation:number;distance:number})=>void}=$props();
  const portrait=$derived(preset.startsWith('portrait'));
  const landscape=$derived(preset.startsWith('landscape'));
  const phone=$derived(portrait||preset.startsWith('landscape'));
@@ -31,7 +32,23 @@
  let environmentReady=$state(false);
  const darkWood=wood(),cloth=felt(),paperGrain=paper(),stitch=tableStitch();
  let cards=$state.raw<Record<string,Texture>>({});
- const {invalidate}=useThrelte();
+ const {invalidate,renderer}=useThrelte();
+ const tap=new CardTap();
+ function select(id:string,event:PointerEvent){if(tap.begin(id,event)){if(event.pointerType==='touch'){hoveredCard=null;onHover(null);}onPress(id);}}
+ onMount(()=>{
+  const canvas=renderer.domElement;
+  const move=(event:PointerEvent)=>tap.move(event);
+  const release=(event:PointerEvent)=>{const id=tap.end(event);onPress(null);const card=id?frame.cards.find(c=>c.id===id&&c.zone==='hand'):undefined;if(card&&canInteract(card.card))onCard(card.card);};
+  const cancel=()=>{tap.cancel();onPress(null);};
+  const extraPointer=(event:PointerEvent)=>{if(!event.isPrimary)cancel();};
+  canvas.addEventListener('pointermove',move,true);
+  canvas.addEventListener('pointerup',release,true);
+  canvas.addEventListener('pointercancel',cancel,true);
+  canvas.addEventListener('pointerleave',cancel,true);
+  canvas.addEventListener('pointerdown',extraPointer,true);
+  window.addEventListener('blur',cancel);
+  return()=>{canvas.removeEventListener('pointermove',move,true);canvas.removeEventListener('pointerup',release,true);canvas.removeEventListener('pointercancel',cancel,true);canvas.removeEventListener('pointerleave',cancel,true);canvas.removeEventListener('pointerdown',extraPointer,true);window.removeEventListener('blur',cancel);};
+ });
  $effect(()=>{updateCardMargins(cards,faceMargin/100,backMargin/100);invalidate();});
  onMount(()=>{let disposed=false;void loadMaterials().then(value=>{if(disposed)disposeMaterials(value);else materials=value;});void cardTextures(deck).then(value=>{if(disposed)Object.values(value).forEach(t=>t.dispose());else {cards=value;}});return()=>{disposed=true;};});
  $effect(()=>{if(environmentReady&&materials&&cards.back){requestAnimationFrame(()=>requestAnimationFrame(onReady));}});
@@ -41,7 +58,7 @@
  const matFace=faceGeometry(roundedShape(20.5,14.3,.4),20.5,14.3);
  onDestroy(()=>{if(materials)disposeMaterials(materials);[darkWood,cloth,paperGrain,stitch,...Object.values(cards),railGeo,matGeo,matFace].forEach(value=>value.dispose());});
 </script>
-<CameraRig {fov} {resetKey} {preset} onChange={onCameraChange}/>
+<CameraRig interactive={orbitEnabled} {fov} {resetKey} {preset} onChange={onCameraChange}/>
 <Environment onReady={()=>environmentReady=true}/>
 <T.HemisphereLight args={['#e5ede6','#38463d',.4*light]}/>
 <T.DirectionalLight position={[lightX,lightY,lightZ]} intensity={1.45*light} color="#fff1d4" castShadow shadow.mapSize.width={4096} shadow.mapSize.height={4096} shadow.camera.left={landscape?-30:-13} shadow.camera.right={landscape?30:13} shadow.camera.top={landscape?26:11} shadow.camera.bottom={landscape?-26:-11} shadow.camera.near={1} shadow.camera.far={landscape?80:50} shadow.bias={-.000035} shadow.normalBias={.003} shadow.radius={2}/>
@@ -60,7 +77,7 @@
  {#each frame.cards as card (card.id)}
   <Piece position={card.position} rotation={card.rotation} flip={card.flip} scale={card.scale} glow={card.glow} map={cards[card.card]} backMap={cards.back} bumpMap={paperGrain}
    interactive={card.zone==='hand'&&!!card.owner&&canInteract(card.card)} hoverable={card.zone==='hand'&&canInspect(card.card)}
-   onhover={active=>cardHover(card.id,active)} onpress={active=>onPress(active?card.id:null)} onactivate={()=>onCard(card.card)}/>
+   onhover={active=>cardHover(card.id,active)} onpress={active=>onPress(active?card.id:null)} onselect={event=>select(card.id,event)}/>
  {/each}
  {#each frame.plates as plate (plate.id)}
   <Nameplate compact={phone} name={plate.name} score={plate.score} pegColor={plate.color} position={plate.position} scale={plate.scale} glow={plate.glow} width={plate.id==='crib-label'?2.8:3.9} height={plate.id==='crib-label'?.62:.8} wood={materials?.walnut} fallback={darkWood}/>
