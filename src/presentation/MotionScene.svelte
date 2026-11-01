@@ -1,4 +1,6 @@
 <script lang="ts">
+ import {cameraMode,type CameraInfo} from '../cameraViews';
+ import type {TableLayout as CameraLayout} from '../presentation/responsive';
  import {canvasPointer} from './cardTap';
  import {phonePlan,phoneFrame} from './phone';
  import type {TableLayout} from './responsive';
@@ -14,7 +16,7 @@
  import Scene from '../Scene.svelte';
  import CardTelemetry from './CardTelemetry.svelte';
  import type {CardControl} from './frame';
- let {game,viewer,pegOrigins,review,layout='table',automaticCard,animationRate=1,hovered=null,pressed=null,respectReducedMotion=true,onFrame=()=>{},onMotion=()=>{},onSettled=()=>{},onHover=()=>{},onPress=()=>{},onCard=()=>{},onControls=()=>{},onReady=()=>{},settings}:{game:State;viewer:string;layout?:TableLayout;animationRate?:number;automaticCard?:string;pegOrigins?:Record<string,number>;review?:{plan:Plan;time:number;interaction?:{card:string;hover:number;press:number}};hovered?:string|null;pressed?:string|null;respectReducedMotion?:boolean;onFrame?:(frame:Frame,idle:boolean)=>void;onMotion?:(active:boolean,kind:string,duration:number)=>void;onSettled?:(revision:number)=>void;onHover?:(id:string|null)=>void;onPress?:(id:string|null)=>void;onCard?:(card:string)=>void;onControls?:(controls:CardControl[])=>void;onReady?:()=>void;settings:{light:number;fov:number;resetKey:number;preset:string;faceMargin:number;backMargin:number;lightX:number;lightY:number;lightZ:number;onCameraChange:(info:{elevation:number;distance:number})=>void}}=$props();
+ let {game,viewer,pegOrigins,review,layout='table',automaticCard,animationRate=1,hovered=null,pressed=null,respectReducedMotion=true,onFrame=()=>{},onMotion=()=>{},onSettled=()=>{},onHover=()=>{},onPress=()=>{},onCard=()=>{},onControls=()=>{},onReady=()=>{},settings}:{game:State;viewer:string;layout?:TableLayout;animationRate?:number;automaticCard?:string;pegOrigins?:Record<string,number>;review?:{plan:Plan;time:number;interaction?:{card:string;hover:number;press:number}};hovered?:string|null;pressed?:string|null;respectReducedMotion?:boolean;onFrame?:(frame:Frame,idle:boolean)=>void;onMotion?:(active:boolean,kind:string,duration:number)=>void;onSettled?:(revision:number)=>void;onHover?:(id:string|null)=>void;onPress?:(id:string|null)=>void;onCard?:(card:string)=>void;onControls?:(controls:CardControl[])=>void;onReady?:()=>void;settings:{viewKey?:CameraLayout;fitAspect?:number;light:number;fov:number;resetKey:number;preset:string;faceMargin:number;backMargin:number;lightX:number;lightY:number;lightZ:number;onCameraChange:(info:CameraInfo)=>void}}=$props();
  const {invalidate,renderer,camera}=useThrelte();
  interactivity({compute:(event,context)=>{
   const point=canvasPointer(event,renderer.domElement.getBoundingClientRect());if(!point)return;
@@ -77,9 +79,9 @@
  $effect(()=>{hovered;pressed;automaticCard;untrack(()=>{interactionActive=publish(performance.now());});});
  let lastTick=performance.now(),interactionActive=false;
  useTask(()=>{const now=performance.now(),dt=Math.min(.1,(now-lastTick)/1000);lastTick=now;if(plan||interactionActive){interactionActive=publish(now,dt);}}, {autoInvalidate:false});
- function available(card:string){const seat=game.players.findIndex(p=>p.id===viewer);return !major&&seat>=0&&game.hands[seat].includes(card)&&(needsDiscard(game,seat)||game.phase==='pegging'&&game.turn===seat&&legalCards(game,seat).includes(card));}
- function inspectable(card:string){const seat=game.players.findIndex(p=>p.id===viewer);return !major&&seat>=0&&game.hands[seat].includes(card);}
+ function available(card:string){const seat=game.players.findIndex(p=>p.id===viewer);return !$cameraMode&&!major&&seat>=0&&game.hands[seat].includes(card)&&(needsDiscard(game,seat)||game.phase==='pegging'&&game.turn===seat&&legalCards(game,seat).includes(card));}
+ function inspectable(card:string){const seat=game.players.findIndex(p=>p.id===viewer);return !$cameraMode&&!major&&seat>=0&&game.hands[seat].includes(card);}
  function hover(id:string|null){onHover(id);renderer.domElement.style.cursor=id?'pointer':'';}
 </script>
-<Scene orbitEnabled={!!review} {frame} {...settings} {onReady} onHover={hover} {onPress} onCard={card=>{if(available(card)){onHover(null);onPress(null);onCard(card);}}} canInteract={card=>available(card)} canInspect={card=>inspectable(card)}/>
-<CardTelemetry tableRotation={layout==='table'?.055:0} {game} {viewer} {frame} blocked={major} onControls={onControls}/>
+<Scene orbitEnabled={$cameraMode} {frame} {...settings} {onReady} onHover={hover} {onPress} onCard={card=>{if(available(card)){onHover(null);onPress(null);onCard(card);}}} canInteract={card=>available(card)} canInspect={card=>inspectable(card)}/>
+<CardTelemetry tableRotation={layout==='table'?.055:0} {game} {viewer} {frame} blocked={major||$cameraMode} onControls={onControls}/>

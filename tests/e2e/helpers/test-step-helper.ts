@@ -52,7 +52,7 @@ export class TestStepHelper{
  finish(){
   // Baseline generation is explicit and must be followed by a separate comparison run.
   const folder=dirname(this.info.file);mkdirSync(folder,{recursive:true});
-  const title=this.story==='SETTINGS'?'Personal table settings':this.story==='ANIMATIONS'?'Shared animation review':this.story==='TWO-PLAYERS'?'Two friends at the cribbage table':this.story==='THREE-PLAYERS'?'Three friends at the cribbage table':'Four friends at the cribbage table';
-  writeFileSync(join(folder,`${this.story}-${process.platform}.md`),`# ${title}\n\n${this.story==='SETTINGS'?'Personal settings, audio playback and reload are exercised through the visible controls.':this.story==='ANIMATIONS'?'Transitions are paused for review, including the points labels at 1.20 seconds.':"Every user action is followed by the actor's view and all seated observers."} All captures are 1180×820 at 1×; verification allows zero different pixels.\n\n${this.steps.join('\n\n')}\n`);
+  const title=this.story==='CAMERA'?'Personal camera views':this.story==='SETTINGS'?'Personal table settings':this.story==='ANIMATIONS'?'Shared animation review':this.story==='TWO-PLAYERS'?'Two friends at the cribbage table':this.story==='THREE-PLAYERS'?'Three friends at the cribbage table':'Four friends at the cribbage table';
+  writeFileSync(join(folder,`${this.story}-${process.platform}.md`),`# ${title}\n\n${this.story==='CAMERA'?'The real game runs in a resizable device frame; portrait and landscape poses stay independent.':this.story==='SETTINGS'?'Personal settings, audio playback and reload are exercised through the visible controls.':this.story==='ANIMATIONS'?'Transitions are paused for review, including the points labels at 1.20 seconds.':"Every user action is followed by the actor's view and all seated observers."} All captures are 1180×820 at 1×; verification allows zero different pixels.\n\n${this.steps.join('\n\n')}\n`);
  }
 }
