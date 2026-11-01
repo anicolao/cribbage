@@ -1,4 +1,6 @@
 <script lang="ts">
+ import {type CameraInfo} from './cameraViews';
+ import type {TableLayout as CameraLayout} from './presentation/responsive';
  import { T, useThrelte } from '@threlte/core';
  import { onDestroy, onMount } from 'svelte';
  import { RoundedBoxGeometry } from 'three/examples/jsm/geometries/RoundedBoxGeometry.js';
@@ -19,7 +21,7 @@
  import { wood, felt, paper, cardTextures, updateCardMargins, tableStitch } from './textures';
  import {BOARD_ROTATION} from './sceneLayout';
  import { roundedShape, faceGeometry, slabGeometry } from './geometry';
- let {frame,onHover=()=>{},onPress=()=>{},onCard=()=>{},canInteract=()=>false,canInspect=canInteract,onReady=()=>{},orbitEnabled=false,light=.7,fov=45,resetKey=0,preset='table',faceMargin=2.5,backMargin=2.5,lightX=11,lightY=17,lightZ=8,onCameraChange=()=>{}}:{frame:Frame;onHover?:(id:string|null)=>void;onPress?:(id:string|null)=>void;onCard?:(card:string)=>void;canInteract?:(card:string)=>boolean;canInspect?:(card:string)=>boolean;onReady?:()=>void;orbitEnabled?:boolean;light:number;fov:number;resetKey:number;preset:string;faceMargin:number;backMargin:number;lightX:number;lightY:number;lightZ:number;onCameraChange:(info:{elevation:number;distance:number})=>void}=$props();
+ let {frame,onHover=()=>{},onPress=()=>{},onCard=()=>{},canInteract=()=>false,canInspect=canInteract,onReady=()=>{},orbitEnabled=false,viewKey,light=.7,fov=45,resetKey=0,preset='table',faceMargin=2.5,backMargin=2.5,lightX=11,lightY=17,lightZ=8,onCameraChange=()=>{}}:{frame:Frame;onHover?:(id:string|null)=>void;onPress?:(id:string|null)=>void;onCard?:(card:string)=>void;canInteract?:(card:string)=>boolean;canInspect?:(card:string)=>boolean;onReady?:()=>void;orbitEnabled?:boolean;viewKey?:CameraLayout;light:number;fov:number;resetKey:number;preset:string;faceMargin:number;backMargin:number;lightX:number;lightY:number;lightZ:number;onCameraChange:(info:CameraInfo)=>void}=$props();
  const portrait=$derived(preset.startsWith('portrait'));
  const landscape=$derived(preset.startsWith('landscape'));
  const phone=$derived(portrait||preset.startsWith('landscape'));
@@ -58,7 +60,7 @@
  const matFace=faceGeometry(roundedShape(20.5,14.3,.4),20.5,14.3);
  onDestroy(()=>{if(materials)disposeMaterials(materials);[darkWood,cloth,paperGrain,stitch,...Object.values(cards),railGeo,matGeo,matFace].forEach(value=>value.dispose());});
 </script>
-<CameraRig interactive={orbitEnabled} {fov} {resetKey} {preset} onChange={onCameraChange}/>
+<CameraRig {viewKey} interactive={orbitEnabled} {fov} {resetKey} {preset} onChange={onCameraChange}/>
 <Environment onReady={()=>environmentReady=true}/>
 <T.HemisphereLight args={['#e5ede6','#38463d',.4*light]}/>
 <T.DirectionalLight position={[lightX,lightY,lightZ]} intensity={1.45*light} color="#fff1d4" castShadow shadow.mapSize.width={4096} shadow.mapSize.height={4096} shadow.camera.left={landscape?-30:-13} shadow.camera.right={landscape?30:13} shadow.camera.top={landscape?26:11} shadow.camera.bottom={landscape?-26:-11} shadow.camera.near={1} shadow.camera.far={landscape?80:50} shadow.bias={-.000035} shadow.normalBias={.003} shadow.radius={2}/>

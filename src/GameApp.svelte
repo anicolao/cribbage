@@ -1,4 +1,5 @@
 <script lang="ts">
+ import {cameraMode} from './cameraViews';
  import {preferences,settingsOpen} from './settings';
  import {onMount,untrack} from 'svelte';
  import TableView from './TableView.svelte';
@@ -29,12 +30,12 @@
  }
  onMount(()=>{void initialize();const ticker=setInterval(()=>now=Date.now(),100);return()=>clearInterval(ticker);});
  $effect(()=>{
-  const state=game,key=`cribbage:choice-windows:${import.meta.env.BASE_URL}:${room}:${viewer}`,stamp=Math.max(now,Date.now()),goReady=ready&&!animating&&renderedRevision===game.revision,autoMs=$settingsOpen?null:$preferences.autoSeconds===null?null:$preferences.autoSeconds*1000;
+  const state=game,key=`cribbage:choice-windows:${import.meta.env.BASE_URL}:${room}:${viewer}`,stamp=Math.max(now,Date.now()),goReady=ready&&!animating&&renderedRevision===game.revision,autoMs=$settingsOpen||$cameraMode?null:$preferences.autoSeconds===null?null:$preferences.autoSeconds*1000;
   if(!room||!viewer||!connected)return;
   untrack(()=>{if(key!==clockKey){clockKey=key;clock=new TableClock(localStorage,key);}windows=clock!.observe(state,stamp,goReady,autoMs);});
  });
  $effect(()=>{
-  const state=game,active=windows,stamp=Math.max(now,Date.now()),id=viewer,dialog=$settingsOpen,settled=!animating&&renderedRevision===game.revision;
+  const state=game,active=windows,stamp=Math.max(now,Date.now()),id=viewer,dialog=$settingsOpen||$cameraMode,settled=!animating&&renderedRevision===game.revision;
   if(!connected||busy||!ready||error||gathering||game.phase==='finished')return;
   untrack(()=>{const choice=automaticChoice(state,id,active,stamp);if(!choice||choice.intent.type!=='accept-crib'&&(!settled||dialog&&choice.actor===id))return;const last=autoAttempts.get(choice.key)??-Infinity;if(performance.now()-last<300)return;autoAttempts.set(choice.key,performance.now());void act(choice.intent,choice.actor,true);});
  });
@@ -45,7 +46,7 @@
   return()=>repo?.close();
  });
  async function act(intent:Intent,actor=viewer,automatic=false){
-  if(busy||animating&&!automatic&&intent.type!=='undo-discard'||!repo)return;busy=true;error='';
+  if($cameraMode&&!automatic||busy||animating&&!automatic&&intent.type!=='undo-discard'||!repo)return;busy=true;error='';
   try{await repo.append(actor,intent);}catch(e){const message=(e as Error).message;if(!automatic||!['The table changed. Try again.','That contribution is no longer waiting.','The crib is not ready.','You can still play.','Finish your last action first.'].includes(message))error=message;}finally{busy=false;}
  }
  async function join(){
@@ -59,7 +60,7 @@
  async function enter(){if(!name.trim())return;if(!room){creating=true;await join();}else await join();}
  $effect(()=>{if(creating&&connected&&repo){creating=false;void join();}});
  $effect(()=>{
-  if(viewer!==game.host||busy||animating||!ready||renderedRevision!==game.revision||error||!connected||gathering||game.phase==='finished')return;
+  if($cameraMode||viewer!==game.host||busy||animating||!ready||renderedRevision!==game.revision||error||!connected||gathering||game.phase==='finished')return;
   const index=game.phase==='discard'?game.players.findIndex((p,i)=>p.bot&&needsDiscard(game,i)):game.turn;
   if(index<0||!game.players[index]?.bot)return;
   const intent=botIntent(game,index);if(!intent||intent.type==='accept-crib'||intent.type===automaticIntent(game)?.type)return;
@@ -70,7 +71,7 @@
  async function copy(){try{await navigator.clipboard.writeText(invitation);copied=true;}catch{error='Select the invitation to share it.';}}
 </script>
 <svelte:head><title>Cribbage</title><meta name="description" content="Pull up a chair. A shared wooden cribbage table for two, three or four."/></svelte:head>
-<main data-e2e-layout data-busy={busy} data-connected={connected} data-animating={animating} data-settled-revision={renderedRevision} data-ready={ready} data-phase={game.phase} data-revision={game.revision} data-round={game.round} aria-label="Cribbage table">
+<main class:camera-mode={$cameraMode} data-e2e-layout data-busy={busy} data-connected={connected} data-animating={animating} data-settled-revision={renderedRevision} data-ready={ready} data-phase={game.phase} data-revision={game.revision} data-round={game.round} aria-label="Cribbage table">
  <div class="table-scene"><TableView {game} {viewer} {pegOrigins} action={choiceAction} onAction={chooseAction} onReady={()=>ready=true} onMotion={moving=>animating=moving} onSettled={revision=>renderedRevision=revision} onCard={play}/></div>
  {#if gathering}
   <section class="gather" aria-label="Gathering" data-e2e-fit>
@@ -115,5 +116,6 @@
  </section>
 </main>
 <style>
+ .camera-mode .gather,.camera-mode .turn-action{display:none}
  :global(*){box-sizing:border-box}:global(body){margin:0;background:#0e1715;color:#ecdfc0;font-family:Georgia,serif}:global(button),:global(input){font:inherit}main{position:relative;width:100vw;height:100svh;overflow:hidden}.table-scene{position:absolute;inset:0}.gather{position:absolute;left:50%;top:43%;transform:translate(-50%,-50%);width:340px;max-width:90vw;text-align:center;padding:22px 24px;background:#12362ef2;border:1px solid #b89b6159;box-shadow:0 12px 40px #0005;border-radius:8px}h1{font-weight:400;font-size:42px;margin:0 0 22px;letter-spacing:2px}form{display:flex;flex-direction:column;gap:14px}input{min-height:44px;width:100%;background:#0d241e;border:1px solid #b89b6159;color:#f4e7cb;border-radius:3px;padding:10px;text-align:center;font-size:20px}button{cursor:pointer;color:#ead9b7;background:transparent;border:1px solid #b89b6159;border-radius:3px;padding:10px 18px;min-height:44px}button:disabled{opacity:.45;cursor:default}.brass{background:linear-gradient(#dfc393,#b69762);color:#30261b;border:1px solid #e1c58b;box-shadow:0 3px 8px #0005;font-size:20px;min-width:130px}.invitation{display:flex;justify-content:center;align-items:center;gap:12px}.invitation a{color:#e9d1a4;font-size:24px;letter-spacing:4px;text-decoration:none}.invitation button{font-size:15px;padding:8px 12px;min-width:132px}.gather-actions{display:flex;gap:10px;margin-top:16px;justify-content:center}.gather-actions button{min-width:0;flex:1;font-size:17px;padding:10px}.companion{margin-top:0}.companion span{font-size:16px}.gather p{font-size:16px;color:#c4c8b5}.prompt{font-size:22px;margin:0}.last-play{font-size:15px;color:#b2baa4;margin:10px 0}.turn-action{transition:opacity .18s,transform .18s;position:absolute;bottom:22px;left:50%;transform:translateX(-50%)}.turn-action.arriving{opacity:.25;transform:translateX(-50%) translateY(6px)}.error{position:absolute;top:100px;left:50%;transform:translateX(-50%);padding:12px;background:#3d241a;border:1px solid #bc9361;max-width:90vw}.error button{margin-left:12px}.sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip-path:inset(50%);white-space:nowrap}:global(button:focus-visible),:global(input:focus-visible),a:focus-visible{outline:2px solid #e4c585;outline-offset:4px}
 </style>

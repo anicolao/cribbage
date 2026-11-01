@@ -66,7 +66,7 @@
    <button onclick={()=>{lightX=11;lightY=17;lightZ=8;}}>Reset light</button>
   </section>
   <section class="camera-section"><div class="section-heading">Camera</div>
-   <p class="orbit-help">Drag to orbit · Scroll to zoom<br/>Right-drag to pan · Touch: one finger orbit, two pan/zoom</p>
+   <p class="orbit-help">Use Settings → Set Camera to orbit.<br/>Drag to turn · Pinch or scroll to zoom</p>
    <label for="projection">Perspective / field of view <span>{fov===0?'Orthographic':`${fov}°`}</span></label><input id="projection" type="range" min="0" max="100" step="1" bind:value={fov}/>
    <div class="projection-ends"><span>0 · parallel</span><span>100° · wide angle</span></div>
    <p class="lens-help">Lens changes keep the table’s size at the orbit target. Higher FOV exaggerates near/far scale.</p>
