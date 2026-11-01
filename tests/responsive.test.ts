@@ -71,3 +71,22 @@ test('portrait pegging leaves a gap before the remaining private fan',()=>{
  }
  expect(checked).toBeGreaterThan(10);
 });
+
+test('compact landscape seats every opponent along the far edge in clockwise order without shrinking cards',()=>{
+ for(const count of [2,3,4]){
+  let game=apply(initialState(),'p0',{type:'create',name:'Alex'});
+  for(let i=1;i<count;i++)game=apply(game,`p${i}`,{type:'join',name:`Player ${i}`});
+  game=apply(game,'p0',{type:'begin',seed:'far-edge-seating'});
+  for(const [index,player] of game.players.entries()){
+   const frame=phoneFrame(buildFrame(game,player.id),game,player.id,'landscape');
+   expect(new Set(frame.cards.map(c=>c.scale)).size).toBe(1);
+   const centres:number[]=[];
+   for(let relative=0;relative<count;relative++){
+    const owner=game.players[(index+relative)%count].id,cards=frame.cards.filter(c=>c.owner===owner&&c.zone==='hand');
+    expect(cards.every(c=>relative===0?c.position[0]>0&&c.position[2]>0:c.position[2]<0)).toBe(true);
+    if(relative)centres.push(cards.reduce((sum,c)=>sum+c.position[0],0)/cards.length);
+   }
+   expect(centres).toEqual(centres.toSorted((a,b)=>a-b));
+  }
+ }
+});

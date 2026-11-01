@@ -1,7 +1,7 @@
 import type {State} from '../game/engine';
 import {tablePlayers} from '../game/layout';
 import {STARTER_POSITION} from '../sceneLayout';
-import {board29Point,BOARD29_Z,BOARD29_LANDSCAPE_Z,BOARD29_LANDSCAPE_SCALE} from '../board29';
+import {board29Point,BOARD29_Z,BOARD29_LANDSCAPE_X,BOARD29_LANDSCAPE_Z,BOARD29_LANDSCAPE_SCALE} from '../board29';
 import {pose,rotate,type Frame,type Pose,type CardVisual} from './frame';
 import type {Plan} from './motion';
 import type {Position} from '../table';
@@ -15,12 +15,7 @@ export function phonePlan(plan:Plan,game:State,viewer:string,orientation:'portra
  const players=tablePlayers(game,viewer),own=players.find(p=>p.id===viewer);
  const area=(owner:string)=>{
   const player=players.find(p=>p.id===owner),relative=player?(player.index-(own?.index??0)+players.length)%players.length:0;
-  if(landscape){
-   // Anchor the viewer at the right thumb; rotate the other seats clockwise.
-   const corner=((players.length===2?relative*2:relative)+3)%4;
-   const near=corner===0||corner===3,x=(corner<2?-1:1)*(near?4.9:7.2),z=near?1.4:-5.2;
-   return {x,z,fanSpacing:players.length===2?.6:.8,playedX:(x<0?-1:1)*(near?1.7:7.2),playedZ:near?2.4:-2.1};
-  }
+
   if(relative===0)return {x:0,z:7.9,fanSpacing:1.18,playedX:0,playedZ:5.05};
   if(players.length===3)return {x:relative===1?-2.8:2.8,z:-7.1,fanSpacing:.8,playedX:relative===1?-2.8:2.8,playedZ:-5.1};
   if(players.length===2)return {x:0,z:-7.5,fanSpacing:.8,playedX:0,playedZ:-4.9};
@@ -59,32 +54,37 @@ export function phonePlan(plan:Plan,game:State,viewer:string,orientation:'portra
  function composed(f:Frame):Frame{
   if(!landscape)return frame(f);
   const scale=LANDSCAPE_CARD_SCALE,handCount=f.counts.find(c=>c.kind==='hand'),cribCount=f.counts.some(c=>c.kind==='crib');
-  const seat=(owner:string)=>{const a=area(owner),sign=Math.sign(a.x);return {sign,near:a.z>0,x:sign*(a.z>0?12:15),z:a.z>0?4.3:-13.8,playedX:sign*(a.z>0?4.3:18.5),playedZ:a.z>0?5.2:-4.3};};
+  const seat=(owner:string)=>{
+   const player=players.find(p=>p.id===owner),relative=player?(player.index-(own?.index??0)+players.length)%players.length:0;
+   if(relative===0)return {near:true,x:12,z:4.5,playedX:4.7,playedZ:4.5};
+   const x=players.length===2?0:players.length===3?(relative===1?-17:17):(relative-2)*17;
+   return {near:false,x,z:-15.5,playedX:x,playedZ:-7.8};
+  };
   const cards=f.cards.map(c=>{
    const a=seat(c.owner),player=players.find(p=>p.id===c.owner);
    let x=0,z=0,rotation=0;
    if(c.zone==='deck'||c.zone==='cut'){
-    x=-9.7+(c.position[0]-STARTER_POSITION[0])*scale;
-    z=-3.5+(c.position[2]-STARTER_POSITION[2])*scale;
+    x=-8+(c.position[0]-STARTER_POSITION[0])*scale;
+    z=-6.8+(c.position[2]-STARTER_POSITION[2])*scale;
    }else if(c.zone==='crib'){
-    x=cribCount?(c.order-1.5)*5.5:9.7+(c.order-1.5)*.12;z=cribCount?4.6:-3.5;
+    x=cribCount?6.5+(c.order%2)*5.8:7.2+(c.order-1.5)*.12;z=cribCount?-3+Math.floor(c.order/2)*7.8:f.counts.length?-17:-6.8;
    }else if(c.zone==='hand'){
     const local=rotate([c.position[0]-(player?.x??0),c.position[1],c.position[2]-(player?.z??0)],-(player?.rotation??0));
-    const held=f.cards.filter(p=>p.zone==='hand'&&p.owner===c.owner).length,spread=held===6?2.25:2.8;
-    const centre=a.near?a.sign*(held>4?11:11.7):a.x;
+    const held=f.cards.filter(p=>p.zone==='hand'&&p.owner===c.owner).length,spread=a.near?(held===6?2.25:2.8):(held===6?1.5:1.8);
+    const centre=a.near?(held>4?11:11.7):a.x;
     x=centre+local[0]*spread;z=a.z+local[2]*spread;
     rotation=(c.rotation-(player?.rotation??0))*.55;
    }else if(handCount?.owner===c.owner){
-    x=(c.order-1.5)*5.5;z=a.near?4.6:-12.5;
+    x=6.5+(c.order%2)*5.8;z=-3+Math.floor(c.order/2)*7.8;
    }else{
-    x=(f.counts.length?a.sign*(a.near?17:15):a.playedX)+(c.order-1.5)*(f.counts.length?.08:.72);z=f.counts.length?(a.near?.2:-13.8):a.playedZ;
+    x=(f.counts.length?(a.near?23.5:a.x):a.playedX)+(c.order-1.5)*(f.counts.length?.08:a.near?.72:.52);z=f.counts.length?(a.near?-10:a.z):a.playedZ;
    }
    return {...c,position:[x,c.position[1]*scale,z] as Position,rotation,scale:c.scale*scale};
   });
-  return {...f,cards,pegs:f.pegs.map(p=>{const q=board29Point(p.score,Math.max(0,game.players.findIndex(player=>player.id===p.owner)));return {...p,position:[q[0]*BOARD29_LANDSCAPE_SCALE,.467*BOARD29_LANDSCAPE_SCALE,q[1]*BOARD29_LANDSCAPE_SCALE+BOARD29_LANDSCAPE_Z] as Position,scale:p.scale*.9*BOARD29_LANDSCAPE_SCALE};}),plates:f.plates.map(p=>{
-   if(p.id==='crib-label')return {...p,name:game.players[game.dealer]?.id===viewer?'Your Crib':p.name,position:[9.7,p.position[1],-8.3] as Position,scale:f.counts.length?0:p.scale*1.15};
-   const a=seat(p.id);return {...p,position:[a.x,p.position[1],a.near?9.1:-19.5] as Position,scale:p.scale*(a.near?1.8:2.4)};
-  }),counts:f.counts.map(p=>{const a=seat(p.owner);return {...p,position:p.kind==='crib'||a.near?[0,.004,9.3] as Position:[a.sign*13,.004,-12.5] as Position};}),awards:f.awards.map(p=>{const a=seat(p.owner);return {...p,position:[a.playedX,.004,a.near?9.5:.3] as Position};})};
+  return {...f,cards,pegs:f.pegs.map(p=>{const q=board29Point(p.score,Math.max(0,game.players.findIndex(player=>player.id===p.owner)));return {...p,position:[q[0]*BOARD29_LANDSCAPE_SCALE+BOARD29_LANDSCAPE_X,.467*BOARD29_LANDSCAPE_SCALE,q[1]*BOARD29_LANDSCAPE_SCALE+BOARD29_LANDSCAPE_Z] as Position,scale:p.scale*.9*BOARD29_LANDSCAPE_SCALE};}),plates:f.plates.map(p=>{
+   if(p.id==='crib-label')return {...p,name:game.players[game.dealer]?.id===viewer?'Your Crib':p.name,position:[7.2,p.position[1],-11.6] as Position,scale:f.counts.length?0:p.scale*1.15};
+   const a=seat(p.id);return {...p,position:[a.x,p.position[1],a.near?9.6:-20.9] as Position,scale:p.scale*(a.near?1.8:2.6)};
+  }),counts:f.counts.map(p=>({...p,position:[6,.004,9.5] as Position})),awards:f.awards.map(p=>{const a=seat(p.owner);return {...p,position:[a.near?a.playedX:a.playedX+(a.x===0?-4.3:Math.sign(a.x)*4.3),.004,a.near?-.2:a.playedZ] as Position};})};
  }
  const from=composed(plan.from),target=plan.target===plan.from?from:composed(plan.target);
  function tracks<T extends Pose&{id:string}>(items:{item:T;segments:{from:Pose;to:Pose;start:number;duration:number;lift:number}[]}[],old:T[],next:T[],mappedOld:T[],mappedNext:T[],cards=false){
@@ -95,7 +95,7 @@ export function phonePlan(plan:Plan,game:State,viewer:string,orientation:'portra
    const mappedPlate=sourcePlate?target.plates.find(p=>p.id===sourcePlate.id):undefined;
    const spawn=cards?{...pose([...STARTER_POSITION],0,Math.PI),position:[...STARTER_POSITION] as Position}:sourcePlate??b??a??track.item;
    const ma=mappedOld.find(p=>p.id===track.item.id),mb=mappedNext.find(p=>p.id===track.item.id);
-   const mappedSpawn=cards?{...spawn,position:landscape?[-9.7,STARTER_POSITION[1]*LANDSCAPE_CARD_SCALE,-3.5] as Position:[...deckAnchor] as Position,scale:landscape?LANDSCAPE_CARD_SCALE:CARD_SCALE}:mappedPlate??mb??ma??track.item;
+   const mappedSpawn=cards?{...spawn,position:landscape?[-8,STARTER_POSITION[1]*LANDSCAPE_CARD_SCALE,-6.8] as Position:[...deckAnchor] as Position,scale:landscape?LANDSCAPE_CARD_SCALE:CARD_SCALE}:mappedPlate??mb??ma??track.item;
    const start=a??spawn,end=b??spawn,startMapped=ma??mappedSpawn,endMapped=mb??mappedSpawn;
    function remap(p:Pose):Pose{
     const dx=end.position[0]-start.position[0],dz=end.position[2]-start.position[2],length=dx*dx+dz*dz;
@@ -104,8 +104,8 @@ export function phonePlan(plan:Plan,game:State,viewer:string,orientation:'portra
     return {...p,position:[dest[0]+(p.position[0]-base[0])*scale,dest[1]+p.position[1]-base[1],dest[2]+(p.position[2]-base[2])*scale],rotation:p.rotation+lerp(startMapped.rotation-start.rotation,endMapped.rotation-end.rotation,t),scale:p.scale*scale};
    }
    const countingFlight=cards&&landscape&&plan.target.counts.length>0&&b&&'zone' in b&&(b.zone==='played'||b.zone==='crib');
-   const segments=track.segments.map(s=>({...s,from:remap(s.from),to:remap(s.to),lift:countingFlight?Math.max(s.lift,1.2):s.lift}));
-   if(!segments.length&&ma&&mb&&(ma.position.some((v,i)=>v!==mb.position[i])||ma.scale!==mb.scale||ma.rotation!==mb.rotation))segments.push({from:ma,to:mb,start:0,duration:.8,lift:countingFlight?1.2:0});
+   const segments=track.segments.map(s=>({...s,from:remap(s.from),to:remap(s.to),lift:countingFlight?Math.max(s.lift,1.8):s.lift}));
+   if(!segments.length&&ma&&mb&&(ma.position.some((v,i)=>v!==mb.position[i])||ma.scale!==mb.scale||ma.rotation!==mb.rotation))segments.push({from:ma,to:mb,start:0,duration:.8,lift:countingFlight?1.8:0});
    return {...track,item:(mb??ma??track.item),segments};
   });
  }
