@@ -1,22 +1,22 @@
 <script lang="ts">
  import { T } from '@threlte/core';
- import { untrack,onDestroy } from 'svelte';
  import type { Material, Texture } from 'three';
  import type { SurfaceMaps } from './materials';
  import type { Position } from './table';
  import { roundedShape,slabGeometry } from './geometry';
  import { nameplateTexture } from './textures';
  import Peg from './Peg.svelte';
- let {compact=false,scale=1,glow=0,name,score,pegColor,position=[0,0,0],width=3.9,height=.8,wood,fallback}:{compact?:boolean;scale?:number;glow?:number;name:string;score?:number;pegColor?:string;position?:Position;width?:number;height?:number;wood?:SurfaceMaps;fallback:Texture}=$props();
- const base=untrack(()=>slabGeometry(roundedShape(width,height,.08),width,height,.12));
- const metal=untrack(()=>slabGeometry(roundedShape(width-.24,height-.18,.045),width-.24,height-.18,.025));
+ let {compact=false,stacked=false,tilt=0,scale=1,glow=0,name,score,pegColor,position=[0,0,0],width=3.9,height=.8,wood,fallback}:{compact?:boolean;stacked?:boolean;tilt?:number;scale?:number;glow?:number;name:string;score?:number;pegColor?:string;position?:Position;width?:number;height?:number;wood?:SurfaceMaps;fallback:Texture}=$props();
+ const base=$derived(slabGeometry(roundedShape(width,height,.08),width,height,.12));
+ const metal=$derived(slabGeometry(roundedShape(width-.24,height-.18,.045),width-.24,height-.18,.025));
  const baseMaterials:Material[]=[],metalMaterials:Material[]=[];
  const label=$derived(name),points=$derived(score);
  let face=$state.raw<Texture>();
- $effect(()=>{const next=nameplateTexture(label,points,compact);face=next;return()=>next.dispose();});
- onDestroy(()=>{base.dispose();metal.dispose();});
+ $effect(()=>{const next=nameplateTexture(label,points,compact,stacked);face=next;return()=>next.dispose();});
+ $effect(()=>{const geometry=base;return()=>geometry.dispose();});
+ $effect(()=>{const geometry=metal;return()=>geometry.dispose();});
 </script>
-<T.Group {position} {scale}>
+<T.Group position={[position[0],position[1]+Math.sin(tilt)*height*scale/2,position[2]]} rotation.x={tilt} {scale}>
  <T.Mesh geometry={base} material={baseMaterials} rotation.x={-Math.PI/2} castShadow receiveShadow>
   <T.MeshPhysicalMaterial attach="material.0" map={wood?.color??fallback} normalMap={wood?.normal} normalScale={[.15,.15]} color="#b68151" roughness={.55} clearcoat={.2}/>
   <T.MeshStandardMaterial attach="material.1" color="#372313" roughness={.7}/>

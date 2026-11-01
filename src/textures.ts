@@ -63,7 +63,18 @@ export function board(scannedWood?:CanvasImageSource){
  }
  return texture(c);
 }
-export function nameplateTexture(name:string,score?:number,compact=false){
+function cribNameplateTexture(name:string){
+ const rand=noise(),{c,g}=canvas(640,256);
+ const brass=g.createLinearGradient(0,0,0,256);brass.addColorStop(0,'#cfaf72');brass.addColorStop(.32,'#dec18a');brass.addColorStop(1,'#b68d53');
+ g.fillStyle=brass;g.fillRect(0,0,640,256);
+ for(let y=0;y<256;y++){g.strokeStyle=`rgba(81,52,18,${rand()*.05})`;g.lineWidth=.5;g.beginPath();g.moveTo(0,y);g.lineTo(640,y+rand()*.6);g.stroke();}
+ g.strokeStyle='#785b32';g.lineWidth=2;g.strokeRect(8,12,624,232);g.strokeStyle='#f0d6a3';g.lineWidth=1;g.strokeRect(12,16,616,224);
+ const owner=name.toUpperCase().replace(/\s+CRIB$/,'');g.fillStyle='#352717';g.textAlign='center';g.textBaseline='middle';g.font='118px Georgia';
+ const width=g.measureText(owner).width;if(width>584)g.font=`${118*584/width}px Georgia`;
+ g.fillText(owner,320,88);g.font='104px Georgia';g.fillText('CRIB',320,190);return texture(c);
+}
+export function nameplateTexture(name:string,score?:number,compact=false,stacked=false){
+ if(stacked)return cribNameplateTexture(name);
  const rand=noise();
  const {c,g}=canvas(1024,164);
  const brass=g.createLinearGradient(0,0,0,164);brass.addColorStop(0,'#cfaf72');brass.addColorStop(.32,'#dec18a');brass.addColorStop(1,'#b68d53');
@@ -71,6 +82,7 @@ export function nameplateTexture(name:string,score?:number,compact=false){
  for(let y=0;y<164;y++){g.strokeStyle=`rgba(81,52,18,${rand()*.05})`;g.lineWidth=.5;g.beginPath();g.moveTo(0,y);g.lineTo(1024,y+rand()*.6);g.stroke();}
  g.strokeStyle='#785b32';g.lineWidth=2;g.strokeRect(12,12,1000,140);g.strokeStyle='#f0d6a3';g.lineWidth=1;g.strokeRect(16,16,992,132);
  g.fillStyle='#352717';g.textAlign='center';g.textBaseline='middle';
+
  const text=name.toUpperCase();g.font=`${compact?112:score===undefined?58:56}px Georgia`;
  if(compact){const maximum=score===undefined?920:510,width=g.measureText(text).width;if(width>maximum)g.font=`${112*maximum/width}px Georgia`;}
  // Modest letter spacing gives the original engraved serif nameplate feel.
