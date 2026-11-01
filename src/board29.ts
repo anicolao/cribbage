@@ -3,7 +3,8 @@ import type {Point} from './table';
 // Curve landmarks follow the supplied four-track board reference. Keep the
 // texture bounds outside the cut outline, including its bevel and end caps.
 export const BOARD29_LANE_EDGES=[-.8,3.8] as const;
-export const BOARD29_LANDSCAPE_Z=-2.6;
+export const BOARD29_LANDSCAPE_SCALE=1.7;
+export const BOARD29_LANDSCAPE_Z=-4.4;
 export const BOARD29_WIDTH=8.2,BOARD29_DEPTH=5.9,BOARD29_Z=-.25;
 const point=(x:number,y:number)=>new Vector2((x-500)/112,(y-325)/112);
 const two=new CurvePath<Vector2>(),nine=new CurvePath<Vector2>();

@@ -13,7 +13,7 @@
  import Piece from './Piece.svelte';
  import Board from './Board.svelte';
  import TwentyNineBoard from './TwentyNineBoard.svelte';
- import {BOARD29_Z,BOARD29_LANDSCAPE_Z} from './board29';
+ import {BOARD29_Z,BOARD29_LANDSCAPE_Z,BOARD29_LANDSCAPE_SCALE} from './board29';
  import Nameplate from './Nameplate.svelte';
  import CountingPoints from './CountingPoints.svelte';
  import { wood, felt, paper, cardTextures, updateCardMargins, tableStitch } from './textures';
@@ -71,7 +71,7 @@
  <T.MeshStandardMaterial attach="material.2" color="#12392e" roughness={1}/>
 </T.Mesh>
 <T.Mesh geometry={matFace} scale={[landscape?3:phone?1.3:1,landscape?2.5:1,1]} rotation={[-Math.PI/2,0,portrait?Math.PI/2:0]} position.y={-.008}><T.MeshStandardMaterial map={stitch} transparent roughness={1} depthWrite={false} polygonOffset polygonOffsetFactor={-1} polygonOffsetUnits={-1}/></T.Mesh>
-{#if phone}<T.Group scale={landscape?1.4:1} position.z={portrait?BOARD29_Z:BOARD29_LANDSCAPE_Z}><TwentyNineBoard {materials} {cards}/></T.Group>{:else}<T.Group rotation.y={BOARD_ROTATION}><Board {materials}/></T.Group>{/if}
+{#if phone}<T.Group scale={landscape?BOARD29_LANDSCAPE_SCALE:1} position.z={portrait?BOARD29_Z:BOARD29_LANDSCAPE_Z}><TwentyNineBoard {materials} {cards}/></T.Group>{:else}<T.Group rotation.y={BOARD_ROTATION}><Board {materials}/></T.Group>{/if}
 {#each frame.pegs as peg (peg.id)}<Peg color={peg.color} position={peg.position} scale={peg.scale} glow={peg.glow}/>{/each}
 {#if cards.back}
  {#each frame.cards as card (card.id)}
@@ -80,7 +80,7 @@
    onhover={active=>cardHover(card.id,active)} onpress={active=>onPress(active?card.id:null)} onselect={event=>select(card.id,event)}/>
  {/each}
  {#each frame.plates as plate (plate.id)}
-  <Nameplate compact={phone} name={plate.name} score={plate.score} pegColor={plate.color} position={plate.position} scale={plate.scale} glow={plate.glow} width={plate.id==='crib-label'?2.8:3.9} height={plate.id==='crib-label'?.62:.8} wood={materials?.walnut} fallback={darkWood}/>
+  <Nameplate stacked={landscape&&plate.id==='crib-label'} tilt={landscape?(plate.id==='crib-label'?Math.PI/4:Math.PI/6):0} compact={phone} name={plate.name} score={plate.score} pegColor={plate.color} position={plate.position} scale={plate.scale} glow={plate.glow} width={plate.id==='crib-label'?(landscape?5.6:2.8):3.9} height={plate.id==='crib-label'?(landscape?2.4:.62):.8} wood={materials?.walnut} fallback={darkWood}/>
  {/each}
 {#each frame.awards as award (award.id)}<CountingPoints size={landscape?1.8:1} points={award.points} position={award.position} opacity={award.scale}/>{/each}
 {#each frame.counts as count (count.id)}<CountingPoints size={landscape?1.8:1} points={count.points} position={count.position} opacity={count.scale}/>{/each}
