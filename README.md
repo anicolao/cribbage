@@ -74,6 +74,8 @@ Camera clipping follows distance to the orbit target, preserving depth precision
 - `src/textures.ts`: board markings over scanned maple, felt albedo, paper grain, labels, and card backs.
 - `src/materials.ts` / `src/Environment.svelte`: local PBR maps and HDR environment lighting.
 
+The animation E2E story also reviews ready-table and counting compositions for iPad landscape, iPad portrait, phone portrait and phone landscape. Each capture stays at 1180×820 while the embedded table renders at the selected device’s native resolution.
+
 The lab borrows replay / speed / reset conventions from Pantheon and Istanbul and the shared Threlte scene approach from Gotfive. The lab replays real game transitions. The playable table uses the deterministic rules engine and persistent relay described below.
 
 Faces retain the classic artwork with an adjustable white margin (default 2.5%). The independent **Face margin** and **Back margin** sliders in the Cards section range from 0–10% in quarter-percent steps and repaint cached textures live (both default to 2.5%; back margin adds to the generated artwork’s existing border); the SVG physical-card outline is removed before rendering onto the solid card. Backs use the generated classic red engraved rider-style design in `public/cards/card-back-classic-v1.png`, rendered into the same 768 × 1116 texture dimensions as the faces. Both use the same 1.38 × 2 card geometry. The built-in image generation prompt is preserved in `artifacts/card-back-classic-v1.prompt.txt`.
