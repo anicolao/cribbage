@@ -3,9 +3,18 @@
 A shared Svelte 5 / Threlte 8 / Three.js cribbage table for two, three or four players with individual scoring tracks, seeded shuffles, intent replay, and optional heuristic companions. GPL-3.0-only. The visual lab, inspired by `cribmock.png`, reviews the same renderer and animations as the game.
 
 ```sh
-bun install
+nix develop
+bun install --frozen-lockfile
 bun run dev
 ```
+
+The locked Nix dev shell supplies Bun 1.3.10 (matching CI), Node.js 24, Java 21 (including `JAVA_HOME`), Git, GitHub CLI and ripgrep on Apple Silicon/Intel macOS and Linux. Firebase CLI and Playwright come from the project's locked dev dependencies. To run the emulator checks without entering an interactive shell:
+
+```sh
+nix develop --command bun run test:firebase
+```
+
+For local browser tests, install the pinned browser once with `nix develop --command bun x playwright install chromium`. Exact screenshot verification in CI continues to use the pinned Playwright Linux ARM64 container.
 
 Open http://127.0.0.1:5197/ to play, or `/dev/animations` for the shared animation lab.
 
@@ -19,7 +28,7 @@ The [ACC rules](https://www.cribbage.org/NewSite/rules/rulebook_2025.pdf) docume
 
 ## Responsive table layouts
 
-The game and animation lab share the same container-based breakpoints (CSS pixels, independent of device pixel ratio): portrait below 600 px wide uses the phone composition; portrait at least 600 px wide uses the iPad composition. Landscape below 600 px high uses the compact landscape composition; taller landscape uses the original table. Resizing or rotating the device selects a layout without changing the table, cards, or replay. The lab's **Desktop · automatic** follows those same rules; named device previews force a reviewed viewport.
+The game and animation lab share the same container-based breakpoints (CSS pixels, independent of device pixel ratio): portrait below 600 px wide uses the phone composition; portrait at least 600 px wide uses the iPad composition. Landscape below 600 px high uses the compact landscape composition; taller landscape uses the original table. Resizing or rotating the device selects a layout without changing the table, cards, or replay. The lab's **Desktop · automatic** follows those same rules; named device previews force a reviewed viewport. The game renders at the device pixel ratio up to 3×, matching the phone lab previews.
 
 Portrait uses the four-track 29-shaped maple and walnut board, with the three opponents across the top and your hand below. Phone portrait defaults to distance 19, elevation 40°, FoV 60°; iPad portrait uses distance 24, elevation 40°, FoV 45°. Compact landscape uses distance 25, elevation 45°, FoV 45°, a 1.4× board and identically enlarged cards for every player, with your hand at the lower right. Counting spreads into separate owner areas. The 29 outline and drilled tracks follow shared Bézier paths; the supplied reference guided the code geometry and is not bundled as an image.
 
