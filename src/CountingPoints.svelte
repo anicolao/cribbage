@@ -2,7 +2,7 @@
  import {T} from '@threlte/core';
  import {CanvasTexture,SRGBColorSpace,type Texture} from 'three';
  import type {Position} from './table';
- let {points,position,opacity=1}:{points:number;position:Position;opacity?:number}=$props();
+ let {points,position,opacity=1,size=1}:{points:number;position:Position;opacity?:number;size?:number}=$props();
  const text=$derived(points?`+${points}`:'0');
  let ink=$state.raw<Texture>();
  $effect(()=>{
@@ -14,7 +14,7 @@
   const texture=new CanvasTexture(canvas);texture.colorSpace=SRGBColorSpace;texture.anisotropy=8;ink=texture;return()=>texture.dispose();
  });
 </script>
-<T.Mesh {position} rotation.x={-Math.PI/2} receiveShadow>
+<T.Mesh {position} scale={size} rotation.x={-Math.PI/2} receiveShadow>
  <T.PlaneGeometry args={[1.35,.65]}/>
  <T.MeshStandardMaterial map={ink} transparent opacity={.9*opacity} roughness={1} metalness={0} depthWrite={false} polygonOffset polygonOffsetFactor={-1} polygonOffsetUnits={-1}/>
 </T.Mesh>

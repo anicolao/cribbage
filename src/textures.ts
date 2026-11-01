@@ -63,7 +63,7 @@ export function board(scannedWood?:CanvasImageSource){
  }
  return texture(c);
 }
-export function nameplateTexture(name:string,score?:number){
+export function nameplateTexture(name:string,score?:number,compact=false){
  const rand=noise();
  const {c,g}=canvas(1024,164);
  const brass=g.createLinearGradient(0,0,0,164);brass.addColorStop(0,'#cfaf72');brass.addColorStop(.32,'#dec18a');brass.addColorStop(1,'#b68d53');
@@ -71,14 +71,15 @@ export function nameplateTexture(name:string,score?:number){
  for(let y=0;y<164;y++){g.strokeStyle=`rgba(81,52,18,${rand()*.05})`;g.lineWidth=.5;g.beginPath();g.moveTo(0,y);g.lineTo(1024,y+rand()*.6);g.stroke();}
  g.strokeStyle='#785b32';g.lineWidth=2;g.strokeRect(12,12,1000,140);g.strokeStyle='#f0d6a3';g.lineWidth=1;g.strokeRect(16,16,992,132);
  g.fillStyle='#352717';g.textAlign='center';g.textBaseline='middle';
- const text=name.toUpperCase();g.font=`${score===undefined?58:56}px Georgia`;
+ const text=name.toUpperCase();g.font=`${compact?112:score===undefined?58:56}px Georgia`;
+ if(compact){const maximum=score===undefined?920:510,width=g.measureText(text).width;if(width>maximum)g.font=`${112*maximum/width}px Georgia`;}
  // Modest letter spacing gives the original engraved serif nameplate feel.
  const spacing=3,total=[...text].reduce((sum,ch)=>sum+g.measureText(ch).width,0)+(text.length-1)*spacing;
  let x=(score===undefined?512:440)-total/2;
  for(const ch of text){g.textAlign='left';g.fillText(ch,x,86);x+=g.measureText(ch).width+spacing;}
  if(score!==undefined){
   g.strokeStyle='#967442';g.lineWidth=1.5;g.beginPath();g.moveTo(752,32);g.lineTo(752,132);g.stroke();
-  g.textAlign='center';g.font='68px Georgia';g.fillText(String(score),871,87);
+  g.textAlign='center';g.font=`${compact?124:68}px Georgia`;g.fillText(String(score),871,87);
   // The real coloured peg is mounted at this position on the brass plate.
   g.strokeStyle='#6c512d';g.lineWidth=2;g.beginPath();g.arc(87,82,13,0,Math.PI*2);g.stroke();
  }
