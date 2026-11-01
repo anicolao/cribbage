@@ -1,0 +1,15 @@
+{
+ "id":"./",
+ "name":"Cribbage",
+ "short_name":"Cribbage",
+ "description":"Pull up a chair. A shared wooden cribbage table for two, three or four.",
+ "start_url":"./",
+ "scope":"./",
+ "display":"standalone",
+ "background_color":"#14251d",
+ "theme_color":"#14251d",
+ "icons":[
+  {"src":"icons/cribbage-192.png","sizes":"192x192","type":"image/png","purpose":"any"},
+  {"src":"icons/cribbage-512.png","sizes":"512x512","type":"image/png","purpose":"any"}
+ ]
+}
