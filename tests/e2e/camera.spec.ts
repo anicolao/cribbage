@@ -30,6 +30,11 @@ test('camera views lock card gestures and restore each orientation independently
  for(let i=0;i<3;i++){await rotate(390,844,'Phone portrait');await expect(table).toHaveAttribute('data-layout','phone-portrait');await closeTo(portrait);await rotate(844,390,'Phone landscape');await expect(table).toHaveAttribute('data-layout','phone-landscape');await closeTo(landscape);}
  await helper.step('camera-rotated',page,'Alex','Repeated rotation restores the same landscape view',[{spec:'No camera scale or target drift after three portrait/landscape cycles',check:async()=>{await closeTo(landscape);}}],false);
  await enter();await device.getByRole('button',{name:'Reset View',exact:true}).click();await closeTo(landscapeDefault);await finish();
+ // A portrait-to-tablet-landscape jump must fit the destination aspect even
+ // before Threlte finishes measuring its new canvas.
+ await rotate(390,844,'Phone portrait');await closeTo(portrait);
+ await rotate(1180,820,'Tablet landscape');await expect(table).toHaveAttribute('data-layout','table');await expect.poll(async()=>Number(await table.getAttribute('data-camera-distance'))).toBeCloseTo(16.3/(2*Math.tan(Math.PI/8)),8);
+ await rotate(844,390,'Phone landscape');await expect(table).toHaveAttribute('data-layout','phone-landscape');await closeTo(landscapeDefault);
  await helper.step('camera-reset',page,'Alex','Reset View restores only landscape',[{spec:'The reviewed default landscape camera returns',check:async()=>{await closeTo(landscapeDefault);}}],false);
  await rotate(390,844,'Phone portrait');await closeTo(portrait);
  const frame=page.frames().find(f=>f.url().includes(`table=${room}`))!;await frame.goto(`/?table=${room}`);await expect(device.locator('main')).toHaveAttribute('data-ready','true');await closeTo(portrait);await expect(table).toHaveAttribute('data-camera-locked','true');
