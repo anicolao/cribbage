@@ -7,13 +7,13 @@
  import { roundedShape,slabGeometry } from './geometry';
  import { nameplateTexture } from './textures';
  import Peg from './Peg.svelte';
- let {scale=1,glow=0,name,score,pegColor,position=[0,0,0],width=3.9,height=.8,wood,fallback}:{scale?:number;glow?:number;name:string;score?:number;pegColor?:string;position?:Position;width?:number;height?:number;wood?:SurfaceMaps;fallback:Texture}=$props();
+ let {compact=false,scale=1,glow=0,name,score,pegColor,position=[0,0,0],width=3.9,height=.8,wood,fallback}:{compact?:boolean;scale?:number;glow?:number;name:string;score?:number;pegColor?:string;position?:Position;width?:number;height?:number;wood?:SurfaceMaps;fallback:Texture}=$props();
  const base=untrack(()=>slabGeometry(roundedShape(width,height,.08),width,height,.12));
  const metal=untrack(()=>slabGeometry(roundedShape(width-.24,height-.18,.045),width-.24,height-.18,.025));
  const baseMaterials:Material[]=[],metalMaterials:Material[]=[];
  const label=$derived(name),points=$derived(score);
  let face=$state.raw<Texture>();
- $effect(()=>{const next=nameplateTexture(label,points);face=next;return()=>next.dispose();});
+ $effect(()=>{const next=nameplateTexture(label,points,compact);face=next;return()=>next.dispose();});
  onDestroy(()=>{base.dispose();metal.dispose();});
 </script>
 <T.Group {position} {scale}>

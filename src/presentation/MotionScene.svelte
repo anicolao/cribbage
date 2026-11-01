@@ -1,4 +1,6 @@
 <script lang="ts">
+ import {phonePlan,phoneFrame} from './phone';
+ import type {TableLayout} from './responsive';
  import {tableAudio} from '../audio/engine';
  import {retimePlan,retimedStart} from './timing';
  import {useTask,useThrelte} from '@threlte/core';
@@ -11,21 +13,27 @@
  import Scene from '../Scene.svelte';
  import CardTelemetry from './CardTelemetry.svelte';
  import type {CardControl} from './frame';
- let {game,viewer,pegOrigins,review,automaticCard,animationRate=1,hovered=null,pressed=null,respectReducedMotion=true,onFrame=()=>{},onMotion=()=>{},onSettled=()=>{},onHover=()=>{},onPress=()=>{},onCard=()=>{},onControls=()=>{},onReady=()=>{},settings}:{game:State;viewer:string;animationRate?:number;automaticCard?:string;pegOrigins?:Record<string,number>;review?:{plan:Plan;time:number;interaction?:{card:string;hover:number;press:number}};hovered?:string|null;pressed?:string|null;respectReducedMotion?:boolean;onFrame?:(frame:Frame,idle:boolean)=>void;onMotion?:(active:boolean,kind:string,duration:number)=>void;onSettled?:(revision:number)=>void;onHover?:(id:string|null)=>void;onPress?:(id:string|null)=>void;onCard?:(card:string)=>void;onControls?:(controls:CardControl[])=>void;onReady?:()=>void;settings:{light:number;fov:number;resetKey:number;preset:string;faceMargin:number;backMargin:number;lightX:number;lightY:number;lightZ:number;onCameraChange:(info:{elevation:number;distance:number})=>void}}=$props();
+ let {game,viewer,pegOrigins,review,layout='table',automaticCard,animationRate=1,hovered=null,pressed=null,respectReducedMotion=true,onFrame=()=>{},onMotion=()=>{},onSettled=()=>{},onHover=()=>{},onPress=()=>{},onCard=()=>{},onControls=()=>{},onReady=()=>{},settings}:{game:State;viewer:string;layout?:TableLayout;animationRate?:number;automaticCard?:string;pegOrigins?:Record<string,number>;review?:{plan:Plan;time:number;interaction?:{card:string;hover:number;press:number}};hovered?:string|null;pressed?:string|null;respectReducedMotion?:boolean;onFrame?:(frame:Frame,idle:boolean)=>void;onMotion?:(active:boolean,kind:string,duration:number)=>void;onSettled?:(revision:number)=>void;onHover?:(id:string|null)=>void;onPress?:(id:string|null)=>void;onCard?:(card:string)=>void;onControls?:(controls:CardControl[])=>void;onReady?:()=>void;settings:{light:number;fov:number;resetKey:number;preset:string;faceMargin:number;backMargin:number;lightX:number;lightY:number;lightZ:number;onCameraChange:(info:{elevation:number;distance:number})=>void}}=$props();
  interactivity();
  const {invalidate,renderer}=useThrelte();
  let frame=$state.raw<Frame>(untrack(()=>buildFrame(game,viewer,undefined,pegOrigins))),base=untrack(()=>frame);
  let previous=untrack(()=>game),previousViewer=untrack(()=>viewer),plan:Plan|undefined,canonical:Plan|undefined,start=0,reduced=false,activeRate=untrack(()=>animationRate);
+ function arrange(p:Plan):Plan{return layout==='table'?p:phonePlan(p,game,viewer,layout==='phone-landscape'?'landscape':'portrait');}
+ function arrangeFrame(f:Frame):Frame{return layout==='table'?f:phoneFrame(f,game,viewer,layout==='phone-landscape'?'landscape':'portrait');}
+ const arrangedReview=$derived(review?arrange(review.plan):undefined);
+ let visualPlan:Plan|undefined;
  let major=$state(false);
  const levels=new Map<string,{hover:number;press:number;hFrom:number;pFrom:number;hTarget:number;pTarget:number;hStart:number;pStart:number}>();
  let lastMotion='',lastSettled=-1,motionName='ready',motionSeconds=0;
  onMount(()=>{const media=matchMedia('(prefers-reduced-motion: reduce)');reduced=media.matches;const update=()=>{reduced=media.matches;};media.addEventListener('change',update);return()=>media.removeEventListener('change',update);});
  function publish(now:number,dt=.016){
-  if(review){base=sampleMotion(review.plan,review.time);major=review.time<review.plan.duration;}
-  else if(plan){const t=(now-start)/1000;base=sampleMotion(plan,t);major=t<plan.duration;if(!major)plan=undefined;}
+  let visual:Frame;
+  if(review){base=sampleMotion(review.plan,review.time);visual=sampleMotion(arrangedReview!,review.time);major=review.time<review.plan.duration;}
+  else if(plan){const t=(now-start)/1000;base=sampleMotion(plan,t);visual=sampleMotion(visualPlan??plan,t);major=t<plan.duration;if(!major)plan=undefined;}
+  else visual=arrangeFrame(base);
   let interactionActive=false;
   const activeHover=hovered,activePress=pressed;
-  const cards=base.cards.map(card=>{
+  const cards=visual.cards.map(card=>{
    if(review?.interaction){const i=review.interaction;return interactionPose(card,i?.card===card.id?i.hover:0,i?.card===card.id?i.press:0);}
    if(review&&automaticCard===card.id)return interactionPose(card,.35,0);
    if(major){levels.delete(card.id);return card;}
@@ -38,7 +46,7 @@
    interactionActive ||= level.hover!==h||level.press!==p;levels.set(card.id,level);
    return interactionPose(card,level.hover,level.press);
   });
-  frame={...base,cards};
+  frame={...visual,cards};
   const idle=!major&&!interactionActive;
   const signature=`${major}:${review?.plan.kind??motionName}:${review?.plan.duration??motionSeconds}`;
   if(signature!==lastMotion){lastMotion=signature;onMotion(major,review?.plan.kind??motionName,review?.plan.duration??motionSeconds);}
@@ -52,13 +60,15 @@
    if(next===previous&&nextViewer===previousViewer)return;
    const hydrate=nextViewer!==previousViewer||(previous.revision===0&&next.revision>1)||next.revision<previous.revision;
    if(next.revision===previous.revision&&!hydrate){previous=next;return;}
-   canonical=hydrate||respectReducedMotion&&reduced?undefined:planMotion(previous,next,nextViewer,frame,origins);plan=canonical?retimePlan(canonical,activeRate):undefined;
-   if(!plan){base=buildFrame(next,nextViewer,frame,origins);major=false;}
+   canonical=hydrate||respectReducedMotion&&reduced?undefined:planMotion(previous,next,nextViewer,base,origins);plan=canonical?retimePlan(canonical,activeRate):undefined;
+   if(!plan){base=buildFrame(next,nextViewer,base,origins);major=false;}
+   visualPlan=plan?arrange(plan):undefined;
    previous=next;previousViewer=nextViewer;start=performance.now();lastSettled=-1;motionName=plan?.kind??'ready';motionSeconds=plan?.duration??0;
    interactionActive=publish(start);if(plan)tableAudio.plan(plan);
   });
  });
- $effect(()=>{const rate=animationRate;untrack(()=>{const now=performance.now();if(plan&&canonical){start=retimedStart(start,now,activeRate,rate);plan=retimePlan(canonical,rate);motionSeconds=plan.duration;tableAudio.plan(plan,(now-start)/1000,false);}activeRate=rate;interactionActive=publish(now);});});
+ $effect(()=>{const rate=animationRate;untrack(()=>{const now=performance.now();if(plan&&canonical){start=retimedStart(start,now,activeRate,rate);plan=retimePlan(canonical,rate);motionSeconds=plan.duration;visualPlan=arrange(plan);tableAudio.plan(plan,(now-start)/1000,false);}activeRate=rate;interactionActive=publish(now);});});
+ $effect(()=>{layout;untrack(()=>{visualPlan=plan?arrange(plan):undefined;interactionActive=publish(performance.now());});});
  $effect(()=>{hovered;pressed;automaticCard;untrack(()=>{interactionActive=publish(performance.now());});});
  let lastTick=performance.now(),interactionActive=false;
  useTask(()=>{const now=performance.now(),dt=Math.min(.1,(now-lastTick)/1000);lastTick=now;if(plan||interactionActive){interactionActive=publish(now,dt);}}, {autoInvalidate:false});
@@ -67,4 +77,4 @@
  function hover(id:string|null){onHover(id);renderer.domElement.style.cursor=id?'pointer':'';}
 </script>
 <Scene {frame} {...settings} {onReady} onHover={hover} {onPress} onCard={card=>{if(available(card)){onHover(null);onPress(null);onCard(card);}}} canInteract={card=>available(card)} canInspect={card=>inspectable(card)}/>
-<CardTelemetry {game} {viewer} {frame} blocked={major} onControls={onControls}/>
+<CardTelemetry tableRotation={layout==='table'?.055:0} {game} {viewer} {frame} blocked={major} onControls={onControls}/>
