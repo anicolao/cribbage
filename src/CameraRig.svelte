@@ -7,7 +7,7 @@
  import type {TableLayout} from './presentation/responsive';
  import { cameraClipRange } from './cameraMath';
  import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
- let { fov=45, resetKey=0, preset='table', interactive=false, viewKey, onChange=()=>{} }:{fov:number;resetKey:number;preset:string;interactive?:boolean;viewKey?:TableLayout;onChange?:(info:CameraInfo)=>void}=$props();
+ let { fov=45, resetKey=0, preset='table', interactive=false, viewKey, fitAspect, onChange=()=>{} }:{fov:number;resetKey:number;preset:string;interactive?:boolean;viewKey?:TableLayout;fitAspect?:number;onChange?:(info:CameraInfo)=>void}=$props();
  const { size, renderer, invalidate }=useThrelte();
  const perspective=new PerspectiveCamera(45,1,.05,2000);
  const orthographic=new OrthographicCamera(-10,10,7.5,-7.5,.05,2000);
@@ -55,10 +55,12 @@
    lastFov=lens;applying=false;
   });
  });
+ // The game supplies its destination container aspect alongside the layout;
+ // Threlte can still be measuring the previous orientation at this point.
  function defaults(){
   const aim=controls?.target??target;aim.set(0,0,.1);
   const angle=(preset==='top'||preset.endsWith('-top')?89.9:preset==='low'||preset.endsWith('-low')?25:preset.startsWith('portrait')?40:preset==='landscape'?45:53)*Math.PI/180;
-  project(preset.startsWith('portrait')?2*(preset.startsWith('portrait-tablet')?24:19)*Math.tan((fov||45)*Math.PI/360):preset.startsWith('landscape')?2*25*Math.tan((fov||45)*Math.PI/360):Math.max(16.3,22.7/(size.current.width/Math.max(1,size.current.height))),new Vector3(0,Math.sin(angle),Math.cos(angle)));
+  project(preset.startsWith('portrait')?2*(preset.startsWith('portrait-tablet')?24:19)*Math.tan((fov||45)*Math.PI/360):preset.startsWith('landscape')?2*25*Math.tan((fov||45)*Math.PI/360):Math.max(16.3,22.7/(fitAspect??size.current.width/Math.max(1,size.current.height))),new Vector3(0,Math.sin(angle),Math.cos(angle)));
  }
  onMount(()=>{controls=new OrbitControls(untrack(()=>active),renderer.domElement);controls.target.copy(target);controls.enabled=interactive;controls.enableDamping=false;controls.minPolarAngle=.001;controls.maxPolarAngle=Math.PI/2-.015;controls.minDistance=2;controls.maxDistance=1000;controls.minZoom=.15;controls.maxZoom=12;controls.screenSpacePanning=true;controls.addEventListener('change',report);controls.update();return()=>{controls?.removeEventListener('change',report);controls?.dispose();};});
  $effect(()=>{const enabled=interactive;if(controls)controls.enabled=enabled;});
