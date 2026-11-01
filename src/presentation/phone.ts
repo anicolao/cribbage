@@ -5,13 +5,13 @@ import {board29Point,BOARD29_Z,BOARD29_LANDSCAPE_Z} from '../board29';
 import {pose,rotate,type Frame,type Pose,type CardVisual} from './frame';
 import type {Plan} from './motion';
 import type {Position} from '../table';
-// First phone composition: retain the actual pieces and replay, rearrange their destinations.
+// Map canonical frames and motion endpoints into the reviewed portrait and compact landscape layouts.
 const CARD_SCALE=1.18;
 const lerp=(a:number,b:number,t:number)=>a+(b-a)*t;
 const mix=(a:Position,b:Position,t:number)=>a.map((v,i)=>lerp(v,b[i],t)) as Position;
 export function phonePlan(plan:Plan,game:State,viewer:string,orientation:'portrait'|'landscape'):Plan{
  const landscape=orientation==='landscape';
- const deckAnchor:Position=landscape?[-1.7,STARTER_POSITION[1]*CARD_SCALE,-5.5]:[-3.15,STARTER_POSITION[1]*CARD_SCALE,3.6];
+ const deckAnchor:Position=[-3.15,STARTER_POSITION[1]*CARD_SCALE,3.6];
  const players=tablePlayers(game,viewer),own=players.find(p=>p.id===viewer);
  const area=(owner:string)=>{
   const player=players.find(p=>p.id===owner),relative=player?(player.index-(own?.index??0)+players.length)%players.length:0;
@@ -27,33 +27,33 @@ export function phonePlan(plan:Plan,game:State,viewer:string,orientation:'portra
   const x=relative===1?-3.9:relative===2?0:3.9;return {x,z:-7.5,fanSpacing:.72,playedX:x,playedZ:-4.9};
  };
 
- function card(c:CardVisual,counting=false,cribCounting=false,handOwner?:string,inCount=false):CardVisual{
-  const focus=handOwner?area(handOwner):undefined,deckPosition:Position=deckAnchor;
+ function card(c:CardVisual,counting=false,cribCounting=false):CardVisual{
+  const deckPosition=deckAnchor;
   if(c.zone==='deck'||c.zone==='cut')return {...c,position:[deckPosition[0]+(c.position[0]-STARTER_POSITION[0])*CARD_SCALE,c.position[1]*CARD_SCALE,deckPosition[2]+(c.position[2]-STARTER_POSITION[2])*CARD_SCALE],rotation:0,scale:c.scale*CARD_SCALE};
   if(c.zone==='crib'){
    const counting=c.flip<Math.PI/2;
-   if(landscape){const lifted=focus&&focus.z>0&&focus.x>0;return {...c,position:[counting?(c.order-1.5)*1.4*CARD_SCALE:1.7+(c.order-1.5)*.045,c.position[1]*CARD_SCALE,counting?2.4:-5.5],rotation:0,scale:c.scale*CARD_SCALE};}
    return {...c,position:[counting?2.1+(c.order-1.5)*.53*CARD_SCALE:3.15+(c.order-1.5)*.045,c.position[1]*CARD_SCALE,counting?3.45:3.1],rotation:0,scale:c.scale*CARD_SCALE};
   }
   const a=area(c.owner),player=players.find(p=>p.id===c.owner);
   if(c.zone==='hand'){
    const local=rotate([c.position[0]-(player?.x??0),c.position[1],c.position[2]-(player?.z??0)],-(player?.rotation??0));
-   return {...c,position:[a.x+local[0]*a.fanSpacing*(landscape?1.7:1),local[1]*CARD_SCALE,a.z+local[2]*a.fanSpacing-(landscape&&a.z>0?.35:0)],rotation:(c.rotation-(player?.rotation??0))*(landscape?.55:1),scale:c.scale*CARD_SCALE};
+   return {...c,position:[a.x+local[0]*a.fanSpacing,local[1]*CARD_SCALE,a.z+local[2]*a.fanSpacing],rotation:c.rotation-(player?.rotation??0),scale:c.scale*CARD_SCALE};
   }
   const count=plan.target.cards.filter(p=>p.zone==='played'&&p.owner===c.owner).length,own=a.z>0;
-  if(landscape){
-   const sign=a.x<0?-1:1;
-   const x=counting?(own?sign*5.25+(c.order%2-.5)*1.75:sign*6.3+(c.order-1.5)*1.4*CARD_SCALE):(inCount?a.x:a.playedX)+(c.order-(count-1)/2)*.28*CARD_SCALE;
-   const z=counting?(own?-.9+Math.floor(c.order/2)*2.45:-4):inCount?a.z:a.playedZ;
-   return {...c,position:[x,c.position[1]*CARD_SCALE,z],rotation:0,scale:c.scale*CARD_SCALE};
-  }
+
   const x=counting?(own?(c.order-(count-1)/2)*1.4*CARD_SCALE:(c.order%2-.5)*1.75):(c.order-(count-1)/2)*.53*CARD_SCALE;
   return {...c,position:[(own&&(counting||cribCounting)?0:a.playedX)+x,c.position[1]*CARD_SCALE,counting?(own?7.1:a.playedZ-2.5+Math.floor(c.order/2)*2.5):own&&cribCounting?7.1:a.playedZ],rotation:0,scale:c.scale*CARD_SCALE};
  }
- function frame(f:Frame):Frame{return {...f,cards:f.cards.map(c=>card(c,f.counts.some(p=>p.kind==='hand'&&p.owner===c.owner),f.counts.some(p=>p.kind==='crib'),f.counts.find(p=>p.kind==='hand')?.owner,f.counts.length>0)),pegs:f.pegs.map(p=>{const q=board29Point(p.score,Math.max(0,game.players.findIndex(player=>player.id===p.owner)));return {...p,position:[q[0],.467,q[1]+(landscape?BOARD29_LANDSCAPE_Z:BOARD29_Z)] as Position,scale:p.scale*.9};}),plates:f.plates.map(p=>{
-  if(p.id==='crib-label'){const counting=f.counts.some(c=>c.kind==='crib');if(landscape){const focus=f.counts.find(c=>c.kind==='hand'),a=focus?area(focus.owner):undefined,lifted=a&&a.z>0&&a.x>0;return {...p,position:[1.7,p.position[1],-3.8],scale:counting?0:p.scale*.5};}return {...p,position:[counting?2.1:3.15,p.position[1],counting?5.7:4.65],scale:p.scale*(counting?.55:.63)};}
-  const a=area(p.id);if(landscape)return {...p,position:[a.z>0?Math.sign(a.x)*5:a.x,p.position[1],a.z>0?3.2:-8.5],scale:p.scale*(a.z>0?.75:1)};return {...p,position:[a.x,p.position[1],a.z+(a.x===0&&a.z>0?1.75:-1.75)],scale:p.scale*(a.x===0&&a.z>0?1.1:.72)};
- }),counts:f.counts.map(p=>{const a=area(p.owner);if(landscape)return {...p,position:p.kind==='crib'?[5.3,.004,-.8]:[Math.sign(a.x)*(a.z>0?5.25:7.5),.004,a.z>0?-2.55:-1.95],scale:p.scale};return {...p,position:p.kind==='crib'?[2.1,.004,4.95]:[a.z>0?0:a.playedX,.004,a.z>0?8.65:a.playedZ+1.85],scale:p.scale*(a.x===0?1:.7)};}),awards:f.awards.map(p=>{const a=area(p.owner);if(landscape)return {...p,position:[a.playedX,.004,a.z>0?1.15:-3.75],scale:p.scale};return {...p,position:[a.z>0?-2.7:a.playedX,.004,a.playedZ+(a.z>0?0:-1.2)],scale:p.scale*(a.x===0?1:.7)};})};}
+ function frame(f:Frame):Frame{return {...f,
+  cards:f.cards.map(c=>card(c,f.counts.some(p=>p.kind==='hand'&&p.owner===c.owner),f.counts.some(p=>p.kind==='crib'))),
+  pegs:f.pegs.map(p=>{const q=board29Point(p.score,Math.max(0,game.players.findIndex(player=>player.id===p.owner)));return {...p,position:[q[0],.467,q[1]+BOARD29_Z] as Position,scale:p.scale*.9};}),
+  plates:f.plates.map(p=>{
+   if(p.id==='crib-label'){const counting=f.counts.some(c=>c.kind==='crib');return {...p,position:[counting?2.1:3.15,p.position[1],counting?5.7:4.65],scale:p.scale*(counting?.55:.63)};}
+   const a=area(p.id);return {...p,position:[a.x,p.position[1],a.z+(a.x===0&&a.z>0?1.75:-1.75)],scale:p.scale*(a.x===0&&a.z>0?1.1:.72)};
+  }),
+  counts:f.counts.map(p=>{const a=area(p.owner);return {...p,position:p.kind==='crib'?[2.1,.004,4.95]:[a.z>0?0:a.playedX,.004,a.z>0?8.65:a.playedZ+1.85],scale:p.scale*(a.x===0?1:.7)};}),
+  awards:f.awards.map(p=>{const a=area(p.owner);return {...p,position:[a.z>0?-2.7:a.playedX,.004,a.playedZ+(a.z>0?0:-1.2)],scale:p.scale*(a.x===0?1:.7)};})
+ };}
  // Landscape uses roomier world-space regions, independent of the portrait composition.
  // The 2.95-scale cards are identical in every hand, pile, and animation endpoint.
  function composed(f:Frame):Frame{

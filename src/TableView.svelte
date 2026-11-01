@@ -38,7 +38,7 @@
  </div>
 </div>
 <style>
- .landscape .table-readout{top:10px;left:38%;right:38%}.landscape .table-readout p{font-size:16px}.landscape .table-readout small{display:none}.landscape.has-action .table-readout{top:58px}.landscape .choice-action{top:8px;bottom:auto}
+ .landscape .table-readout{top:10px;left:38%;right:38%}.landscape .table-readout p{font-size:16px}.landscape .table-readout small{display:none}.landscape.has-action .table-readout{top:12px;left:3%;right:68%;text-align:left}.landscape .choice-action{top:8px;bottom:auto}
  .portrait .table-readout{top:18px;left:8%;right:8%}.portrait .table-readout p{font-size:19px}.portrait .table-readout small{font-size:13px;margin-top:6px}.portrait .choice-action{bottom:14px}
  .choice-action{position:absolute;bottom:22px;left:50%;transform:translateX(-50%);z-index:1}.table-view{position:relative;width:100%;height:100%;touch-action:none}.table-readout{position:absolute;top:24px;left:25%;right:25%;text-align:center;pointer-events:none;color:#ecdfc0;font-family:Georgia,serif}.table-readout p{font-size:22px;margin:0}.table-readout small{display:block;font-size:15px;color:#b2baa4;margin-top:10px}.keyboard-cards{position:absolute;width:1px;height:1px;left:0;top:0;padding:0;margin:-1px;overflow:hidden;clip-path:inset(50%);white-space:nowrap}.keyboard-cards button{outline:none!important;border:0;background:transparent;-webkit-tap-highlight-color:transparent}
 </style>
