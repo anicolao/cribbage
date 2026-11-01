@@ -6,7 +6,7 @@ import {heldPose} from '../src/game/layout';
 import {interactionPose} from '../src/presentation/motion';
 import {roundedShape,slabGeometry} from '../src/geometry';
 import {CARD_WIDTH,CARD_HEIGHT} from '../src/sceneLayout';
-import {CARD_DEPTH} from '../src/table';
+import {CARD_DEPTH,FAN_LAYER_STEP} from '../src/table';
 test('native card targets hit the intended solid mesh before hover and after hover and press in four-, five- and six-card fans',()=>{
  const geometry=slabGeometry(roundedShape(CARD_WIDTH,CARD_HEIGHT,.09),CARD_WIDTH,CARD_HEIGHT,CARD_DEPTH),camera=new PerspectiveCamera(45,1180/820,.1,100);camera.position.set(0,20,15);camera.lookAt(0,0,.1);camera.updateMatrixWorld();
  for(const held of [4,5,6])for(let index=0;index<held;index++)for(const hover of [0,.5,1])for(const press of new Set([0,hover])){
@@ -17,4 +17,13 @@ test('native card targets hit the intended solid mesh before hover and after hov
   expect({held,index,hover,press,hit:ray.intersectObjects(meshes,false)[0]?.object.userData.id}).toEqual({held,index,hover,press,hit:String(index)});
  }
  geometry.dispose();
+});
+
+
+test('touch press feedback cannot bury a card below the preceding card in its fan',()=>{
+ for(const scale of [1,1.18,2.95]){
+  const card:CardVisual={...pose([0,(.055+FAN_LAYER_STEP)*scale,0]),scale,id:'next',card:'ace_of_hearts',owner:'you',zone:'hand',order:1};
+  const lowerTop=(.055+CARD_DEPTH)*scale;
+  expect(interactionPose(card,0,1).position[1]).toBeGreaterThan(lowerTop);
+ }
 });
