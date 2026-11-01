@@ -55,3 +55,19 @@ test('projected mobile card targets hit their actual meshes in every held-card d
  }
  geometry.dispose();
 });
+
+
+test('portrait pegging leaves a gap before the remaining private fan',()=>{
+ let checked=0;
+ for(const e of animationExamples)for(const step of e.steps){
+  const game=step.after;if(game.phase!=='pegging')continue;
+  for(const viewer of game.players.map(p=>p.id)){
+   const frame=phoneFrame(buildFrame(game,viewer),game,viewer,'portrait'),held=frame.cards.filter(c=>c.owner===viewer&&c.zone==='hand'),played=frame.cards.filter(c=>c.owner===viewer&&c.zone==='played');
+   if(!held.length||!played.length)continue;
+   const front=Math.min(...held.map(c=>c.position[2]-(CARD_HEIGHT*Math.abs(Math.cos(c.rotation))+CARD_WIDTH*Math.abs(Math.sin(c.rotation)))*c.scale/2));
+   const back=Math.max(...played.map(c=>c.position[2]+CARD_HEIGHT*c.scale/2));
+   expect(front-back).toBeGreaterThan(.2);checked++;
+  }
+ }
+ expect(checked).toBeGreaterThan(10);
+});

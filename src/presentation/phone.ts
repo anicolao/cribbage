@@ -21,7 +21,7 @@ export function phonePlan(plan:Plan,game:State,viewer:string,orientation:'portra
    const near=corner===0||corner===3,x=(corner<2?-1:1)*(near?4.9:7.2),z=near?1.4:-5.2;
    return {x,z,fanSpacing:players.length===2?.6:.8,playedX:(x<0?-1:1)*(near?1.7:7.2),playedZ:near?2.4:-2.1};
   }
-  if(relative===0)return {x:0,z:7.9,fanSpacing:1.18,playedX:0,playedZ:5.5};
+  if(relative===0)return {x:0,z:7.9,fanSpacing:1.18,playedX:0,playedZ:5.05};
   if(players.length===3)return {x:relative===1?-2.8:2.8,z:-7.1,fanSpacing:.8,playedX:relative===1?-2.8:2.8,playedZ:-5.1};
   if(players.length===2)return {x:0,z:-7.5,fanSpacing:.8,playedX:0,playedZ:-4.9};
   const x=relative===1?-3.9:relative===2?0:3.9;return {x,z:-7.5,fanSpacing:.72,playedX:x,playedZ:-4.9};
@@ -52,7 +52,7 @@ export function phonePlan(plan:Plan,game:State,viewer:string,orientation:'portra
    const a=area(p.id);return {...p,position:[a.x,p.position[1],a.z+(a.x===0&&a.z>0?1.75:-1.75)],scale:p.scale*(a.x===0&&a.z>0?1.1:.72)};
   }),
   counts:f.counts.map(p=>{const a=area(p.owner);return {...p,position:p.kind==='crib'?[2.1,.004,4.95]:[a.z>0?0:a.playedX,.004,a.z>0?8.65:a.playedZ+1.85],scale:p.scale*(a.x===0?1:.7)};}),
-  awards:f.awards.map(p=>{const a=area(p.owner);return {...p,position:[a.z>0?-2.7:a.playedX,.004,a.playedZ+(a.z>0?0:-1.2)],scale:p.scale*(a.x===0?1:.7)};})
+  awards:f.awards.map(p=>{const a=area(p.owner);return {...p,position:[a.z>0?-2.7:a.playedX,.004,a.playedZ+(a.z>0?.4:-1.2)],scale:p.scale*(a.x===0?1:.7)};})
  };}
  // Landscape uses roomier world-space regions, independent of the portrait composition.
  // The 2.95-scale cards are identical in every hand, pile, and animation endpoint.
