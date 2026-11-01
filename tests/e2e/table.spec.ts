@@ -176,5 +176,31 @@ test('the shared animation lab reviews every real transition at a paused interme
    expect(await draws(),'Moving cards must reuse score and nameplate textures while their text is unchanged').toBe(before);
   }
  }
+ // Review each native-resolution device composition inside the same 1180×820
+ // capture. Resize through the real controls; keep cards, lighting and motion.
+ for(const device of [
+  {id:'ipad',layout:'table',width:2360},
+  {id:'ipad-portrait',layout:'ipad-portrait',width:1640},
+  {id:'phone-portrait',layout:'phone-portrait',width:1170},
+  {id:'phone-landscape',layout:'phone-landscape',width:2532},
+ ]){
+  await page.getByRole('combobox',{name:'Display',exact:true}).selectOption(device.id);
+  for(const scene of ['ready','count-start']){
+   await page.getByRole('combobox',{name:'Scene',exact:true}).selectOption(scene);
+   await page.getByRole('combobox',{name:'Perspective',exact:true}).selectOption('you');
+   await page.locator('#timeline').press('End');
+   await page.getByRole('button',{name:'Hide lab',exact:true}).click();
+   await helper.step(`motion-${device.id}-${scene}`,page,'Lab',`${device.id}: ${scene==='ready'?'ready to play':'pegging finishes and counting spreads'}`,[{spec:'The selected shared layout renders at native device resolution, with counting points beside the revealed hand',check:async()=>{
+    await expect(page.locator('[data-table-view]')).toHaveAttribute('data-layout',device.layout);
+    await expect(page.locator('canvas')).toHaveAttribute('width',String(device.width));
+    await expect(page.locator('[data-table-view]')).toHaveAttribute('data-render-width',String(device.width));
+    await expect(page.locator('[data-table-view]')).toHaveAttribute('data-render-quality','shared-lab');
+    const counts=JSON.parse(await page.locator('[data-table-view]').getAttribute('data-render-counts')??'[]');
+    expect(counts.filter((c:{opacity:number})=>c.opacity>0).length).toBe(scene==='ready'?0:1);
+   }}],false);
+   await page.getByRole('button',{name:'Show lab',exact:true}).click();
+  }
+ }
+
  helper.finish();
 });
