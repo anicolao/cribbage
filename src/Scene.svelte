@@ -13,7 +13,7 @@
  import Piece from './Piece.svelte';
  import Board from './Board.svelte';
  import TwentyNineBoard from './TwentyNineBoard.svelte';
- import {BOARD29_Z,BOARD29_LANDSCAPE_Z,BOARD29_LANDSCAPE_SCALE} from './board29';
+ import {BOARD29_Z,BOARD29_LANDSCAPE_X,BOARD29_LANDSCAPE_Z,BOARD29_LANDSCAPE_SCALE} from './board29';
  import Nameplate from './Nameplate.svelte';
  import CountingPoints from './CountingPoints.svelte';
  import { wood, felt, paper, cardTextures, updateCardMargins, tableStitch } from './textures';
@@ -71,7 +71,7 @@
  <T.MeshStandardMaterial attach="material.2" color="#12392e" roughness={1}/>
 </T.Mesh>
 <T.Mesh geometry={matFace} scale={[landscape?3:phone?1.3:1,landscape?2.5:1,1]} rotation={[-Math.PI/2,0,portrait?Math.PI/2:0]} position.y={-.008}><T.MeshStandardMaterial map={stitch} transparent roughness={1} depthWrite={false} polygonOffset polygonOffsetFactor={-1} polygonOffsetUnits={-1}/></T.Mesh>
-{#if phone}<T.Group scale={landscape?BOARD29_LANDSCAPE_SCALE:1} position.z={portrait?BOARD29_Z:BOARD29_LANDSCAPE_Z}><TwentyNineBoard {materials} {cards}/></T.Group>{:else}<T.Group rotation.y={BOARD_ROTATION}><Board {materials}/></T.Group>{/if}
+{#if phone}<T.Group scale={landscape?BOARD29_LANDSCAPE_SCALE:1} position.x={landscape?BOARD29_LANDSCAPE_X:0} position.z={portrait?BOARD29_Z:BOARD29_LANDSCAPE_Z}><TwentyNineBoard {materials} {cards}/></T.Group>{:else}<T.Group rotation.y={BOARD_ROTATION}><Board {materials}/></T.Group>{/if}
 {#each frame.pegs as peg (peg.id)}<Peg color={peg.color} position={peg.position} scale={peg.scale} glow={peg.glow}/>{/each}
 {#if cards.back}
  {#each frame.cards as card (card.id)}
