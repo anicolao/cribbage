@@ -14,13 +14,13 @@
  perspective.position.set(0,20,15); perspective.lookAt(0,0,.1);
  const active=$derived(fov===0?orthographic:perspective);
  let controls:OrbitControls|undefined;
- let applying=false,custom=false,lastKey='',lastFov=untrack(()=>fov);
+ let applying=false,lastKey='',lastFov=untrack(()=>fov);
  let previous:PerspectiveCamera|OrthographicCamera=perspective;
  const target=new Vector3(0,0,.1);
  function report(){const cam=controls?.object??previous;const offset=cam.position.clone().sub(controls?.target??target);const distance=offset.length(),range=cameraClipRange(distance);
   if(previous.near!==range.near||previous.far!==range.far){previous.near=range.near;previous.far=range.far;previous.updateProjectionMatrix();}
   const view={position:cam.position.toArray() as [number,number,number],target:(controls?.target??target).toArray() as [number,number,number]};
-  onChange({...view,elevation:Math.asin(offset.y/distance)*180/Math.PI,distance});if(!applying&&interactive&&viewKey){custom=true;rememberCamera(viewKey,view);}invalidate();}
+  onChange({...view,elevation:Math.asin(offset.y/distance)*180/Math.PI,distance});if(!applying&&interactive&&viewKey){rememberCamera(viewKey,view);}invalidate();}
  function heightAtTarget(){const d=previous.position.distanceTo(controls?.target??target);return previous instanceof PerspectiveCamera?2*d*Math.tan(previous.fov*Math.PI/360)/previous.zoom:(previous.top-previous.bottom)/previous.zoom;}
  function project(height:number,direction:Vector3){
   const aspect=Math.max(.1,size.current.width/Math.max(1,size.current.height));
@@ -38,7 +38,7 @@
   untrack(()=>{
    applying=true;
    if(key!==lastKey){
-    lastKey=key;const saved=viewKey?get(cameraViews)[viewKey]:undefined;custom=!!saved;
+    lastKey=key;const saved=viewKey?get(cameraViews)[viewKey]:undefined;
     const aim=controls?.target??target;
     if(saved){
      aim.fromArray(saved.target);const position=new Vector3(...saved.position),direction=position.clone().sub(aim),distance=direction.length();
@@ -46,8 +46,7 @@
     }else defaults();
    }else if(lens!==lastFov){
     const direction=previous.position.clone().sub(controls?.target??target).normalize();project(heightAtTarget(),direction);
-   }else if(!custom&&preset==='table')defaults();
-   else{
+   }else{
     const aspect=Math.max(.1,width/Math.max(1,height));
     if(previous instanceof PerspectiveCamera)previous.aspect=aspect;
     else{const h=previous.top-previous.bottom;previous.left=-h*aspect/2;previous.right=h*aspect/2;}
