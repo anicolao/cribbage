@@ -18,6 +18,30 @@ For local browser tests, install the pinned browser once with `nix develop --com
 
 Open http://127.0.0.1:5197/ to play, or `/dev/animations` for the shared animation lab.
 
+## Launching from gameroom
+
+Cribbage accepts URL-based launches while retaining the existing manual invitations:
+
+```text
+/?table=ABCD1234&launch=create&name=Alex&returnTo=<encoded-room-url>
+/?table=ABCD1234&launch=join&name=Sam&returnTo=<encoded-room-url>
+```
+
+The host creates a fresh table with a supplied 5–8 character uppercase alphanumeric
+code. Guests wait for creation, then join automatically. A reload recognizes the
+browser’s existing player identity and does not append another create/join intent.
+An occupied host code is rejected rather than joining an unrelated table. The URL
+name is a display preference; Firebase continues to provide identity. The optional
+HTTP(S) return link is a visible “Back to gameroom” link, never an automatic redirect.
+Existing `?table=…` links retain their manual name-and-seat flow. No game protocol
+version or replay semantics changed.
+
+The URL story uses the existing `TestStepHelper` and exact decoded RGBA comparison:
+`bun run test:e2e --grep 'URL invitations'`. Baseline generation is explicit through
+`bun run test:e2e:update --grep 'URL invitations'`, followed by a separate ordinary
+verification run. Gameroom’s own integration suite exercises both apps against the
+real Firebase Auth and Firestore emulators, including a dealt hand and the return.
+
 ## The table
 
 Four players have individual scoring tracks: You (turquoise, bottom left), Rowan (coral, top left), Jules (gold, top right), and Ada (plum, bottom right) in the review fixture. Only your hand is face up in the ready and dealing scenes. The public cut card lies face up on top of the deck to the left of the board; the concealed crib sits to the right with an engraved owner label (the dealer’s crib). Hands use a consistent radial fan and individual cards retain their owner throughout motion. Player areas use physical walnut-and-brass nameplates with engraved serif names, local scores, and a miniature of the matching board peg. There is no top score bar or coloured badge border. Decorative table captions and redundant starter/track labels have been removed.

@@ -5,6 +5,7 @@
  import TableView from './TableView.svelte';
  import {initialState,legalCards,needsDiscard,isCribCount,cribCards,type State,type Event,type Intent} from './game/engine';
  import {repository,playerIdentity} from './game/repository';
+ import {readLaunch,launchIntent,type Launch} from './game/launcher';
  import {botIntent} from './game/bot';
  import {cardName} from './game/cards';
  import {tablePlayers} from './game/layout';
@@ -17,6 +18,7 @@
  let clock:TableClock|undefined,clockKey='';const autoAttempts=new Map<string,number>();
  const choiceAction=$derived.by(()=>{const action=countdownAction(game,viewer,windows,Math.max(now,Date.now()),busy||!connected||!ready);return action?{...action,disabled:action.disabled||action.kind!=='undo'&&animating}:undefined;});
  let repo:ReturnType<typeof repository>|undefined;
+ let launch=$state<Launch|null>(null),launchAttempt=$state(-1),launchInvalid=$state(false);
  const seat=$derived(game.players.findIndex(p=>p.id===viewer));
  const own=$derived(seat>=0?game.players[seat]:undefined);
  const gathering=$derived(game.phase==='gathering');
@@ -25,7 +27,9 @@
  const prompt=$derived(gathering?(own?'':'Take a seat'):tableStatus.primary);
  async function initialize(){
   try{viewer=await playerIdentity();error='';name=localStorage.getItem('cribbage:name')??'';
+   try{launch=readLaunch(location.search);}catch(e){launchInvalid=true;error=(e as Error).message;return;}
    const code=new URLSearchParams(location.search).get('table');if(code&&/^[A-Z0-9]{5,8}$/.test(code))room=code;
+   if(launch)name=launch.name;
   }catch{error='Couldn’t reach the table. Try again.';}
  }
  onMount(()=>{void initialize();const ticker=setInterval(()=>now=Date.now(),100);return()=>clearInterval(ticker);});
@@ -49,6 +53,19 @@
   if($cameraMode&&!automatic||busy||animating&&!automatic&&intent.type!=='undo-discard'||!repo)return;busy=true;error='';
   try{await repo.append(actor,intent);}catch(e){const message=(e as Error).message;if(!automatic||!['The table changed. Try again.','That contribution is no longer waiting.','The crib is not ready.','You can still play.','Finish your last action first.'].includes(message))error=message;}finally{busy=false;}
  }
+ $effect(()=>{
+  if(!launch||!connected||!repo||!viewer||busy||animating||!ready||own||launchAttempt===game.revision)return;
+  const invitation=launch,current=game,id=viewer;
+  untrack(()=>{
+   try{
+    const intent=launchIntent(invitation,current,id);
+    if(!intent)return;
+    launchAttempt=current.revision;
+    localStorage.setItem('cribbage:name',invitation.name);
+    void act(intent);
+   }catch(e){launchAttempt=current.revision;error=(e as Error).message;}
+  });
+ });
  async function join(){
   if(!name.trim())return;
   localStorage.setItem('cribbage:name',name.trim());
@@ -76,7 +93,9 @@
  {#if gathering}
   <section class="gather" aria-label="Gathering" data-e2e-fit>
    <h1>Cribbage</h1>
-   {#if !own&&game.players.length<4}
+   {#if launchInvalid}<p>Open a fresh invitation from your room.</p>
+   {:else if launch&&!own}<p>{launch.mode==='join'&&!game.revision?'Waiting for your host to open the table…':'Taking your seat…'}</p>
+   {:else if !own&&game.players.length<4}
     <form onsubmit={event=>{event.preventDefault();void enter();}}>
      <label for="your-name" class="sr-only">Your name</label><input id="your-name" placeholder="Your name" bind:value={name} maxlength="24" autocomplete="nickname" disabled={busy}/>
      <button class="brass" type="submit" disabled={busy||!name.trim()||!viewer||!!room&&!connected}>Take a seat</button>
@@ -114,8 +133,10 @@
   {#if game.cut}<p data-testid="starter">{cardName(game.cut)}</p>{/if}
   {#if game.phase==='count'&&isCribCount(game)}<ul aria-label="Crib cards">{#each game.crib as card}<li>{cardName(card)}</li>{/each}</ul>{/if}
  </section>
+ {#if launch?.returnTo}<a class="return-to-room" href={launch.returnTo}>← Back to gameroom</a>{/if}
 </main>
 <style>
+ .return-to-room{position:absolute;top:16px;left:16px;padding:11px 15px;border:1px solid #b89b6159;border-radius:4px;background:#0d241ee8;color:#ead9b7;font-size:14px;min-height:44px;z-index:5}
  .camera-mode .gather,.camera-mode .turn-action{display:none}
  :global(*){box-sizing:border-box}:global(body){margin:0;background:#0e1715;color:#ecdfc0;font-family:Georgia,serif}:global(button),:global(input){font:inherit}main{position:relative;width:100vw;height:100svh;overflow:hidden}.table-scene{position:absolute;inset:0}.gather{position:absolute;left:50%;top:43%;transform:translate(-50%,-50%);width:340px;max-width:90vw;text-align:center;padding:22px 24px;background:#12362ef2;border:1px solid #b89b6159;box-shadow:0 12px 40px #0005;border-radius:8px}h1{font-weight:400;font-size:42px;margin:0 0 22px;letter-spacing:2px}form{display:flex;flex-direction:column;gap:14px}input{min-height:44px;width:100%;background:#0d241e;border:1px solid #b89b6159;color:#f4e7cb;border-radius:3px;padding:10px;text-align:center;font-size:20px}button{cursor:pointer;color:#ead9b7;background:transparent;border:1px solid #b89b6159;border-radius:3px;padding:10px 18px;min-height:44px}button:disabled{opacity:.45;cursor:default}.brass{background:linear-gradient(#dfc393,#b69762);color:#30261b;border:1px solid #e1c58b;box-shadow:0 3px 8px #0005;font-size:20px;min-width:130px}.invitation{display:flex;justify-content:center;align-items:center;gap:12px}.invitation a{color:#e9d1a4;font-size:24px;letter-spacing:4px;text-decoration:none}.invitation button{font-size:15px;padding:8px 12px;min-width:132px}.gather-actions{display:flex;gap:10px;margin-top:16px;justify-content:center}.gather-actions button{min-width:0;flex:1;font-size:17px;padding:10px}.companion{margin-top:0}.companion span{font-size:16px}.gather p{font-size:16px;color:#c4c8b5}.prompt{font-size:22px;margin:0}.last-play{font-size:15px;color:#b2baa4;margin:10px 0}.turn-action{transition:opacity .18s,transform .18s;position:absolute;bottom:22px;left:50%;transform:translateX(-50%)}.turn-action.arriving{opacity:.25;transform:translateX(-50%) translateY(6px)}.error{position:absolute;top:100px;left:50%;transform:translateX(-50%);padding:12px;background:#3d241a;border:1px solid #bc9361;max-width:90vw}.error button{margin-left:12px}.sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip-path:inset(50%);white-space:nowrap}:global(button:focus-visible),:global(input:focus-visible),a:focus-visible{outline:2px solid #e4c585;outline-offset:4px}
 </style>

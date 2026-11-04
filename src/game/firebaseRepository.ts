@@ -1,5 +1,7 @@
 import {connectFirebase,previewScope} from '../firebase';
 import {appendFirestore,watchFirestore} from './firestore';
+import {getDoc} from 'firebase/firestore';
+import {tableRef} from './firestore';
 import {type Event,type Intent,apply,replay} from './engine';
 import type {Pending} from './repository';
 export function firebaseRepository(room:string,onEvents:(events:Event[])=>void,onError:(message:string)=>void){
@@ -13,6 +15,11 @@ export function firebaseRepository(room:string,onEvents:(events:Event[])=>void,o
   catch(error){
    const message=(error as Error).message;
    if(message==='The table changed. Try again.'||message==='That action has already been used.')localStorage.removeItem(key);
+   if(typeof error==='object'&&error!==null&&'code' in error&&error.code==='permission-denied'){
+    localStorage.removeItem(key);
+    const current=await getDoc(tableRef(db,previewScope,room));
+    if(current.data()?.revision!==pending.expectedRevision)throw new Error('The table changed. Try again.');
+   }
    throw new Error((typeof error==='object'&&error!==null&&'code' in error)?'Couldn’t reach the table. Try again.':message);
   }
  }
