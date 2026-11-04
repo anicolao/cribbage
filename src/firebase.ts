@@ -10,7 +10,7 @@ async function connect(){
  // XHR avoids Safari buffering the last Fetch Streams response frame.
  const db=initializeFirestore(app,{experimentalAutoDetectLongPolling:true,useFetchStreams:false} as Parameters<typeof initializeFirestore>[1]);
  if(env.VITE_USE_FIREBASE_EMULATORS==='true'){
-  connectAuthEmulator(auth,'http://127.0.0.1:9297',{disableWarnings:true});connectFirestoreEmulator(db,'127.0.0.1',8197);
+  connectAuthEmulator(auth,`http://127.0.0.1:${env.VITE_FIREBASE_AUTH_EMULATOR_PORT??9297}`,{disableWarnings:true});connectFirestoreEmulator(db,'127.0.0.1',Number(env.VITE_FIRESTORE_EMULATOR_PORT??8197));
  }
  await auth.authStateReady();if(!auth.currentUser)await signInAnonymously(auth);
  return {db,uid:auth.currentUser!.uid};
