@@ -54,7 +54,7 @@
   try{await repo.append(actor,intent);}catch(e){const message=(e as Error).message;if(!automatic||!['The table changed. Try again.','That contribution is no longer waiting.','The crib is not ready.','You can still play.','Finish your last action first.'].includes(message))error=message;}finally{busy=false;}
  }
  $effect(()=>{
-  if(!launch||!connected||!repo||!viewer||busy||animating||!ready||own||launchAttempt===game.revision)return;
+  if(!launch||!connected||!repo||!viewer||busy||own||launchAttempt===game.revision)return;
   const invitation=launch,current=game,id=viewer;
   untrack(()=>{
    try{
@@ -62,7 +62,8 @@
     if(!intent)return;
     launchAttempt=current.revision;
     localStorage.setItem('cribbage:name',invitation.name);
-    void act(intent);
+    // Seating is a launch operation; it must not wait for a WebGL frame in a background tab.
+    void act(intent,viewer,true);
    }catch(e){launchAttempt=current.revision;error=(e as Error).message;}
   });
  });
