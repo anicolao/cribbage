@@ -1,4 +1,6 @@
 <script lang="ts">
+ import HandHistory from './HandHistory.svelte';
+ import type {HistoryRound} from './presentation/handHistory';
  import {cameraMode} from './cameraViews';
  import {preferences,settingsOpen} from './settings';
  import {onMount,untrack} from 'svelte';
@@ -14,6 +16,7 @@
  import {BOT_DELAY_MS,TableClock,countdownAction,automaticChoice,automaticIntent,intentForAction,type Windows} from './game/countdowns';
  let game=$state<State>(initialState()),viewer=$state(''),room=$state(''),name=$state(''),busy=$state(false),error=$state(''),ready=$state(false),animating=$state(false),renderedRevision=$state(-1),connected=$state(false),copied=$state(false);
  let pegOrigins=$state<Record<string,number>>({});
+ let handHistory=$state<HistoryRound[]>([]);
  let now=$state(Date.now()),windows=$state.raw<Windows>({discards:[]});
  let clock:TableClock|undefined,clockKey='';const autoAttempts=new Map<string,number>();
  const choiceAction=$derived.by(()=>{const action=countdownAction(game,viewer,windows,Math.max(now,Date.now()),busy||!connected||!ready);return action?{...action,disabled:action.disabled||action.kind!=='undo'&&animating}:undefined;});
@@ -46,7 +49,7 @@
  $effect(()=>{
   if(!room||!viewer)return;
   connected=false;
-  repo=repository(room,(events:Event[])=>{({game,pegOrigins}=replayTable(events));connected=true;error='';},message=>{connected=false;error=message;});
+  repo=repository(room,(events:Event[])=>{({game,pegOrigins,handHistory}=replayTable(events));connected=true;error='';},message=>{connected=false;error=message;});
   return()=>repo?.close();
  });
  async function act(intent:Intent,actor=viewer,automatic=false){
@@ -91,6 +94,7 @@
 <svelte:head><title>Cribbage</title><meta name="description" content="Pull up a chair. A shared wooden cribbage table for two, three or four."/></svelte:head>
 <main class:camera-mode={$cameraMode} data-e2e-layout data-busy={busy} data-connected={connected} data-animating={animating} data-settled-revision={renderedRevision} data-ready={ready} data-phase={game.phase} data-revision={game.revision} data-round={game.round} aria-label="Cribbage table">
  <div class="table-scene"><TableView {game} {viewer} {pegOrigins} action={choiceAction} onAction={chooseAction} onReady={()=>ready=true} onMotion={moving=>animating=moving} onSettled={revision=>renderedRevision=revision} onCard={play}/></div>
+ {#if !$cameraMode}<HandHistory rounds={handHistory.filter(round=>round.revision<=renderedRevision)}/>{/if}
  {#if gathering}
   <section class="gather" aria-label="Gathering" data-e2e-fit>
    <h1>Cribbage</h1>

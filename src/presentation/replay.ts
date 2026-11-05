@@ -1,3 +1,4 @@
+import {HandHistory} from './handHistory';
 import {replay,type Event,type State,type Intent} from '../game/engine';
 /** Physical pegs show one combined award per intent; canonical replay remains unchanged. */
 export function nextPegOrigins(origins:Record<string,number>,before:State,after:State,intent:Intent){
@@ -6,7 +7,8 @@ export function nextPegOrigins(origins:Record<string,number>,before:State,after:
  return next;
 }
 export function replayTable(events:readonly Event[]){
+ const history=new HandHistory();
  let pegOrigins:Record<string,number>={};
- const game=replay(events,(before,after,event)=>{pegOrigins=nextPegOrigins(pegOrigins,before,after,event.intent);});
- return {game,pegOrigins};
+ const game=replay(events,(before,after,event)=>{pegOrigins=nextPegOrigins(pegOrigins,before,after,event.intent);history.observe(before,after,event.intent);});
+ return {game,pegOrigins,handHistory:history.rounds};
 }
