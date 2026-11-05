@@ -217,3 +217,11 @@ Viewpoint: **Alex**
 ![Scroll to the dealer’s crib on phone landscape](./screenshots/026-history-phone-crib-alex-linux.png)
 
 - [x] The last player and crib remain readable below the fixed round navigation
+
+## Review history below the return-to-gameroom link
+
+Viewpoint: **Alex**
+
+![Review history below the return-to-gameroom link](./screenshots/027-history-gameroom-alex-linux.png)
+
+- [x] Return navigation and history never overlap on the short phone viewport, with no duplicate seating intent
