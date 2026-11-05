@@ -94,7 +94,7 @@
 <svelte:head><title>Cribbage</title><meta name="description" content="Pull up a chair. A shared wooden cribbage table for two, three or four."/></svelte:head>
 <main class:camera-mode={$cameraMode} data-e2e-layout data-busy={busy} data-connected={connected} data-animating={animating} data-settled-revision={renderedRevision} data-ready={ready} data-phase={game.phase} data-revision={game.revision} data-round={game.round} aria-label="Cribbage table">
  <div class="table-scene"><TableView {game} {viewer} {pegOrigins} action={choiceAction} onAction={chooseAction} onReady={()=>ready=true} onMotion={moving=>animating=moving} onSettled={revision=>renderedRevision=revision} onCard={play}/></div>
- {#if !$cameraMode}<HandHistory rounds={handHistory.filter(round=>round.revision<=renderedRevision)}/>{/if}
+ {#if !$cameraMode}<HandHistory withReturn={!!launch?.returnTo} rounds={handHistory.filter(round=>round.revision<=renderedRevision)}/>{/if}
  {#if gathering}
   <section class="gather" aria-label="Gathering" data-e2e-fit>
    <h1>Cribbage</h1>
