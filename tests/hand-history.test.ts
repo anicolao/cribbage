@@ -16,7 +16,12 @@ for(const [count,protocol] of [[2,3],[3,3],[4,3],[2,2],[4,1]] as const)test(`${c
  while(t.state.phase!=='between'){
   const before=t.state;if(before.phase==='count'){const seat=countOwner(before),crib=isCribCount(before),cards=crib?cribCards(before):before.kept[seat];expected.push({owner:before.players[seat].id,kind:crib?'crib':'hand',cards:[...cards],points:handScore(cards,before.cut!,crib)});}
   t.next();
-  if(t.read().phase!=='between')expect(replayTable(t.events).handHistory).toEqual([]);
+  const current=t.read(),shown=replayTable(t.events).handHistory;
+  if(current.phase==='count'){
+   expect(shown.at(-1)!.hands).toHaveLength(current.countIndex+1);
+   expect(shown.at(-1)!.hands.at(-1)!.kind).toBe(isCribCount(current)?'crib':'hand');
+   expect(shown.at(-1)!.hands.at(-1)!.revision).toBe(current.revision);
+  }else if(current.phase!=='between')expect(shown).toEqual([]);
  }
  const {handHistory,game}=replayTable(t.events);expect(game).toEqual(t.state);expect(handHistory).toHaveLength(1);
  const round=handHistory[0];expect(round.round).toBe(1);expect(round.game).toBe(1);expect(round.starter).toBe(t.state.cut!);
@@ -25,12 +30,12 @@ for(const [count,protocol] of [[2,3],[3,3],[4,3],[2,2],[4,1]] as const)test(`${c
  t.state.players.forEach((p,i)=>expect(round.hands.filter(h=>h.owner===p.id).reduce((sum,h)=>sum+h.points+h.pegging+h.heels,0)).toBe(p.score-start[i]));
  const snapshot=structuredClone(round);t.next();expect(replayTable(t.events).handHistory[0]).toEqual(snapshot); // the next deal cannot replace the old cards
 });
-test('a winning partial round exposes only the hands actually counted, and a new game keeps earlier public rounds',()=>{
+test('a winning partial round exposes only revealed counts, and a new game keeps earlier public rounds',()=>{
  const t=table(2);let last:State|undefined;
  while(t.state.phase!=='finished'){last=t.state;t.next();}
  let history=replayTable(t.events).handHistory;
  if(last!.phase==='count'){
-  const round=history.at(-1)!;expect(round.revision).toBe(t.state.revision);expect(round.hands).toHaveLength(last!.countIndex+1);
+  const round=history.at(-1)!;expect(round.revision).toBeLessThan(t.state.revision);expect(round.hands.at(-1)!.revision).toBeLessThan(t.state.revision);expect(round.hands).toHaveLength(last!.countIndex+1);
   expect(round.hands.at(-1)!.points).toBe(handScore(isCribCount(last!)?cribCards(last!):last!.kept[countOwner(last!)],last!.cut!,isCribCount(last!)));
  }else expect(history.every(round=>round.round<t.state.round+1)).toBe(true);
  const previous=structuredClone(history);t.act('p0',{type:'begin',seed:'history-rematch'});while(t.read().phase!=='between')t.next();
