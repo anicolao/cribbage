@@ -17,6 +17,7 @@
   if(next===seenCount)return;seenCount=next;
   untrack(()=>{if(open&&latest){selected=latest.id;scrollToLatest(latest.id);}});
  });
+ $effect(()=>{if(open&&selected===latest?.id)scrollToLatest(selected!);});
  function scrollToLatest(id:string){void tick().then(()=>{if(open&&selected===id)list?.scrollTo({top:list.scrollHeight,behavior:matchMedia('(prefers-reduced-motion: reduce)').matches?'auto':'smooth'});});}
  function move(delta:number){selected=rounds[index+delta]?.id??selected;void tick().then(()=>list?.scrollTo({top:0,behavior:'auto'}));}
 </script>
