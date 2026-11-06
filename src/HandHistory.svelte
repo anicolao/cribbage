@@ -22,7 +22,7 @@
 </script>
 <svelte:window onresize={()=>{if(open&&selected===latest?.id)scrollToLatest(selected!);}} onkeydown={event=>{if(event.key==='Escape'&&open){open=false;element?.querySelector('summary')?.focus();}}}/>
 {#if round}
- <details bind:this={element} bind:open class="history" class:with-return={withReturn} data-hand-history ontoggle={event=>{selected=event.currentTarget.open?round.id:undefined;if(open&&selected===latest?.id)scrollToLatest(selected!);}}>
+ <details bind:this={element} bind:open class="history" class:with-return={withReturn} data-hand-history ontoggle={event=>{const expanded=event.currentTarget.open;selected=expanded?round.id:undefined;if(expanded&&selected===latest?.id)scrollToLatest(selected!);}}>
   <summary aria-label="Hand history"><span class="cards-icon" aria-hidden="true">▤</span> <span class="caption">History</span> <span class="rounds">{rounds.length}</span></summary>
   <section class="panel" aria-label="Hand history" data-e2e-fit>
    <header><button type="button" aria-label="Previous round" disabled={index===0} onclick={()=>move(-1)}>‹</button><h2>{#if rounds.at(-1)!.game>1}<small>Game {round.game}</small>{/if}Round {round.round}</h2><button type="button" aria-label="Next round" disabled={index===rounds.length-1} onclick={()=>move(1)}>›</button><div class="starter"><span>Starter</span><CardIndex card={round.starter}/></div></header>
