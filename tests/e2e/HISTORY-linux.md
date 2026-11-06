@@ -1,6 +1,6 @@
 # Reviewing counted hands
 
-Completed public hands and cribs are reviewed independently from every seat, including phone layouts. All captures are 1180×820 at 1×; verification allows zero different pixels.
+Public hands and cribs are reviewed from every seat as each count is revealed, including live following and phone layouts. All captures are 1180×820 at 1×; verification allows zero different pixels.
 
 ## Alex opens the latest completed round · actor
 
@@ -194,11 +194,267 @@ Viewpoint: **Ada**
 
 - [x] History is personal; the current deal, revision and concealed opponent cards stay intact
 
+## All open widgets follow the first count of the next round · actor
+
+Viewpoint: **Jules**
+
+![All open widgets follow the first count of the next round · actor](./screenshots/024-history-live-6-jules-linux.png)
+
+- [x] The open widget follows the newly revealed hand or crib after the table animation, with readable indices and no future counts
+
+## All open widgets follow the first count of the next round · observer
+
+Viewpoint: **Alex**
+
+![All open widgets follow the first count of the next round · observer](./screenshots/025-history-live-6-alex-linux.png)
+
+- [x] The open widget follows the newly revealed hand or crib after the table animation, with readable indices and no future counts
+
+## All open widgets follow the first count of the next round · observer
+
+Viewpoint: **Rowan**
+
+![All open widgets follow the first count of the next round · observer](./screenshots/026-history-live-6-rowan-linux.png)
+
+- [x] The open widget follows the newly revealed hand or crib after the table animation, with readable indices and no future counts
+
+## All open widgets follow the first count of the next round · observer
+
+Viewpoint: **Ada**
+
+![All open widgets follow the first count of the next round · observer](./screenshots/027-history-live-6-ada-linux.png)
+
+- [x] The open widget follows the newly revealed hand or crib after the table animation, with readable indices and no future counts
+
+## Pegging advances the open widget to the next count · actor
+
+Viewpoint: **Jules**
+
+![Pegging advances the open widget to the next count · actor](./screenshots/028-history-live-7-jules-linux.png)
+
+- [x] The open widget follows the newly revealed hand or crib after the table animation, with readable indices and no future counts
+
+## Pegging advances the open widget to the next count · observer
+
+Viewpoint: **Alex**
+
+![Pegging advances the open widget to the next count · observer](./screenshots/029-history-live-7-alex-linux.png)
+
+- [x] The open widget follows the newly revealed hand or crib after the table animation, with readable indices and no future counts
+
+## Pegging advances the open widget to the next count · observer
+
+Viewpoint: **Rowan**
+
+![Pegging advances the open widget to the next count · observer](./screenshots/030-history-live-7-rowan-linux.png)
+
+- [x] The open widget follows the newly revealed hand or crib after the table animation, with readable indices and no future counts
+
+## Pegging advances the open widget to the next count · observer
+
+Viewpoint: **Ada**
+
+![Pegging advances the open widget to the next count · observer](./screenshots/031-history-live-7-ada-linux.png)
+
+- [x] The open widget follows the newly revealed hand or crib after the table animation, with readable indices and no future counts
+
+## Pegging advances the open widget to the next count · actor
+
+Viewpoint: **Ada**
+
+![Pegging advances the open widget to the next count · actor](./screenshots/032-history-live-8-ada-linux.png)
+
+- [x] The open widget follows the newly revealed hand or crib after the table animation, with readable indices and no future counts
+
+## Pegging advances the open widget to the next count · observer
+
+Viewpoint: **Alex**
+
+![Pegging advances the open widget to the next count · observer](./screenshots/033-history-live-8-alex-linux.png)
+
+- [x] The open widget follows the newly revealed hand or crib after the table animation, with readable indices and no future counts
+
+## Pegging advances the open widget to the next count · observer
+
+Viewpoint: **Rowan**
+
+![Pegging advances the open widget to the next count · observer](./screenshots/034-history-live-8-rowan-linux.png)
+
+- [x] The open widget follows the newly revealed hand or crib after the table animation, with readable indices and no future counts
+
+## Pegging advances the open widget to the next count · observer
+
+Viewpoint: **Jules**
+
+![Pegging advances the open widget to the next count · observer](./screenshots/035-history-live-8-jules-linux.png)
+
+- [x] The open widget follows the newly revealed hand or crib after the table animation, with readable indices and no future counts
+
+## Pegging advances the open widget to the next count · actor
+
+Viewpoint: **Alex**
+
+![Pegging advances the open widget to the next count · actor](./screenshots/036-history-live-9-alex-linux.png)
+
+- [x] The open widget follows the newly revealed hand or crib after the table animation, with readable indices and no future counts
+
+## Pegging advances the open widget to the next count · observer
+
+Viewpoint: **Rowan**
+
+![Pegging advances the open widget to the next count · observer](./screenshots/037-history-live-9-rowan-linux.png)
+
+- [x] The open widget follows the newly revealed hand or crib after the table animation, with readable indices and no future counts
+
+## Pegging advances the open widget to the next count · observer
+
+Viewpoint: **Jules**
+
+![Pegging advances the open widget to the next count · observer](./screenshots/038-history-live-9-jules-linux.png)
+
+- [x] The open widget follows the newly revealed hand or crib after the table animation, with readable indices and no future counts
+
+## Pegging advances the open widget to the next count · observer
+
+Viewpoint: **Ada**
+
+![Pegging advances the open widget to the next count · observer](./screenshots/039-history-live-9-ada-linux.png)
+
+- [x] The open widget follows the newly revealed hand or crib after the table animation, with readable indices and no future counts
+
+## Pegging advances the open widget to the next count · actor
+
+Viewpoint: **Rowan**
+
+![Pegging advances the open widget to the next count · actor](./screenshots/040-history-live-10-rowan-linux.png)
+
+- [x] The open widget follows the newly revealed hand or crib after the table animation, with readable indices and no future counts
+
+## Pegging advances the open widget to the next count · observer
+
+Viewpoint: **Alex**
+
+![Pegging advances the open widget to the next count · observer](./screenshots/041-history-live-10-alex-linux.png)
+
+- [x] The open widget follows the newly revealed hand or crib after the table animation, with readable indices and no future counts
+
+## Pegging advances the open widget to the next count · observer
+
+Viewpoint: **Jules**
+
+![Pegging advances the open widget to the next count · observer](./screenshots/042-history-live-10-jules-linux.png)
+
+- [x] The open widget follows the newly revealed hand or crib after the table animation, with readable indices and no future counts
+
+## Pegging advances the open widget to the next count · observer
+
+Viewpoint: **Ada**
+
+![Pegging advances the open widget to the next count · observer](./screenshots/043-history-live-10-ada-linux.png)
+
+- [x] The open widget follows the newly revealed hand or crib after the table animation, with readable indices and no future counts
+
+## Pegging advances the open widget to the next count · actor
+
+Viewpoint: **Rowan**
+
+![Pegging advances the open widget to the next count · actor](./screenshots/044-history-live-11-rowan-linux.png)
+
+- [x] The open widget follows the newly revealed hand or crib after the table animation, with readable indices and no future counts
+
+## Pegging advances the open widget to the next count · observer
+
+Viewpoint: **Alex**
+
+![Pegging advances the open widget to the next count · observer](./screenshots/045-history-live-11-alex-linux.png)
+
+- [x] The open widget follows the newly revealed hand or crib after the table animation, with readable indices and no future counts
+
+## Pegging advances the open widget to the next count · observer
+
+Viewpoint: **Jules**
+
+![Pegging advances the open widget to the next count · observer](./screenshots/046-history-live-11-jules-linux.png)
+
+- [x] The open widget follows the newly revealed hand or crib after the table animation, with readable indices and no future counts
+
+## Pegging advances the open widget to the next count · observer
+
+Viewpoint: **Ada**
+
+![Pegging advances the open widget to the next count · observer](./screenshots/047-history-live-11-ada-linux.png)
+
+- [x] The open widget follows the newly revealed hand or crib after the table animation, with readable indices and no future counts
+
+## History stays open through the next deal · actor
+
+Viewpoint: **Rowan**
+
+![History stays open through the next deal · actor](./screenshots/048-history-12-rowan-linux.png)
+
+- [x] History is personal; the current deal, revision and concealed opponent cards stay intact
+
+## History stays open through the next deal · observer
+
+Viewpoint: **Alex**
+
+![History stays open through the next deal · observer](./screenshots/049-history-12-alex-linux.png)
+
+- [x] History is personal; the current deal, revision and concealed opponent cards stay intact
+
+## History stays open through the next deal · observer
+
+Viewpoint: **Jules**
+
+![History stays open through the next deal · observer](./screenshots/050-history-12-jules-linux.png)
+
+- [x] History is personal; the current deal, revision and concealed opponent cards stay intact
+
+## History stays open through the next deal · observer
+
+Viewpoint: **Ada**
+
+![History stays open through the next deal · observer](./screenshots/051-history-12-ada-linux.png)
+
+- [x] History is personal; the current deal, revision and concealed opponent cards stay intact
+
+## A card decision keeps the history widget open · actor
+
+Viewpoint: **Alex**
+
+![A card decision keeps the history widget open · actor](./screenshots/052-history-13-alex-linux.png)
+
+- [x] History is personal; the current deal, revision and concealed opponent cards stay intact
+
+## A card decision keeps the history widget open · observer
+
+Viewpoint: **Rowan**
+
+![A card decision keeps the history widget open · observer](./screenshots/053-history-13-rowan-linux.png)
+
+- [x] History is personal; the current deal, revision and concealed opponent cards stay intact
+
+## A card decision keeps the history widget open · observer
+
+Viewpoint: **Jules**
+
+![A card decision keeps the history widget open · observer](./screenshots/054-history-13-jules-linux.png)
+
+- [x] History is personal; the current deal, revision and concealed opponent cards stay intact
+
+## A card decision keeps the history widget open · observer
+
+Viewpoint: **Ada**
+
+![A card decision keeps the history widget open · observer](./screenshots/055-history-13-ada-linux.png)
+
+- [x] History is personal; the current deal, revision and concealed opponent cards stay intact
+
 ## Review the four hands and crib on phone portrait
 
 Viewpoint: **Alex**
 
-![Review the four hands and crib on phone portrait](./screenshots/024-history-phone-portrait-alex-linux.png)
+![Review the four hands and crib on phone portrait](./screenshots/056-history-phone-portrait-alex-linux.png)
 
 - [x] The panel stays inside the device and its card list scrolls without covering navigation
 
@@ -206,7 +462,7 @@ Viewpoint: **Alex**
 
 Viewpoint: **Alex**
 
-![Review the four hands and crib on phone landscape](./screenshots/025-history-phone-landscape-alex-linux.png)
+![Review the four hands and crib on phone landscape](./screenshots/057-history-phone-landscape-alex-linux.png)
 
 - [x] The panel stays inside the device and its card list scrolls without covering navigation
 
@@ -214,7 +470,7 @@ Viewpoint: **Alex**
 
 Viewpoint: **Alex**
 
-![Scroll to the dealer’s crib on phone landscape](./screenshots/026-history-phone-crib-alex-linux.png)
+![Scroll to the dealer’s crib on phone landscape](./screenshots/058-history-phone-crib-alex-linux.png)
 
 - [x] The last player and crib remain readable below the fixed round navigation
 
@@ -222,6 +478,6 @@ Viewpoint: **Alex**
 
 Viewpoint: **Alex**
 
-![Review history below the return-to-gameroom link](./screenshots/027-history-gameroom-alex-linux.png)
+![Review history below the return-to-gameroom link](./screenshots/059-history-gameroom-alex-linux.png)
 
 - [x] Return navigation and history never overlap on the short phone viewport, with no duplicate seating intent
