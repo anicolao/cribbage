@@ -1,0 +1,17 @@
+{
+  "title": "Baize at Dusk",
+  "bars": 48,
+  "meter": "6/8",
+  "quarterBpm": 84,
+  "seconds": 102.85714285714286,
+  "notes": 362,
+  "parts": [
+    "flute",
+    "violin",
+    "cello"
+  ],
+  "sampleRate": 44100,
+  "peakDb": -8.988771038090075,
+  "rmsDb": -22.498774732165998,
+  "sourceCommit": "440300901dfe9275fd84e0b7763af1f8443ae62e"
+}
