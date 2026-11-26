@@ -1,4 +1,5 @@
 <script lang="ts">
+ import {randomId} from './random-id';
  import {cameraMode} from './cameraViews';
  import {preferences,settingsOpen} from './settings';
  import {onMount,untrack} from 'svelte';
@@ -70,7 +71,7 @@
  async function join(){
   if(!name.trim())return;
   localStorage.setItem('cribbage:name',name.trim());
-  if(!room){room=crypto.randomUUID().replaceAll('-','').slice(0,6).toUpperCase();history.replaceState(null,'',`?table=${room}`);return;}
+  if(!room){room=randomId().replaceAll('-','').slice(0,6).toUpperCase();history.replaceState(null,'',`?table=${room}`);return;}
   await act({type:game.players.length?'join':'create',name});
  }
  // Creating the invitation opens the stream first; the second click is avoided.
@@ -107,8 +108,8 @@
     {#if game.players.length<4}<p>{game.players.length===1?'3 chairs waiting':`${game.players.length} at the table`}</p>{/if}
     {#if viewer===game.host}
     <div class="gather-actions">
-     {#if game.players.length<4}<button class="companion" onclick={()=>act({type:'invite-bot',id:`bot-${crypto.randomUUID()}`,name:['Alex','Rowan','Jules','Ada'][game.players.length]})} disabled={busy||animating} aria-label="Invite companion">＋ <span>Companion</span></button>{/if}
-     {#if game.players.length>=(game.protocol===1?4:2)}<button class="brass" onclick={()=>act({type:'begin',seed:crypto.randomUUID()})} disabled={busy||animating}>Deal</button>{/if}
+     {#if game.players.length<4}<button class="companion" onclick={()=>act({type:'invite-bot',id:`bot-${randomId()}`,name:['Alex','Rowan','Jules','Ada'][game.players.length]})} disabled={busy||animating} aria-label="Invite companion">＋ <span>Companion</span></button>{/if}
+     {#if game.players.length>=(game.protocol===1?4:2)}<button class="brass" onclick={()=>act({type:'begin',seed:randomId()})} disabled={busy||animating}>Deal</button>{/if}
     </div>
     {/if}
    {/if}
@@ -116,7 +117,7 @@
  {:else}
   <div class="sr-only"><p class="prompt" role="status" data-status={ready&&connected&&!busy&&!animating&&renderedRevision===game.revision?'synced':'waiting'}>{prompt}</p>{#if tableStatus.secondary}<p class="last-play">{tableStatus.secondary}</p>{/if}</div>
   <div class="turn-action" class:arriving={animating} data-e2e-fit>
-   {#if game.phase==='finished'&&viewer===game.host}<button class="brass" onclick={()=>act({type:'begin',seed:crypto.randomUUID()})} disabled={busy||animating}>Play again</button>{/if}
+   {#if game.phase==='finished'&&viewer===game.host}<button class="brass" onclick={()=>act({type:'begin',seed:randomId()})} disabled={busy||animating}>Play again</button>{/if}
   </div>
  {/if}
  {#if gathering}<span role="status" class="sr-only" data-status={ready&&connected&&!busy&&!animating&&renderedRevision===game.revision?'synced':'waiting'}>{prompt}</span>{/if}
