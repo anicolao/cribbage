@@ -1,3 +1,4 @@
+import {randomId} from '../random-id';
 import {apply,replay,type Event,type Intent} from './engine';
 export type Pending={id:string;actor:string;expectedRevision:number;intent:Intent};
 export function repository(room:string,onEvents:(events:Event[])=>void,onError:(message:string)=>void){
@@ -24,7 +25,7 @@ export function repository(room:string,onEvents:(events:Event[])=>void,onError:(
   async append(actor:string,intent:Intent){
    const saved=localStorage.getItem(key);if(saved)throw new Error('Finish your last action first.');
    apply(replay(events),actor,intent);
-   const pending:Pending={id:crypto.randomUUID(),actor,expectedRevision:events.length,intent};localStorage.setItem(key,JSON.stringify(pending));await send(pending);
+   const pending:Pending={id:randomId(),actor,expectedRevision:events.length,intent};localStorage.setItem(key,JSON.stringify(pending));await send(pending);
   },
   async retry(){const saved=localStorage.getItem(key);if(saved)await send(JSON.parse(saved));else accept(await (await fetch(url)).json());},
   close(){closed=true;stream.close();}
@@ -33,5 +34,5 @@ export function repository(room:string,onEvents:(events:Event[])=>void,onError:(
 
 export async function playerIdentity(){
  if(import.meta.env.VITE_FIREBASE_PROJECT_ID)return (await (await import('../firebase')).connectFirebase()).uid;
- const uid=localStorage.getItem('cribbage:player')??crypto.randomUUID();localStorage.setItem('cribbage:player',uid);return uid;
+ const uid=localStorage.getItem('cribbage:player')??randomId();localStorage.setItem('cribbage:player',uid);return uid;
 }

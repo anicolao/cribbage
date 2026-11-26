@@ -1,3 +1,4 @@
+import {randomId} from '../random-id';
 import {connectFirebase,previewScope} from '../firebase';
 import {appendFirestore,watchFirestore} from './firestore';
 import {getDoc} from 'firebase/firestore';
@@ -27,7 +28,7 @@ export function firebaseRepository(room:string,onEvents:(events:Event[])=>void,o
   async append(actor:string,intent:Intent){
    if(localStorage.getItem(key))throw new Error('Finish your last action first.');
    apply(replay(events),actor,intent);
-   const pending:Pending={id:crypto.randomUUID(),actor,expectedRevision:events.length,intent};localStorage.setItem(key,JSON.stringify(pending));await send(pending);
+   const pending:Pending={id:randomId(),actor,expectedRevision:events.length,intent};localStorage.setItem(key,JSON.stringify(pending));await send(pending);
   },
   async retry(){const pending=localStorage.getItem(key);if(pending)await send(JSON.parse(pending));else{const {db}=await services;unsubscribe();unsubscribe=watchFirestore(db,previewScope,room,accept,()=>onError('Couldn’t reach the table. Try again.'));}},
   close(){closed=true;unsubscribe();}
